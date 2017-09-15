@@ -8,7 +8,7 @@ if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=python -msphinx
 )
 set SOURCEDIR=.
-set BUILDDIR=.build
+set BUILDDIR=.
 set SPHINXPROJ=StereoTUM
 
 if "%1" == "" goto help
