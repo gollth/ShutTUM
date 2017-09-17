@@ -6,7 +6,7 @@ REM build the docs
 cd %ROOT%\Python\Docs
 make clean
 make html
-xcopy /s build "%TEMP%\build\"
+xcopy /s /e /y build "%TEMP%\build\"
 cd %ROOT%
 
 REM switch branches and pull the data we want
