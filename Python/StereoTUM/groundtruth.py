@@ -7,9 +7,26 @@ import StereoTUM as api
 
 
 class GroundTruth (api.Value):
+    r"""
+    A ground truth is a :class:`Value` with the reference ``"world"``.
+    The ground truth is taken with a higher frequency than all other values (around 100 Hz), but since the 
+    :class:`Mocap` system is stationary in one room only, it might not cover the whole duration of the datset 
+    (depending on the record).
+    """
 
     @staticmethod
     def interpolate(dataset, stamp, position_interpolation=api.Interpolation.linear, orientation_interpolation=api.Interpolation.slerp):
+        r"""
+        This function enables you to find the interpolated groundtruth of a record given a cretain timestamp.
+        
+        :param dataset: the dataset which holds all ground truth values to interpolate over 
+        :param float stamp: the time at which to interpolate (in seconds, with decimal places) 
+        :param position_interpolation: A predefined or custom interpolation function
+        :param orientation_interpolation: A predefined or custom interpolation function
+        :return: A :class:`GroundTruth`-Value
+        
+        .. seealso:: :class:`Interpolation`
+        """
         poses = dataset.raw.groundtruth
         idx = np.searchsorted(poses[:, 0], stamp)
         p = np.ones((1,3)) * np.nan
@@ -35,26 +52,31 @@ class GroundTruth (api.Value):
 
     @property
     def position(self):
+        r"""The position of this ground truth as 3D numpy.ndarray"""
         return self._data[1:4]
 
     @property
     def quaternion(self):
+        r"""The orientation in quaternion representation with the scalar (w) component as first element in a 4D numpy.ndarray"""
         return self._data[4:8]
 
     @property
     def rotation(self):
+        r"""The rotation matrix only **WITHOUT** the translational part as 4x4 numpy.ndarray """
         t = np.eye(4)
         t[0:3,0:3] = tf.quaternions.quat2mat(self.quaternion)
         return t
 
     @property
     def translation(self):
+        r"""The translation matrix only **WITHOUT** the rotational part as 4x4 numpy.ndarray"""
         t = np.eye(4)
         t[0:3,3] = self.position
         return t
 
     @property
     def pose(self):
+        r"""The complete pose of the ground truth including both translation and orientation"""
         return tf.affines.compose(
             T=self.position,
             R=tf.quaternions.quat2mat(self.quaternion),
@@ -67,4 +89,14 @@ class GroundTruth (api.Value):
         return np.linalg.inv(self.pose)
 
     def stereo(self, shutter, extrapolation='closest'):
+        r"""
+        Find a matching stereo image pair for this ground truth value.
+        
+        :param shutter: The shutter type of the images to find ("global", "rolling", **not** "both") 
+        :param extrapolation: An optional extrapolation method to determine the rules for a "match" 
+        (one of "closest", "next", "prev", "exact")
+        :return: The matching stereo image or None if no was found
+        
+        """
         return api.StereoImage.extrapolate(self, shutter, method=extrapolation)
+

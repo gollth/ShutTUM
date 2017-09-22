@@ -83,5 +83,16 @@ class TestDataset (unittest.TestCase):
         dataset = api.Dataset(self._valid)
         self.assertAlmostEqual(dataset.rolling_shutter_speed, 0.01586, delta=0.001)
 
+    def test_camera_iteration_with_filter(self):
+        dataset = api.Dataset(self._valid)
+        x = filter(lambda item: item.ID == 2, dataset.cameras('rolling'))
+        self.assertEqual(list(x)[0].ID, 2)
+
+    def test_camera_iteration_with_list_comprehension(self):
+        dataset = api.Dataset(self._valid)
+
+        x = [ image.stamp for image in dataset.cameras('rolling') if image.ID == 2]
+        self.assertEqual(x[0], dataset.cameras('rolling')[0].stamp)
+
 if __name__ == '__main__':
     unittest.main()

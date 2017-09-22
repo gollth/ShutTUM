@@ -76,5 +76,6 @@ class TestStereoImage (unittest.TestCase):
         self.assertFalse(np.allclose(wl, wr))
         self.assertTrue(np.allclose(wl, wl2))
 
+
 if __name__ == '__main__':
     unittest.main()

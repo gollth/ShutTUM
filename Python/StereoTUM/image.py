@@ -10,6 +10,7 @@ class Image (api.Value):
     def __init__(self, stereo, shutter, left):
         self._left = left
         self._stereo = stereo
+        self._shutter = shutter
 
         if shutter not in ['global', 'rolling']:
             raise ValueError('Shutter type can only be "global" or "rolling"')
@@ -28,6 +29,10 @@ class Image (api.Value):
 
     def __str__(self):
         return "Image (%s/#%05d/%.2f)" % (self.reference, self.ID, self.stamp)
+
+    @property
+    def shutter(self):
+        return self._shutter
 
     @property
     def ID(self):
