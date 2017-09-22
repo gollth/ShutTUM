@@ -3,7 +3,7 @@
 SET ROOT="%~dp0\.."
 
 REM build the docs
-cd %ROOT%\Python\Docs
+cd %ROOT%\Docs
 make clean
 make html
 xcopy /s /e /y build "%TEMP%\build\"
