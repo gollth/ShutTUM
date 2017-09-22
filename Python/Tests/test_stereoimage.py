@@ -60,15 +60,15 @@ class TestStereoImage (unittest.TestCase):
     def test_ground_truth_match_is_correctly_interpolated(self):
         gti = np.genfromtxt(p.join(self.path,'data', 'ground_truth_interpolated.csv'), skip_header=1)
         for image in self.dataset.cameras('rolling'):
-            gt = image.L.groundtruth >> image.L
+            gt = image.L.groundtruth() >> image.L
             expected = gti[gti[:,0] == image.stamp,:]
             if expected.size == 0: self.fail("No interpolated gt in file found for time %.3f" % image.stamp)
             expected = api.GroundTruth(self.dataset, expected[0])
             self.assertTrue(np.allclose(gt, expected.pose))
 
     def test_ground_truth_is_correct_for_both_images(self):
-        wl = self.stereo.L.groundtruth.pose
-        wr = self.stereo.R.groundtruth.pose
+        wl = self.stereo.L.groundtruth().pose
+        wr = self.stereo.R.groundtruth().pose
         rl = self.stereo.L << self.stereo.R
 
         wl2 = wr.dot(rl)

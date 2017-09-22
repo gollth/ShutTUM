@@ -28,3 +28,6 @@ Classes
 
      ~StereoTUM.Value
      ~StereoTUM.GroundTruth
+     ~StereoTUM.Image
+     ~StereoTUM.StereoImage
+     ~StereoTUM.ImuValue

@@ -7,7 +7,6 @@ cd %ROOT%\Docs
 make clean
 make html
 xcopy /s /e /y build "%TEMP%\build\"
-cd %ROOT%
 
 REM switch branches and pull the data we want
 git checkout gh-pages

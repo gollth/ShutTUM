@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-import math
 import numpy as np
 import transforms3d as tf
 import StereoTUM as api
@@ -15,9 +12,10 @@ class GroundTruth (api.Value):
     """
 
     @staticmethod
-    def interpolate(dataset, stamp, position_interpolation=api.Interpolation.linear, orientation_interpolation=api.Interpolation.slerp):
+    def interpolate(dataset, stamp, position_interpolation=api.Interpolation.linear,
+                                    orientation_interpolation=api.Interpolation.slerp):
         r"""
-        This function enables you to find the interpolated groundtruth of a record given a cretain timestamp.
+        This function enables you to find the interpolated groundtruth of a record given a certain timestamp.
         
         :param dataset: the dataset which holds all ground truth values to interpolate over 
         :param float stamp: the time at which to interpolate (in seconds, with decimal places) 
@@ -97,6 +95,7 @@ class GroundTruth (api.Value):
         (one of "closest", "next", "prev", "exact")
         :return: The matching stereo image or None if no was found
         
+        .. seealso:: :func:`StereoImage.extrapolate`
         """
         return api.StereoImage.extrapolate(self, shutter, method=extrapolation)
 

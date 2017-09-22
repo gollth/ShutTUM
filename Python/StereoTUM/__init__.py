@@ -1,9 +1,9 @@
 """
 .. module:: StereoTUM
    :platform: Unix, Windows
-   :synopsis: A useful module indeed.
+   :synopsis: A utility API to easily interact with the StereoTUM dataset
 
-.. moduleauthor:: Andrew Carter <andrew@invalid.com>
+.. moduleauthor:: Thore Goll <thore.goll@tum.de>
 
 """
 

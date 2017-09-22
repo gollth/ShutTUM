@@ -7,3 +7,9 @@ All types of values StereoTUM consists of
    :members:
 .. autoclass:: StereoTUM.GroundTruth
    :members:
+.. autoclass:: StereoTUM.Image
+   :members:
+.. autoclass:: StereoTUM.StereoImage
+   :members:
+.. autoclass:: StereoTUM.ImuValue
+   :members:
