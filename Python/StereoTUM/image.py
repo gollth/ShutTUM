@@ -7,16 +7,16 @@ import StereoTUM as api
 
 class Image (api.Value):
     r"""
-    An image is a :class:`Value` with its reference set to either "cam1" ... "cam4".
+    An image is a :any:`Value` with its reference set to one of ``"cam1"`` ... ``"cam4"``.
         
-    Each image is recorded by a :class:`StereoCamera`, which has a shutter type, so as its images. Note, though,
+    Each image is recorded by a :any:`StereoCamera`, which has a shutter type, so as its images. Note, though,
     that each camera might differ its shutter methods between dataset records, to achieve statistical independence. 
-    That means, that you cannot rely on e.g. "cam1" always having "global" or "rolling" shutter, nor as the other cams.
+    That means, that you cannot rely on e.g. ``"cam1"`` always having ``"global"`` or ``"rolling"`` shutter, nor as the other cams.
     
-    The cameras record data at approximately 20 FPS, but sometimes their might exist frame drops. 
+    The cameras record data at approximately **20 FPS**, but sometimes their might exist frame drops. 
     
-    You can query a lot of information from an image such as its :attr:`shutter`, :attr:`exposure` time and :attr:`ID`.
-    Since it is a :class:`Value` all transform shenanigans apply.
+    You can query a lot of information from an image such as its :any:`shutter <StereoTUM.Image.shutter>`, :any:`exposure <StereoTUM.Image.exposure>` time and :any:`ID <StereoTUM.Image.ID>`.
+    Since it is a :any:`Value` all transform shenanigans apply.
     """
     def __init__(self, stereo, shutter, left):
         self._left = left
@@ -43,7 +43,7 @@ class Image (api.Value):
 
     @property
     def shutter(self):
-        r""" The shutter method with which this image was captured as string, either "rolling" or "global" """
+        r""" The shutter method with which this image was captured as string, either ``"rolling"`` or ``"global"`` """
         return self._shutter
 
     @property
@@ -64,26 +64,26 @@ class Image (api.Value):
 
     @property
     def path(self):
-        r"""The path to the JPEG file of this image, relative to the the construction parameter of :func:`Dataset.__init__`"""
+        r"""The path to the JPEG file of this image, relative to the the construction parameter of :any:`Dataset(...) <StereoTUM.Dataset.__init__>`"""
         return p.join(self._stereo._dataset._path, 'frames', self.reference, '%05d.jpeg' % self.ID)
 
     @property
     def imu(self):
-        r"""The matching :class:`ImuValue` for this image. Since the capture of an image is synchronized with the IMU,
+        r"""The matching :any:`ImuValue` for this image. Since the capture of an image is synchronized with the IMU,
         no interpolation is needed."""
         return self._stereo.imu
 
     def groundtruth(self, position_interpolation=api.Interpolation.linear,
                           orientation_interpolation=api.Interpolation.slerp):
         r"""
-        Find the matching :class:`GroundTruth` value for this image. Since the motion capture system and the cameras
+        Find the matching :any:`GroundTruth` value for this image. Since the motion capture system and the cameras
         are not synced, we need to interpolate between ground truths by image's time stamp.
         
         :param position_interpolation: a predefined or custom interpolation function to interpolate positions 
         :param orientation_interpolation: a predefined or custom interpolation function to interpolate quaternions
         :return: the matching interpolated ground truth
          
-        .. seealso:: :func:`GroundTruth.interpolate`
+        .. seealso:: :any:`StereoTUM.GroundTruth.interpolate`
         """
         # The ground truth value is from world to our reference
         # Therefore we first get the gt from world -> cam1 ...
@@ -100,7 +100,8 @@ class Image (api.Value):
         return api.GroundTruth(self._dataset, np.concatenate(([gt1.stamp], p, q)))
 
     def load(self):
-        r"""Loads the JPEG itself into memory::
+        r"""
+        Loads the JPEG itself into memory::
         
             image = ...
             pixels = image.load()   # uses cv2.imread()

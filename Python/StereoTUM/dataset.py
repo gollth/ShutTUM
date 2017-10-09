@@ -16,9 +16,9 @@ class Interpolation:
     around 60 Hz (exactly three measurements per image), while Ground Truth data is clocked between 100 .. 120 Hz. To 
     get relateable measurements, you must sometimes interpolate between two values.
     
-    StereoTUM supports currently three interpolation methods, namely :py:func:`~linear`, :py:func:`~cubic` and :py:func:`~slerp`.
-    However it is possible to define your own function and hand it over to interpolating methods, such as  :py:func:`GroundTruth.interpolate` 
-    or :py:func:`ImuValue.interpolate`::
+    StereoTUM supports currently three interpolation methods, namely :any:`linear`, :any:`cubic` 
+    and :any:`slerp`. However it is possible to define your own function and hand it over to interpolating 
+    methods, such as  :any:`GroundTruth.interpolate` or :any:`ImuValue.interpolate`::
         
         def some_crazy_interpolation(a,b,t, a0, b0):
             return a + b - 17*t**2
@@ -33,11 +33,11 @@ class Interpolation:
     @staticmethod
     def linear(a, b, t, *_):
         r"""
-        :param `float/numpy.ndarray` a: the lower bound from which to interpolate
-        :param `float/numpy.ndarray` b: the upper bound to which to interpolate 
-        :param `float` t: the value between 0 .. 1 of the interpolation
-        :param _: further args are ignored but required in the function definition (see :py:func:`~cubic`)
-        :rtype: `float/numpy.ndarray`
+        :param a: (float/`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_) the lower bound from which to interpolate
+        :param b: (float/`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_) the upper bound to which to interpolate 
+        :param t: (float) the value between 0 .. 1 of the interpolation
+        :param _: further args are ignored but required in the function definition (see :any:`cubic`)
+        :rtype: float/`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
         
         Interpolate linearly between two points
         
@@ -58,12 +58,12 @@ class Interpolation:
     @staticmethod
     def cubic(a, b, t, a0=None, b0=None):
         r"""
-        :param `float`/`numpy.ndarray` a: the lower bound from which to interpolate
-        :param `float`/`numpy.ndarray` b: the upper bound to which to interpolate
-        :param `float` t: the value between 0 .. 1 of the interpolation
-        :param `float`/`numpy.ndarray` a0: the value before a, from which the tangent in a is calculated. If None, a0 = a
-        :param `float`/`numpy.ndarray` b0: the value after b, from which the tangent in b is calculated. If None, b0 = b
-        :rtype: `float`/`numpy.ndarray`
+        :param a: (float/`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_) the lower bound from which to interpolate
+        :param b: (float/`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_) the upper bound to which to interpolate
+        :param t: (float) t: the value between 0 .. 1 of the interpolation
+        :param a0: (float/`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_) the value before a, from which the tangent in a is calculated. If None, a0 = a
+        :param b0: float/`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_) the value after b, from which the tangent in b is calculated. If None, b0 = b
+        :rtype: float/`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
         
         Interpolate cubically between two points. Note that a, b, a0 and a0 must all have the same shape.
         
@@ -79,11 +79,11 @@ class Interpolation:
     @staticmethod
     def slerp(quat0, quat1, t, *_):
         r"""
-        :param `numpy.ndarray` quat0: the lower rotational bound from which to interpolate (4x1 vector). Will be normalized
-        :param `numpy.ndarray` quat1: the upper rotational bound to which to interpolate (4x1 vector). Will be normalized
-        :param `float` t: the value between 0 .. 1 of the interpolation
-        :param _: further args are ignored but required in the function definition (see :py:func:`~cubic`)
-        :rtype: `numpy.ndarray`
+        :param quat0: (`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_) the lower rotational bound from which to interpolate (4x1 vector). Will be normalized
+        :param quat1: (`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_) the upper rotational bound to which to interpolate (4x1 vector). Will be normalized
+        :param t: (`float`) the value between 0 .. 1 of the interpolation
+        :param _: further args are ignored but required in the function definition (see :any:`cubic`)
+        :rtype: `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
         
         Interpolate spherically between two quaternions. This method is mostly used to interpolate rotations.
         Directly copied from `Transformation.py <http://www.lfd.uci.edu/~gohlke/code/transformations.py.html>`_
@@ -137,10 +137,10 @@ class Interpolation:
 class Dataset(object):
     r"""The base class representing one dataset record.
     
-    In order for performent operations the dataset loads and checks lots of the data in its :func:`__init__` thus avoiding
+    In order for performent operations the dataset loads and checks lots of the data in its :any:`__init__` thus avoiding
     expensive checks in for loops or list comprehensions. In addition it holds the reference to list-like objects, such 
-    as :func:`cameras` or :attr:`.imu`. You can iterate over each of these (depending
-    on application) to get the corresponding :class:`Value`s in order.
+    as :any:`cameras` or :any:`imu <StereoTUM.Dataset.imu>`. You can iterate over each of these (depending
+    on application) to get the corresponding :any:`Value` s in order.
     
     A typical application might look like::
     
@@ -199,7 +199,7 @@ class Dataset(object):
         
         1. It is checked that in path there exists a ``data``, ``frames`` and ``params`` folder
         2. It is checked that there exists the files ``data/frames.csv``, ``data/imu.csv`` and ``data/ground_truth.csv``
-        3. The files from 2. are loaded into memory (see :py:attr:`raw`)
+        3. The files from 2. are loaded into memory (see :any:`raw`)
         4. The ``params/time.yaml`` is loaded
         5. The ``params/params.yaml`` is loaded
            
@@ -224,7 +224,7 @@ class Dataset(object):
         self._ground_truth = np.genfromtxt(g, delimiter='\t', skip_header=1)
 
         Raw = namedtuple('Raw', ['frames', 'imu', 'groundtruth'])
-        self.raw = Raw(self._frames, self._imu, self._ground_truth)
+        self._raw = Raw(self._frames, self._imu, self._ground_truth)
         self._time = {}
         timefile = p.join(path, 'params', 'time.yaml')
         Dataset._check_file_exists(timefile)
@@ -266,10 +266,22 @@ class Dataset(object):
         self._imu     = api.Imu(self)
         self._mocap   = api.Mocap(self)
 
+    @property
+    def raw(self):
+        r"""
+        The raw values in matrix form. This property is a Named Tuple with the following fields:
+        
+        * ``frames`` (`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_) corresponding to ``data/frames.csv``
+        * ``imu`` (`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_) corresponding to ``data/imu.csv``
+        * ``groundtruth`` (`ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_) corresponding to ``data/ground_truth.csv``
+        
+        """
+        return self._raw
+
     def cameras(self, shutter='both'):
         r""" 
         :param str shutter: {both/global/rolling} the type of shutter you are interested in. 
-        :return The reference of the cameras, which you can iterate either as :class:`~devices.StereoCamera` (global/rolling)or :class:`~devices.DuoStereoCamera` (both)
+        :return The reference of the cameras, which you can iterate either as :any:`StereoCamera` (global/rolling)or :any:`DuoStereoCamera` (both)
         :raise: ValueError: for anything other then both/global/rolling
         
         Get a reference to one or both of the two stereo cameras, to iterate over their images
@@ -291,7 +303,7 @@ class Dataset(object):
     @property
     def imu(self):
         r""" 
-        :return: The reference of the Imu for this dataset, which you can iterate as :class:`~devices.Imu`
+        :return: The reference of the Imu for this dataset, which you can iterate as :any:`Imu`
         
         Get a reference to the IMU to iterate over its values.
         
@@ -308,7 +320,7 @@ class Dataset(object):
     @property
     def mocap(self):
         r"""
-        :return: The reference to the Ground Truth list as :class:`~devices.Mocap`
+        :return: The reference to the Ground Truth list as :any:`Mocap`
        
         Get a reference to the Motion Capture system to iterate over the ground truth values.
          
@@ -368,7 +380,7 @@ class Dataset(object):
 
     def gamma(self, cam, input):
         r""" 
-        :param str cam: the name of the camera (e.g. "cam1")
+        :param str cam: the name of the camera (e.g. ``"cam1"``)
         :param float input: the position to lookup, i.e. X-axis on luminance plot. Between 0 .. 255, will be rounded to int
         :raises: ValueError: for unknown camera names or inputs below 0 or above 255
         
@@ -382,9 +394,9 @@ class Dataset(object):
 
     def vignette(self, cam):
         r"""
-        :param str cam: the name of the camera to lookup its vignette (e.g. "cam1")  
-        :return: the vignette image, read by ``cv2.imread()`` with dimensions [1280x1024] as grayscale
-        :rtype: ndarray
+        :param str cam: the name of the camera to lookup its vignette (e.g. ``"cam1"``)  
+        :return: the vignette image, read by `cv2.imread() <http://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_image_display/py_image_display.html>`_ with dimensions [1280x1024] as grayscale
+        :rtype: `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
         """
         if cam not in self._cams:
             raise ValueError("Unknown camera name: %s" % cam)

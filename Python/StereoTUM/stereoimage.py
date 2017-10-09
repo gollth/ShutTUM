@@ -6,11 +6,11 @@ import StereoTUM as api
 
 
 class StereoImage (api.Value):
-    r"""A stereo image contains of two individual :class:`Image`s, a left and a right one.
+    r"""A stereo image contains of two individual :any:`Image` s, a left and a right one.
     It is more or less a container for the two.
     
-    Note that for internal reasons a stereo image derives from :class:`Value`. However, you should
-    not use the transform functions (``<<``and ``>>``) with this, since a stereo image contains two 
+    Note that for internal reasons a stereo image derives from :any:`Value`. However, you should
+    not use the transform functions (``<<`` and ``>>``) with this, since a stereo image contains two 
     reference frames, one for each camera::
     
         stereo = dataset.cameras('rolling')[0]
@@ -26,15 +26,17 @@ class StereoImage (api.Value):
     @staticmethod
     def extrapolate(value, shutter, method='closest'):
         r"""
-        Find a matching image for a certain :class:`Value` based on a extrapolation method
+        Find a matching image for a certain :any:`Value` based on a extrapolation method
         
         :param value: The value for which to find a matching image
-        :param shutter: The shutter type of the images to find ("global", "rolling", **not** "both") 
+        :param shutter: The shutter type of the images to find (``"global"``, ``"rolling"``, **not** ``"both"``) 
         :param method: An optional extrapolation method to determine the rules for a "match":
-            * **"closest"**: the image with the least difference to value.stamp is chosen
-            * **"next"**: the image with the next larger time stamp than value.stamp is chosen
-            * **"prev"**: the image with the next smaller time stamp than value.stamp is chosen
-            * **"exact"**: the image where value.stamp == image.stamp holds is chosen, None otherwise
+        
+            * ``"closest"``: the image with the least difference to value.stamp is chosen
+            * ``"next"``: the image with the next larger time stamp than value.stamp is chosen
+            * ``"prev"``: the image with the next smaller time stamp than value.stamp is chosen
+            * ``"exact"``: the image where value.stamp == image.stamp holds is chosen, None otherwise
+        
         :return: The matching stereo image or None if no was found
         """
         if method == 'closest':
@@ -86,22 +88,25 @@ class StereoImage (api.Value):
 
     @property
     def exposure(self):
-        r"""The exposure time as float in milli seconds, that this image was illuminated. This is constant for :attr:`L` and :attr:`R`"""
+        r"""
+        The exposure time as float in milli seconds, that this image was illuminated. This is constant for 
+        :any:`L <StereoTUM.StereoImage.L>` and :any:`R <StereoTUM.StereoImage.R>`
+        """
         return self._data[2]
 
     @property
     def L(self):
-        r""" The rerference to the left :class:`Image`"""
+        r""" The reference to the left :any:`Image`"""
         return self._left
 
     @property
     def R(self):
-        r""" The rerference to the right :class:`Image`"""
+        r""" The reference to the right :any:`Image`"""
         return self._right
 
     @property
     def imu(self):
-        r"""The matching :class:`ImuValue` for this image. Since the capture of an image is synchronized with the IMU,
+        r"""The matching :any:`ImuValue` for this image. Since the capture of an image is synchronized with the IMU,
                 no interpolation is needed."""
         i = self._dataset.raw.imu
         match = i[i[:, 0] == self.stamp]

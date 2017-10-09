@@ -5,7 +5,7 @@ class StereoCamera:
     r"""
     A stereo camera consists of a left and a right camera facing both in the same direction. Both cameras have the same
     shutter method, so either rolling or global. If you iterate over a stereo camera you go through all the 
-    :class:`StereoImage` in order::
+    :any:`StereoImage` in order::
         
         # You can use a "classic" for loop ... 
         for stereo in dataset.cameras('global')
@@ -23,7 +23,7 @@ class StereoCamera:
     def __init__(self, dataset, shutter):
         r"""
         Creates a new StereoCamera as iterable container for images. Usually you will not invoke this constructor
-        directly but rather get a reference via :func:`Dataset.cameras`
+        directly but rather get a reference via :any:`cameras <StereoTUM.Dataset.cameras>`
         
         :param Dataset dataset: The reference to the dataset 
         :param str shutter: the name of the shutter this camera uses (usually "rolling" or "global")
@@ -52,9 +52,9 @@ class StereoCamera:
 
 class DuoStereoCamera:
     r"""
-    A duo stereo camera consists of a two :class:`StereoCamera`s each with a left and a right one. Both stereo cameras
+    A duo stereo camera consists of a two :any:`StereoCamera` s each with a left and a right one. Both stereo cameras
     use usally (but not necessarily) different shutter methods. If you iterate over a duo stereo camera you go get a 
-    tuple with both :class:`StereoImage`s in order::
+    tuple with both :any:`StereoImage` s in order::
 
         # You can use a "classic" for loop ... 
         for stereo_1, stereo_2 in dataset.cameras()     # both is the default
@@ -85,7 +85,7 @@ class DuoStereoCamera:
 
 class Imu:
     r"""
-    An IMU is an iterable container of all :class:`ImuValue`s. You can iterate over all of its observations like so::
+    An IMU is an iterable container of all :any:`ImuValue` s. You can iterate over all of its observations like so::
     
         # Iteration via "classic" for loop
         for observation in dataset.imu:
@@ -118,15 +118,17 @@ class Imu:
 
 
 class Mocap:
-    r"""The Motion Capture system is an iterable container for all (recorded) :class:`GroundTruth` values in a dataset::
+    r"""
+    The Motion Capture system is an iterable container for all (recorded) :any:`GroundTruth` values in a dataset::
         
         # Iteration via "classic" for loop
         for gt in dataset.mocap:
             print(gt.pose)
-            
+    
         # Or use simple index based access
         T_world_2_cam1 = dataset.mocap[17] >> "cam1"
         print(T_world_2_cam1.pose)
+        
     
     """
     def __init__(self, dataset):
