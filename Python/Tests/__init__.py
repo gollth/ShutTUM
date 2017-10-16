@@ -8,7 +8,7 @@ from StereoTUM.groundtruth import *
 from StereoTUM.image import *
 from StereoTUM.imuvalue import *
 from StereoTUM.stereoimage import *
-from StereoTUM.value import *
+from StereoTUM.values import *
 
 #apipath = p.abspath(p.join('..', 'StereoTUM'))
 #sys.path.append(apipath)

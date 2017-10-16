@@ -1,14 +1,14 @@
 import unittest
 import numpy as np
-import StereoTUM as api
+from StereoTUM import Interpolation
 
 
 class TestInterpolation(unittest.TestCase):
 
     def setUp(self):
-        self.linear = api.Interpolation.linear
-        self.slerp  = api.Interpolation.slerp
-        self.cubic  = api.Interpolation.cubic
+        self.linear = Interpolation.linear
+        self.slerp  = Interpolation.slerp
+        self.cubic  = Interpolation.cubic
         self.lower  = np.array((0,2,10))
         self.upper  = np.array((1,4,110))
         self.middle = np.array((.5, 3, 60))

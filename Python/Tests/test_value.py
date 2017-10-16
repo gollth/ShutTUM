@@ -1,54 +1,54 @@
 import unittest
 import os.path   as p
 import numpy     as np
-import StereoTUM as api
-
+from StereoTUM.dataset import Dataset
+from StereoTUM.values import Value
 
 class TestValue(unittest.TestCase):
 
     def setUp(self):
         d = p.dirname(p.realpath(__file__))
-        self.dataset = api.Dataset(p.join(d, 'valid'))
+        self.dataset = Dataset(p.join(d, 'valid'))
 
     def test_unknown_reference_raises_value_error(self):
         with self.assertRaises(ValueError):
-            api.Value(self.dataset, 0, 'some unknown frame')
+            Value(self.dataset, 0, 'some unknown frame')
 
     def test_reference_set_correctly(self):
-        value = api.Value(self.dataset, 14.145, 'cam1')
+        value = Value(self.dataset, 14.145, 'cam1')
         self.assertEqual(value.reference, 'cam1')
 
     def test_stamp_set_correctly(self):
-        value = api.Value(self.dataset, 14.145, 'cam1')
+        value = Value(self.dataset, 14.145, 'cam1')
         self.assertEqual(value.stamp, 14.145)
 
     def test_wrong_reference_raises_value_error(self):
-        value = api.Value(self.dataset, 14.145, 'cam1')
+        value = Value(self.dataset, 14.145, 'cam1')
         with self.assertRaises(ValueError):
             value >> 'some unknown frame'
 
     def test_tf_lookup_with_int_type_raises_type_error(self):
-        value = api.Value(self.dataset, 0, 'cam1')
+        value = Value(self.dataset, 0, 'cam1')
         with self.assertRaises(TypeError):
             value >> 17
         with self.assertRaises(TypeError):
             value << 17
 
     def test_tf_lookup_with_list_type_raises_type_error(self):
-        value = api.Value(self.dataset, 0, 'cam1')
+        value = Value(self.dataset, 0, 'cam1')
         with self.assertRaises(TypeError):
             value >> ['hello', 'world']
         with self.assertRaises(TypeError):
             value << ['hello', 'world']
 
     def test_self_tf_lookup_is_correct(self):
-        cam1 = api.Value(self.dataset, 0, 'cam1')
+        cam1 = Value(self.dataset, 0, 'cam1')
         identity = cam1 >> 'cam1'
         self.assertTrue(np.allclose(identity, np.eye(4)))
 
     def test_cam1_to_cam2_tf_lookup_is_correct(self):
-        cam1 = api.Value(self.dataset, 0, 'cam1')
-        cam2 = api.Value(self.dataset, 0, 'cam2')
+        cam1 = Value(self.dataset, 0, 'cam1')
+        cam2 = Value(self.dataset, 0, 'cam2')
 
         expected_transform = np.array([
             [0.0,-1.0, 0.0, 0.0],
@@ -60,8 +60,8 @@ class TestValue(unittest.TestCase):
         self.assertTrue(np.allclose(actual_transform, expected_transform))
 
     def test_cam2_to_imu_tf_lookup_is_correct(self):
-        cam2 = api.Value(self.dataset, 0, 'cam2')
-        imu  = api.Value(self.dataset, 0, 'imu')
+        cam2 = Value(self.dataset, 0, 'cam2')
+        imu  = Value(self.dataset, 0, 'imu')
 
         expected_transform = np.array([
             [ 0.0, 1.0, 0.0, 0.3],

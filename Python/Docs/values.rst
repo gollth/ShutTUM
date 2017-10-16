@@ -3,13 +3,13 @@ Values
 ======
 All types of values StereoTUM consists of
 
-.. autoclass:: StereoTUM.Value
+.. autoclass:: StereoTUM.values.Value
    :members:
-.. autoclass:: StereoTUM.GroundTruth
+.. autoclass:: StereoTUM.values.GroundTruth
    :members:
-.. autoclass:: StereoTUM.Image
+.. autoclass:: StereoTUM.values.Image
    :members:
-.. autoclass:: StereoTUM.StereoImage
+.. autoclass:: StereoTUM.values.StereoImage
    :members:
-.. autoclass:: StereoTUM.ImuValue
+.. autoclass:: StereoTUM.values.ImuValue
    :members:

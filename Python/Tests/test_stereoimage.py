@@ -1,16 +1,17 @@
 import unittest
 import numpy     as np
 import os.path   as p
-import StereoTUM as api
+from StereoTUM.dataset import Dataset
+from StereoTUM.values import StereoImage, GroundTruth
 
 
 class TestStereoImage (unittest.TestCase):
     def setUp(self):
         d = p.dirname(p.realpath(__file__))
         self.path = p.join(d, 'valid')
-        self.dataset = api.Dataset(self.path)
+        self.dataset = Dataset(self.path)
         self.data = self.dataset.raw.frames[0,:]
-        self.stereo = api.StereoImage(self.dataset, self.data , 'rolling')
+        self.stereo = StereoImage(self.dataset, self.data , 'rolling')
 
     def test_stereoimage_created_correctly(self):
         self.assertEqual(self.stereo.L.reference, 'cam1')
@@ -63,7 +64,7 @@ class TestStereoImage (unittest.TestCase):
             gt = image.L.groundtruth() >> image.L
             expected = gti[gti[:,0] == image.stamp,:]
             if expected.size == 0: self.fail("No interpolated gt in file found for time %.3f" % image.stamp)
-            expected = api.GroundTruth(self.dataset, expected[0])
+            expected = GroundTruth(self.dataset, expected[0])
             self.assertTrue(np.allclose(gt, expected.pose))
 
     def test_ground_truth_is_correct_for_both_images(self):

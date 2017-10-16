@@ -1,4 +1,4 @@
-import StereoTUM as api
+import StereoTUM.values
 
 
 class StereoCamera:
@@ -47,7 +47,7 @@ class StereoCamera:
         return self._data.shape[0]
 
     def __getitem__(self, item):
-        return api.StereoImage(self._dataset, self._data[item], self._shutter)
+        return StereoTUM.values.StereoImage(self._dataset, self._data[item], self._shutter)
 
 
 class DuoStereoCamera:
@@ -114,7 +114,7 @@ class Imu:
         return self._data.shape[0]
 
     def __getitem__(self, item):
-        return api.ImuValue(self._dataset, self._data[item])
+        return StereoTUM.values.ImuValue(self._dataset, self._data[item])
 
 
 class Mocap:
@@ -150,4 +150,4 @@ class Mocap:
         return self._data.shape[0]
 
     def __getitem__(self, item):
-        return api.GroundTruth(self._dataset, self._data[item])
+        return StereoTUM.values.GroundTruth(self._dataset, self._data[item])

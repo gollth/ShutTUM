@@ -3,11 +3,11 @@ Devices
 =======
 All classes associated with iteration over values measured by sensors
 
-.. autoclass:: StereoTUM.StereoCamera
+.. autoclass:: StereoTUM.devices.StereoCamera
     :members:
-.. autoclass:: StereoTUM.DuoStereoCamera
+.. autoclass:: StereoTUM.devices.DuoStereoCamera
     :members:
-.. autoclass:: StereoTUM.Imu
+.. autoclass:: StereoTUM.devices.Imu
     :members:
-.. autoclass:: StereoTUM.Mocap
+.. autoclass:: StereoTUM.devices.Mocap
     :members:

@@ -21,13 +21,9 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
-from StereoTUM.value       import *
-from StereoTUM.dataset     import *
-from StereoTUM.devices     import *
-from StereoTUM.groundtruth import *
-from StereoTUM.image       import *
-from StereoTUM.imuvalue    import *
-from StereoTUM.stereoimage import *
+#from StereoTUM.values       import *
+#from StereoTUM.dataset     import *
+#from StereoTUM.devices     import *
 
 
 # -- General configuration ------------------------------------------------

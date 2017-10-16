@@ -1,8 +1,7 @@
 =======================
 StereoTUM documentation
 =======================
-
-Welcome to the documentation of the StereoTUM dataset!
+A utility API to easily interact with the StereoTUM dataset by `Thore Goll <thore.goll@tum.de>`_
 
 .. toctree::
     :maxdepth: 2
@@ -19,15 +18,15 @@ Classes
      :toctree:
 
      ~StereoTUM.Interpolation
-     ~StereoTUM.Dataset
+     ~StereoTUM.dataset.Dataset
 
-     ~StereoTUM.StereoCamera
-     ~StereoTUM.DuoStereoCamera
-     ~StereoTUM.Imu
-     ~StereoTUM.Mocap
+     ~StereoTUM.devices.StereoCamera
+     ~StereoTUM.devices.DuoStereoCamera
+     ~StereoTUM.devices.Imu
+     ~StereoTUM.devices.Mocap
 
-     ~StereoTUM.Value
-     ~StereoTUM.GroundTruth
-     ~StereoTUM.Image
-     ~StereoTUM.StereoImage
-     ~StereoTUM.ImuValue
+     ~StereoTUM.values.Value
+     ~StereoTUM.values.GroundTruth
+     ~StereoTUM.values.Image
+     ~StereoTUM.values.StereoImage
+     ~StereoTUM.values.ImuValue
