@@ -94,5 +94,78 @@ class TestDataset (unittest.TestCase):
         x = [ image.stamp for image in dataset.cameras('rolling') if image.ID == 2]
         self.assertEqual(x[0], dataset.cameras('rolling')[0].stamp)
 
+    def test_times_contain_framestamps(self):
+        dataset = Dataset(self._valid)
+        g = set(img.stamp for img in dataset.cameras('global'))
+        r = set(img.stamp for img in dataset.cameras('rolling'))
+        frames = g | r
+
+        self.assertTrue(frames < set(dataset.times))    # check if timestamp from frames is subset of all stamps
+
+    def test_times_contain_imustamps(self):
+        dataset = Dataset(self._valid)
+        i = set(imu.stamp for imu in dataset.imu)
+        self.assertTrue(i < set(dataset.times))
+
+    def test_times_contain_groundtruthstamps(self):
+        dataset = Dataset(self._valid)
+        g = set(gt.stamp for gt in dataset.mocap)
+        self.assertTrue(g < set(dataset.times))
+
+    def test_large_time_is_not_in_times(self):
+        dataset = Dataset(self._valid)
+        x = { 7751621, 2951, -0.1 }
+        self.assertFalse(x < set(dataset.times))
+
+    def test_iteration_over_times_yields_times(self):
+        dataset = Dataset(self._valid)
+        times = dataset.times
+        for i, time in enumerate(dataset.times):
+            if time != times[i]: self.fail("Time %s (number %d) did not match iterated item %s" % (time, i, times[i]))
+
+    def test_times_are_sorted(self):
+        dataset = Dataset(self._valid)
+        self.assertListEqual(dataset.times, sorted(dataset.times))
+
+    def test_lookup_returns_image(self):
+        dataset = Dataset(self._valid)
+        A = dataset.cameras('global')[1]
+        img1, img2, imu, gt = dataset.lookup(A.stamp)
+        self.assertIsNotNone(img1)
+        self.assertIsNotNone(img2)
+        self.assertIsNotNone(imu)
+        self.assertIsNone(gt)
+        self.assertEqual(A, img1)
+        self.assertNotEqual(A, img2)
+
+    def test_lookup_returns_imu(self):
+        dataset = Dataset(self._valid)
+        A = dataset.imu[1]
+        img1, img2, imu, gt = dataset.lookup(A.stamp)
+        self.assertIsNotNone(imu)
+        self.assertIsNone(img1)
+        self.assertIsNone(img2)
+        self.assertIsNone(gt)
+        self.assertEqual(A, imu)
+
+    def test_lookup_returns_gt(self):
+        dataset = Dataset(self._valid)
+        A = dataset.mocap[1]
+        img1, img2, imu, gt = dataset.lookup(A.stamp)
+        self.assertIsNotNone(gt)
+        self.assertIsNone(img1)
+        self.assertIsNone(img2)
+        self.assertIsNone(imu)
+        self.assertEqual(A, gt)
+
+    def test_lookup_returns_only_nones_for_invalid_timestamp(self):
+        dataset = Dataset(self._valid)
+        img1, img2, imu, gt = dataset.lookup(11547)
+        self.assertIsNone(img1)
+        self.assertIsNone(img2)
+        self.assertIsNone(imu)
+        self.assertIsNone(gt)
+
+
 if __name__ == '__main__':
     unittest.main()

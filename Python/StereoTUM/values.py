@@ -62,6 +62,10 @@ class Value(object):
 
         self._reference = reference
 
+    def __eq__(self, other):
+        if not isinstance(other, Value): return False
+        return self._stamp == other._stamp and self.reference == other.reference
+
     @property
     def stamp(self):
         r"""
@@ -148,6 +152,12 @@ class Image(Value):
             # Now we have found a camera matching the wanted shutter type and position
             super(Image, self).__init__(stereo._dataset, stereo._data[1], cam)
             break  # from any further for loop iteration
+
+    def __eq__(self, other):
+        if not isinstance(other, Image): return False
+        return (super(Image, self).__eq__(other)
+                and self._left == other._left
+                and self._shutter == other._shutter)
 
     def __str__(self):
         return "Image (%s/#%05d/%.2f)" % (self.reference, self.ID, self.stamp)
@@ -293,6 +303,10 @@ class StereoImage(Value):
         # Timestamp is in second column
         super(StereoImage, self).__init__(dataset, self._data[1], self._left.reference)
 
+    def __eq__(self, other):
+        if not isinstance(other, StereoImage): return False
+        return super(StereoImage, self).__eq__(other) and np.allclose(self._data, other._data)
+
     def __str__(self):
         return "StereoImage ({%s|%s}/%05d" % (self._left.reference, self._right.reference, self.ID)
 
@@ -347,6 +361,47 @@ class ImuValue(Value):
     """
 
     @staticmethod
+    def extrapolate(value, method='closest'):
+        r"""
+        Find a matching imuvalue for a certain :any:`Value` based on a extrapolation method
+
+        :param value: The value for which to find a matching imuvalue
+        :param method: An optional extrapolation method to determine the rules for a "match":
+
+            * ``"closest"``: the image with the least difference to value.stamp is chosen
+            * ``"next"``: the image with the next larger time stamp than value.stamp is chosen
+            * ``"prev"``: the image with the next smaller time stamp than value.stamp is chosen
+            * ``"exact"``: the image where value.stamp == image.stamp holds is chosen, None otherwise
+
+        :return: The matching stereo image or None if no was found
+        """
+        if method == 'closest':
+            f = value._dataset.raw.imu
+            i = np.abs(f[:, 0] - value.stamp).argmin()
+            return ImuValue(value._dataset, f[i, :])
+
+        if method == 'next':
+            f = value._dataset.raw.imu
+            imu = f[f[:, 0] > value.stamp, :]
+            if imu.size == 0: return None
+            return ImuValue(value._dataset, imu[0])
+
+        if method == 'prev':
+            f = value._dataset.raw.imu
+            imu = f[f[:, 0] < value.stamp, :]
+            if imu.size == 0: return None
+            return ImuValue(value._dataset, imu[-1])
+
+        if method == 'exact':
+            f = value._dataset.raw.imu
+            imu = f[f[:, 0] == value.stamp, :]
+            if imu.size == 0: return None
+            return ImuValue(value._dataset, imu[0])
+
+        raise ValueError(
+            'Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")' % method)
+
+    @staticmethod
     def interpolate(dataset, stamp, accelaration_interpolation=StereoTUM.Interpolation.linear,
                     angvelo_interpolation=StereoTUM.Interpolation.linear):
         r"""
@@ -379,6 +434,12 @@ class ImuValue(Value):
         super(ImuValue, self).__init__(dataset, stamp=data[0], reference='imu')
         self._acc = np.array(data[1:4])
         self._gyro = np.array(data[4:7])
+
+    def __eq__(self, other):
+        if not isinstance(other, ImuValue): return False
+        return (super(ImuValue, self).__eq__(other)
+                and np.allclose(self._acc, other._acc)
+                and np.allclose(self._gyro, other._gyro))
 
     @property
     def acceleration(self):
@@ -460,12 +521,57 @@ class GroundTruth(Value):
             q = orientation_interpolation(poses[idx - 1, 4:8], poses[idx, 4:8], t, qa0, qb0)
         return GroundTruth(dataset, np.concatenate(([stamp], p, q)))
 
+    @staticmethod
+    def extrapolate(value, method='closest'):
+        r"""
+        Find a matching ground truth for a certain :any:`Value` based on a extrapolation method
+
+        :param value: The value for which to find a matching imuvalue
+        :param method: An optional extrapolation method to determine the rules for a "match":
+
+            * ``"closest"``: the image with the least difference to value.stamp is chosen
+            * ``"next"``: the image with the next larger time stamp than value.stamp is chosen
+            * ``"prev"``: the image with the next smaller time stamp than value.stamp is chosen
+            * ``"exact"``: the image where value.stamp == image.stamp holds is chosen, None otherwise
+
+        :return: The matching stereo image or None if no was found
+        """
+        if method == 'closest':
+            f = value._dataset.raw.groundtruth
+            i = np.abs(f[:, 0] - value.stamp).argmin()
+            return GroundTruth(value._dataset, f[i, :])
+
+        if method == 'next':
+            f = value._dataset.raw.groundtruth
+            gt = f[f[:, 0] > value.stamp, :]
+            if gt.size == 0: return None
+            return GroundTruth(value._dataset, gt[0])
+
+        if method == 'prev':
+            f = value._dataset.raw.groundtruth
+            gt = f[f[:, 0] < value.stamp, :]
+            if gt.size == 0: return None
+            return GroundTruth(value._dataset, gt[-1])
+
+        if method == 'exact':
+            f = value._dataset.raw.groundtruth
+            gt = f[f[:, 0] == value.stamp, :]
+            if gt.size == 0: return None
+            return GroundTruth(value._dataset, gt[0])
+
+        raise ValueError(
+            'Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")' % method)
+
     def __init__(self, dataset, data):
         if len(data) < 8:
             raise ValueError(
                 "Data must have at least 8 entries [time1, position3, orientation4] but has %d" % len(data))
         super(GroundTruth, self).__init__(dataset, stamp=data[0], reference='world')
         self._data = data
+
+    def __eq__(self, other):
+        if not isinstance(other, GroundTruth): return False
+        return super(GroundTruth, self).__eq__(other) and np.allclose(self._data, other._data)
 
     @property
     def position(self):

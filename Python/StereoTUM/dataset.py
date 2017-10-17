@@ -6,6 +6,7 @@ import numpy   as np
 
 from collections import namedtuple
 import StereoTUM.devices
+import StereoTUM.values
 
 
 class Dataset(object):
@@ -97,6 +98,7 @@ class Dataset(object):
         self._frames       = np.genfromtxt(f, delimiter='\t', skip_header=1)
         self._imu          = np.genfromtxt(i, delimiter='\t', skip_header=1)
         self._ground_truth = np.genfromtxt(g, delimiter='\t', skip_header=1)
+        self._times = list(sorted(set(self._frames[:,1]) | set(self._imu[:,0]) | set(self._ground_truth[:,0])))
 
         Raw = namedtuple('Raw', ['frames', 'imu', 'groundtruth'])
         self._raw = Raw(self._frames, self._imu, self._ground_truth)
@@ -211,6 +213,22 @@ class Dataset(object):
         return self._mocap
 
     @property
+    def times(self):
+        r"""
+        A list of all time stamps in the dataset.
+        
+        .. math:: \mathbf{t} = \mathbf{t}_{frames} \cup \mathbf{t}_{imu} \cup \mathbf{t}_{groundtruth}
+        
+        Note that this list is sorted, so you can easily iterate over it like so::
+        
+            for time in dataset.times:
+                print(time)
+        
+        
+        """
+        return self._times
+
+    @property
     def start(self):
         r"""
         The start time of the record as Unix Timestamp in seconds with decimal places
@@ -290,3 +308,31 @@ class Dataset(object):
             if shutter['type'] == 'rolling':
                 return shutter['speed']
         raise ValueError('No cams in %s had rolling shutter enabled!' % self._path)
+
+    def lookup(self, stamp):
+        r"""
+        :param float stamp: the stamp in [s] at which to look up the values 
+        :return: a tuple with type (:any:`StereoImage`, :any:`StereoImage`, :any:`ImuValue`, :any:`GroundTruth`). The first element is for **global** shutter, second for **rolling**. If any value does not exist for the stamp, it becomes ``None``
+        
+        Looks up all corresponding :any:`Value` s it can find for a given time stamp::
+        
+            dataset = Dataset(...)
+            
+            for time in dataset.times:
+                g, r, i, t = dataset.lookup(times)
+                if g is not None: print(g.ID)
+                if r is not None: print(r.ID)
+                if i is not None: print(i.acceleration)
+                if t is not None: print(t.pose)
+        
+        Note, though, that this is not the most performant thing to iterate over the dataset,
+        since the lookup has to be done on every iteration. Consider iterating over :any:`cameras`, :any:`imu` or :any:`mocap` instead.
+        """
+        value = StereoTUM.values.Value(self, stamp, 'world')    # world as dummy for the time stamp
+        g = StereoTUM.values.StereoImage.extrapolate(value, 'global', method='exact')
+        r = StereoTUM.values.StereoImage.extrapolate(value, 'rolling', method='exact')
+        i = StereoTUM.values.ImuValue.extrapolate(value, method='exact')
+        t = StereoTUM.values.GroundTruth.extrapolate(value, method='exact')
+        return g, r, i, t
+
+
