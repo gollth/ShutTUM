@@ -36,6 +36,9 @@ class StereoCamera:
         self._index = 0
         return self
 
+    def next(self): # python2 support
+        return self.__next__()
+
     def __next__(self):
         if len(self) <= self._index: raise StopIteration
 
@@ -71,6 +74,9 @@ class DuoStereoCamera:
         self._global.__iter__()
         return self
 
+    def next(self): # python2 support
+        return self.__next__()
+
     def __next__(self):
         g = self._global.__next__()
         r = self._rolling.__next__()
@@ -102,6 +108,9 @@ class Imu:
     def __iter__(self):
         self._index = 0
         return self
+
+    def next(self): # python2 support
+        return self.__next__()
 
     def __next__(self):
         if len(self) >= self._index: raise StopIteration
@@ -145,6 +154,9 @@ class Mocap:
         gt = self[self._index]
         self._index += 1
         return gt
+
+    def next(self): # python2 support
+        return self.__next__()
 
     def __len__(self):
         return self._data.shape[0]

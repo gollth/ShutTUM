@@ -38,19 +38,19 @@ class Dataset(object):
     def _check_folder_exists(folder):
         r""" Checks if a folder exists and raises an exception otherwise
         :param str folder: the path to the folder to check for existance
-        :raises FileNotFoundError
+        :raises IOError
         """
-        if not p.exists(p.join(folder)):
-            raise FileNotFoundError("Could not find folder %s, record folder seems not to be valid!" % folder)
+        if not p.exists(folder):
+            raise IOError("Could not find folder %s, record folder seems not to be valid!" % folder)
 
     @staticmethod
     def _check_file_exists(file):
         r""" Checks if a file exists and raises an exception otherwise
         :param str file: the path to the file to check for existance
-        :raises FileNotFoundError
+        :raises IOError
         """
         if not p.exists(file):
-            raise FileNotFoundError("Could not find %s, record folder seems not to be valid!" % file)
+            raise IOError("Could not find %s, record folder seems not to be valid!" % file)
 
     @staticmethod
     def _check_contains_key(file, dictionary, key):
@@ -78,6 +78,7 @@ class Dataset(object):
         5. The ``params/params.yaml`` is loaded
            
         """
+        path = p.expandvars(p.expanduser(path))
         self._path = path
 
         # Consistency Check

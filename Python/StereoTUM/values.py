@@ -87,7 +87,7 @@ class Value(object):
     def __str__(self):
         return "%s (%s/%.2f)" % (type(self).__name__, self.reference, self.stamp)
 
-    def __lshift__(self, parent) -> np.ndarray:
+    def __lshift__(self, parent):
         if isinstance(parent, str):
             if parent not in self._dataset._refs:
                 raise ValueError("Cannot find the (static) parent reference %s" % parent)
@@ -101,7 +101,7 @@ class Value(object):
         tchild = self.transform
         return np.dot(np.linalg.inv(tparent), tchild)
 
-    def __rshift__(self, child) -> np.ndarray:
+    def __rshift__(self, child):
         if isinstance(child, str):
             if child not in self._dataset._refs:
                 raise ValueError("Cannot find the (static) parent reference %s" % child)
@@ -146,7 +146,7 @@ class Image(Value):
             if not left and cam not in ['cam2', 'cam4']: continue
 
             # Now we have found a camera matching the wanted shutter type and position
-            super().__init__(stereo._dataset, stereo._data[1], cam)
+            super(Image, self).__init__(stereo._dataset, stereo._data[1], cam)
             break  # from any further for loop iteration
 
     def __str__(self):
@@ -291,7 +291,7 @@ class StereoImage(Value):
         self._right = Image(self, shutter, left=False)
 
         # Timestamp is in second column
-        super().__init__(dataset, self._data[1], self._left.reference)
+        super(StereoImage, self).__init__(dataset, self._data[1], self._left.reference)
 
     def __str__(self):
         return "StereoImage ({%s|%s}/%05d" % (self._left.reference, self._right.reference, self.ID)
@@ -376,7 +376,7 @@ class ImuValue(Value):
     def __init__(self, dataset, data):
         if len(data) < 7: raise ValueError(
             "Data must have at least 7 entries [time1, acc3, gyro3] but has %d" % len(data))
-        super().__init__(dataset, stamp=data[0], reference='imu')
+        super(ImuValue, self).__init__(dataset, stamp=data[0], reference='imu')
         self._acc = np.array(data[1:4])
         self._gyro = np.array(data[4:7])
 
@@ -464,7 +464,7 @@ class GroundTruth(Value):
         if len(data) < 8:
             raise ValueError(
                 "Data must have at least 8 entries [time1, position3, orientation4] but has %d" % len(data))
-        super().__init__(dataset, stamp=data[0], reference='world')
+        super(GroundTruth, self).__init__(dataset, stamp=data[0], reference='world')
         self._data = data
 
     @property

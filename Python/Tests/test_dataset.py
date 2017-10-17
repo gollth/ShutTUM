@@ -19,11 +19,11 @@ class TestDataset (unittest.TestCase):
     def test_loads_valid_record_without_exception(self):
         try:
             Dataset(self._valid)
-        except FileNotFoundError:
+        except IOError:
             self.fail('Loading with __init__ of a valid dataset failed')
 
     def test_loads_missing_frames_record_with_exception(self):
-        with self.assertRaises(FileNotFoundError) as context:
+        with self.assertRaises(IOError) as context:
             Dataset(self._missing_frames)
 
     def test_loads_wrong_time_param_record_with_exception(self):
