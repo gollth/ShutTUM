@@ -1,3 +1,6 @@
 __pycache__/
 build/
 *.pyc
+devel/
+logs/
+.catkin_tools/

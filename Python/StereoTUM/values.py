@@ -5,6 +5,7 @@ import numpy as np
 import os.path as p
 import transforms3d as tf
 import StereoTUM
+from collections import namedtuple
 
 
 class Value(object):
@@ -95,6 +96,8 @@ class Value(object):
         if isinstance(parent, str):
             if parent not in self._dataset._refs:
                 raise ValueError("Cannot find the (static) parent reference %s" % parent)
+            
+            # TODO add test case cam1.L << 'world' (NOT WORKING!!!)
             tparent = np.array(self._dataset._refs[parent]['transform'])
 
         elif isinstance(parent, Value):
@@ -133,6 +136,8 @@ class Image(Value):
     Since it is a :any:`Value` all transform shenanigans apply.
     """
 
+    Vector2 = namedtuple('Vector2', 'x y')
+    
     def __init__(self, stereo, shutter, left):
         self._left = left
         self._stereo = stereo
@@ -152,6 +157,9 @@ class Image(Value):
             # Now we have found a camera matching the wanted shutter type and position
             super(Image, self).__init__(stereo._dataset, stereo._data[1], cam)
             break  # from any further for loop iteration
+
+        # TODO add test for this exception
+        if not p.exists(self.path): raise ValueError("Image %s does not exist" % self.path)
 
     def __eq__(self, other):
         if not isinstance(other, Image): return False
@@ -232,6 +240,32 @@ class Image(Value):
         """
         return cv2.imread(self.path, cv2.IMREAD_GRAYSCALE)
 
+    @property
+    def distortion(self):
+        r"""The FOV distortion parameter as ``float`` for the provided camera"""
+        return self._dataset._refs[self.reference]['distortion']
+    
+    @property
+    def focal(self):
+        r"""The focal length in both ``x`` and ``y`` as named tuple"""
+        return Image.Vector2(x=self._dataset._refs[self.reference]['intrinsics'][0],
+                             y=self._dataset._refs[self.reference]['intrinsics'][1])
+
+    @property
+    def principle(self):
+        r"""The image's principle point in both ``x`` and ``y`` as named tuple in image coordinates``"""
+        return Image.Vector2(x=self._dataset._refs[self.reference]['intrinsics'][2],
+                             y=self._dataset._refs[self.reference]['intrinsics'][3])
+
+    @property
+    def P(self):
+        r"""The projection or intrinsic camera matrix as 4x3 `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_"""
+        f = self.focal
+        p = self.principle
+        return np.array(((f.x,   0, p.x, 0),
+                         (  0, f.y, p.y, 0),
+                         (  0,   0,   1, 0)))
+
 
 class StereoImage(Value):
     r"""A stereo image contains of two individual :any:`Image` s, a left and a right one.
@@ -268,28 +302,32 @@ class StereoImage(Value):
 
         :return: The matching stereo image or None if no was found
         """
-        if method == 'closest':
-            f = value._dataset.raw.frames
-            i = np.abs(f[:, 1] - value.stamp).argmin()
-            return StereoImage(value._dataset, f[i, :], shutter)
+        try:
+            if method == 'closest':
+                f = value._dataset.raw.frames
+                i = np.abs(f[:, 1] - value.stamp).argmin()
+                return StereoImage(value._dataset, f[i, :], shutter)
 
-        if method == 'next':
-            f = value._dataset.raw.frames
-            frame = f[f[:, 1] > value.stamp, :]
-            if frame.size == 0: return None
-            return StereoImage(value._dataset, frame[0], shutter)
+            if method == 'next':
+                f = value._dataset.raw.frames
+                frame = f[f[:, 1] > value.stamp, :]
+                if frame.size == 0: return None
+                return StereoImage(value._dataset, frame[0], shutter)
 
-        if method == 'prev':
-            f = value._dataset.raw.frames
-            frame = f[f[:, 1] < value.stamp, :]
-            if frame.size == 0: return None
-            return StereoImage(value._dataset, frame[-1], shutter)
+            if method == 'prev':
+                f = value._dataset.raw.frames
+                frame = f[f[:, 1] < value.stamp, :]
+                if frame.size == 0: return None
+                return StereoImage(value._dataset, frame[-1], shutter)
 
-        if method == 'exact':
-            f = value._dataset.raw.frames
-            frame = f[f[:, 1] == value.stamp, :]
-            if frame.size == 0: return None
-            return StereoImage(value._dataset, frame[0], shutter)
+            if method == 'exact':
+                f = value._dataset.raw.frames
+                frame = f[f[:, 1] == value.stamp, :]
+                if frame.size == 0: return None
+                return StereoImage(value._dataset, frame[0], shutter)
+        
+        except ValueError:
+            return None
 
         raise ValueError(
             'Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")' % method)
@@ -443,6 +481,7 @@ class ImuValue(Value):
 
     @property
     def acceleration(self):
+        # TODO Add unit [gs] to docstring, and convert units to m/m**2
         r"""The acceleration 3D vector [x,y,z] of this measurement as `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_"""
         return self._acc
 

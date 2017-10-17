@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <name>playback</name>
+  <version>0.1.0</version>
+  <description>A utility API to easily interact with the StereoTUM dataset</description>
+
+  <license>BSD</license>
+
+
+  <maintainer email="thore.goll@tum.de">Thore Goll</maintainer>
+  <author email="thore.goll@tum.de">Thore Goll</author>
+
+  <url type="repository">https://github.com/gollth/stereotum</url>
+  
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>rosgraph_msgs</run_depend>
+  <run_depend>cv_bridge</run_depend>
+
+</package>
