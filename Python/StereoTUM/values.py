@@ -84,7 +84,7 @@ class Value(object):
         r"""
         The transformation from ``"cam1"`` to this value`s :any:`reference <StereoTUM.Value.reference>` as 4x4 `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_ homogenous matrix 
         """
-        return np.array(self._dataset._refs[self._reference]['_transform'])
+        return np.array(self._dataset._refs[self._reference]['transform'])
 
     def __str__(self):
         return "%s (%s/%.2f)" % (type(self).__name__, self.reference, self.stamp)
@@ -93,8 +93,7 @@ class Value(object):
         if isinstance(parent, str):
             if parent not in self._dataset._refs:
                 raise ValueError("Cannot find the (static) parent reference %s" % parent)
-            
-            # TODO add test case cam1.L << 'world' (NOT WORKING!!!)
+
             tparent = np.array(self._dataset._refs[parent]['transform'])
 
         elif isinstance(parent, Value):
@@ -109,7 +108,7 @@ class Value(object):
         if isinstance(child, str):
             if child not in self._dataset._refs:
                 raise ValueError("Cannot find the (static) parent reference %s" % child)
-            tchild = np.array(self._dataset._refs[child]['_transform'])
+            tchild = np.array(self._dataset._refs[child]['transform'])
         elif isinstance(child, Value):
             tchild = child._transform
         else:
@@ -133,7 +132,7 @@ class Image(Value):
     Since it is a :any:`Value` all transform shenanigans apply.
     """
 
-    Vector2 = namedtuple('Vector2', 'x y')
+    _Vector2 = namedtuple('Vector2', 'x y')
     
     def __init__(self, stereo, shutter, left):
         self._left = left
@@ -155,7 +154,6 @@ class Image(Value):
             super(Image, self).__init__(stereo._dataset, stereo._data[1], cam)
             break  # from any further for loop iteration
 
-        # TODO add test for this exception
         if not p.exists(self.path): raise ValueError("Image %s does not exist" % self.path)
 
     def __eq__(self, other):
@@ -245,14 +243,14 @@ class Image(Value):
     @property
     def focal(self):
         r"""The focal length in both ``x`` and ``y`` as named tuple"""
-        return Image.Vector2(x=self._dataset._refs[self.reference]['intrinsics'][0],
-                             y=self._dataset._refs[self.reference]['intrinsics'][1])
+        return Image._Vector2(x=self._dataset._refs[self.reference]['intrinsics'][0],
+                              y=self._dataset._refs[self.reference]['intrinsics'][1])
 
     @property
     def principle(self):
         r"""The image's principle point in both ``x`` and ``y`` as named tuple in image coordinates``"""
-        return Image.Vector2(x=self._dataset._refs[self.reference]['intrinsics'][2],
-                             y=self._dataset._refs[self.reference]['intrinsics'][3])
+        return Image._Vector2(x=self._dataset._refs[self.reference]['intrinsics'][2],
+                              y=self._dataset._refs[self.reference]['intrinsics'][3])
 
     @property
     def P(self):
@@ -391,6 +389,8 @@ class ImuValue(Value):
     the :any:`Imu` is synchronized in a way, that it measures exactly three times 
     per image. Any ImuValue consist of three acceleration measurements in X, Y and Z 
     and three angular velocity measurements around the X, Y, and Z axis.
+    
+     .. image:: images/imu.png
 
     .. seealso:: :any:`Interpolation`
     """
@@ -478,13 +478,19 @@ class ImuValue(Value):
 
     @property
     def acceleration(self):
-        # TODO Add unit [gs] to docstring, and convert units to m/m**2
-        r"""The acceleration 3D vector [x,y,z] of this measurement as `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_"""
+        r"""
+        The acceleration 3D vector [x,y,z] of this measurement as 
+        `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_ 
+        in .. math:: \frac{m}{s^2}"""
         return self._acc
 
     @property
     def angular_velocity(self):
-        r"""The angular velocity 3D vector around [x,y,z] of this measurement as `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_"""
+        r"""
+        The angular velocity 3D vector around [x,y,z] of this measurement as 
+        `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
+        in .. math:: \frac{rad}{s}
+        """
         return self._gyro
 
     def stereo(self, shutter, extrapolation='closest'):

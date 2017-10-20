@@ -77,6 +77,11 @@ class TestStereoImage (unittest.TestCase):
         self.assertFalse(np.allclose(wl, wr))
         self.assertTrue(np.allclose(wl, wl2))
 
+    def test_framedrop_will_raise_value_error(self):
+        with self.assertRaises(ValueError) as context:
+            StereoImage(self.dataset, [117, 100, 1], "rolling")
+
+
 
 if __name__ == '__main__':
     unittest.main()

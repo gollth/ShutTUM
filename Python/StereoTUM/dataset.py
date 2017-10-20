@@ -123,8 +123,8 @@ class Dataset(object):
         for ref in self._refs:
             if ref == 'world': continue  # world param must only be present, not more
 
-            # Every other reference must have at least a _transform parameter
-            Dataset._check_contains_key(paramfile, self._refs[ref], '_transform')
+            # Every other reference must have at least a transform parameter
+            Dataset._check_contains_key(paramfile, self._refs[ref], 'transform')
 
             if 'shutter' not in self._refs[ref]: continue
 
