@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import cv2
 import numpy as np
 import os.path as p
@@ -17,14 +15,14 @@ class Value(object):
     
     1) They are single, time-discrete values (see :any:`stamp <StereoTUM.Value.stamp>`)
     2) They are related to a certain reference frame (see :any:`reference <StereoTUM.Value.reference>`)
-    3) They all have a transformation from its reference frame towards that of ``"cam1"`` (see :any:`transform <StereoTUM.Value.transform>`)
+    3) They all have a transformation from its reference frame towards that of ``"cam1"`` (see :any:`_transform <StereoTUM.Value._transform>`)
     
     
     Since every value has these three properties, you can achieve easily get the transformations between different  values. 
     Therefore the leftshift ``<<`` and rightshift ``>>`` operator has been overloaded. Both accept as their right parameter either:
     
-    * a string indicating the desired reference to or from which to transform (e.g. ``"cam1"``, ``"cam2"``, ``"world"``, ``"imu"`` ...)
-    * or another value, whose :any:`reference <StereoTUM.Value.reference>` property is used to determine the transform
+    * a string indicating the desired reference to or from which to _transform (e.g. ``"cam1"``, ``"cam2"``, ``"world"``, ``"imu"`` ...)
+    * or another value, whose :any:`reference <StereoTUM.Value.reference>` property is used to determine the _transform
     
     The direction of the "shift" means "How is the transformation from reference x to y?"::
     
@@ -36,22 +34,21 @@ class Value(object):
         print("Image %s is associated with reference %s" % (image, image.reference))
         print("Ground Truth %s is associated with reference %s" % (gt, gt.reference))
         
-        # ... and also a transform from the systems origin, which is "cam1"
-        print("T_cam1_2_image: %s" % image.transform)
-        print("T_cam1_2_gt:    %s" % gt.transform)
+        # ... and also a _transform from the systems origin, which is "cam1"
+        print("T_cam1_2_image: %s" % image._transform)
+        print("T_cam1_2_gt:    %s" % gt._transform)
         # BUT since they are "private" functions from value you should rather use something like this:
          
          
         # Since we know both transforms to "cam1", we can compute the transformation between the two
         T_image_2_gt = image >> gt
         T_image_2_gt = gt << image        # same as line above
-        T_image_2_gt = image >> "world"   # also the same
-        # T_image_2_gt = "world" << image # This fails, since the shift operators cannot be overloaded for strings in the first place
+        # T_image_2_gt = gt.reference << image # This fails, since the shift operators cannot be overloaded for strings in the first place
         
         T_gt_2_image = gt >> image
         T_gt_2_image = image << gt
         T_gt_2_image = gt >> "cam2"       # for example, if image was taken by "cam2"
-        T_gt_2_image = "cam2" << "world"  # obviously this will also not work ...
+        # T_gt_2_image = "cam2" << gt.reference  # obviously this will also not work ...
     
     """
     def __init__(self, dataset, stamp, reference):
@@ -82,11 +79,11 @@ class Value(object):
         return self._reference
 
     @property
-    def transform(self):
+    def _transform(self):
         r"""
         The transformation from ``"cam1"`` to this value`s :any:`reference <StereoTUM.Value.reference>` as 4x4 `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_ homogenous matrix 
         """
-        return np.array(self._dataset._refs[self._reference]['transform'])
+        return np.array(self._dataset._refs[self._reference]['_transform'])
 
     def __str__(self):
         return "%s (%s/%.2f)" % (type(self).__name__, self.reference, self.stamp)
@@ -95,27 +92,27 @@ class Value(object):
         if isinstance(parent, str):
             if parent not in self._dataset._refs:
                 raise ValueError("Cannot find the (static) parent reference %s" % parent)
-            tparent = np.array(self._dataset._refs[parent]['transform'])
+            tparent = np.array(self._dataset._refs[parent]['_transform'])
 
         elif isinstance(parent, Value):
-            tparent = parent.transform
+            tparent = parent._transform
         else:
             raise TypeError("Cannot only lookup transforms for type string or StereoTUM.Value")
 
-        tchild = self.transform
+        tchild = self._transform
         return np.dot(np.linalg.inv(tparent), tchild)
 
     def __rshift__(self, child):
         if isinstance(child, str):
             if child not in self._dataset._refs:
                 raise ValueError("Cannot find the (static) parent reference %s" % child)
-            tchild = np.array(self._dataset._refs[child]['transform'])
+            tchild = np.array(self._dataset._refs[child]['_transform'])
         elif isinstance(child, Value):
-            tchild = child.transform
+            tchild = child._transform
         else:
             raise TypeError("Cannot only lookup transforms for type string or StereoTUM.Value")
 
-        tparent = self.transform
+        tparent = self._transform
         return np.dot(np.linalg.inv(tparent), tchild)
 
 
@@ -130,7 +127,7 @@ class Image(Value):
     The cameras record data at approximately **20 FPS**, but sometimes their might exist frame drops. 
 
     You can query a lot of information from an image such as its :any:`shutter <StereoTUM.Image.shutter>`, :any:`exposure <StereoTUM.Image.exposure>` time and :any:`ID <StereoTUM.Image.ID>`.
-    Since it is a :any:`Value` all transform shenanigans apply.
+    Since it is a :any:`Value` all _transform shenanigans apply.
     """
 
     def __init__(self, stereo, shutter, left):
@@ -238,7 +235,7 @@ class StereoImage(Value):
     It is more or less a container for the two.
 
     Note that for internal reasons a stereo image derives from :any:`Value`. However, you should
-    not use the transform functions (``<<`` and ``>>``) with this, since a stereo image contains two 
+    not use the _transform functions (``<<`` and ``>>``) with this, since a stereo image contains two 
     reference frames, one for each camera::
 
         stereo = dataset.cameras('rolling')[0]
@@ -608,7 +605,7 @@ class GroundTruth(Value):
         )
 
     @property
-    def transform(self):
+    def _transform(self):
         return np.linalg.inv(self.pose)
 
     def stereo(self, shutter, extrapolation='closest'):

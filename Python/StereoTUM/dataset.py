@@ -3,7 +3,6 @@ import cv2
 import os.path as p
 import numpy   as np
 
-
 from collections import namedtuple
 import StereoTUM.devices
 import StereoTUM.values
@@ -34,6 +33,8 @@ class Dataset(object):
             print(stereo.L.ID)
     
     """
+
+    _Data = namedtuple('Data', 'global_ rolling imu groundtruth')
 
     @staticmethod
     def _check_folder_exists(folder):
@@ -122,8 +123,8 @@ class Dataset(object):
         for ref in self._refs:
             if ref == 'world': continue  # world param must only be present, not more
 
-            # Every other reference must have at least a transform parameter
-            Dataset._check_contains_key(paramfile, self._refs[ref], 'transform')
+            # Every other reference must have at least a _transform parameter
+            Dataset._check_contains_key(paramfile, self._refs[ref], '_transform')
 
             if 'shutter' not in self._refs[ref]: continue
 
@@ -309,30 +310,79 @@ class Dataset(object):
                 return shutter['speed']
         raise ValueError('No cams in %s had rolling shutter enabled!' % self._path)
 
-    def lookup(self, stamp):
+    def _find_data_for(self, s):
+        value = StereoTUM.values.Value(self, s, 'world')  # world as dummy for the time stamp
+        return Dataset._Data(
+            global_=StereoTUM.values.StereoImage.extrapolate(value, 'global', method='exact'),
+            rolling=StereoTUM.values.StereoImage.extrapolate(value, 'rolling', method='exact'),
+            imu=StereoTUM.values.ImuValue.extrapolate(value, method='exact'),
+            groundtruth=StereoTUM.values.GroundTruth.extrapolate(value, method='exact')
+        )
+
+    def _find_data_between(self, start, stop):
+        for time in self._times:
+            if start is not None and time < start: continue
+            if stop  is not None and time > stop:  continue
+            yield self._find_data_for(time)
+
+    def __getitem__(self, stamp):
         r"""
-        :param float stamp: the stamp in [s] at which to look up the values 
-        :return: a tuple with type (:any:`StereoImage`, :any:`StereoImage`, :any:`ImuValue`, :any:`GroundTruth`). The first element is for **global** shutter, second for **rolling**. If any value does not exist for the stamp, it becomes ``None``
+        :param float/slice stamp: either the time at which to look up the values or a slice object (e.g. start:stop) 
+                                  defining a range of time stamps, between which to lookup the values. If the start 
+                                  value of the slice is before :any:`start`, or the end value of the slice is after 
+                                  :any:`end`, then the generator yield up to :any:`start` or :any:`end`, respectively.
+                                  Note that times for the slice are both *inclusive* unlike normal python index slices.
+        :return: either a named tuple with the fields 
+                  * ``global_`` (:any:`StereoImage`) 
+                  * ``rolling`` (:any:`StereoImage`) 
+                  * ``imu`` (:any:`ImuValue`) and 
+                  * ``groundtruth`` (:any:`GroundTruth`). 
+                 
+                 or a generator yielding multiple (or none) of these. If any of the values of the above tuple does not 
+                 exist for the stamp, it becomes ``None``. Note the spelling of ``global_``, since ``global`` 
+                 is a reserved keyword in python.
         
         Looks up all corresponding :any:`Value` s it can find for a given time stamp::
         
             dataset = Dataset(...)
             
+            # The single lookup with one float as index
             for time in dataset.times:
-                g, r, i, t = dataset.lookup(times)
-                if g is not None: print(g.ID)
-                if r is not None: print(r.ID)
-                if i is not None: print(i.acceleration)
-                if t is not None: print(t.pose)
+                data = dataset[time]
+                if data.global_     is not None: print(data.global_.ID)
+                if data.rolling     is not None: print(data.rolling.ID)
+                if data.imu         is not None: print(data.imu.acceleration)
+                if data.groundtruth is not None: print(data.groundtruth.pose)
         
+            # ... or the sliced version specifying all data between 5s .. 45s
+            for data in dataset[5:45]:
+               print(data)
+                
+            # ... or all up to 10s
+            for beginning in dataset[:10]
+                print(data)
+                
+            # ... or all from 30s till end
+            for finish in dataset[30:]
+                print(data)
+                
+            # Custom steps, however, are not supported:
+            try:
+                x = dataset[::-1]
+            except ValueError:
+                print("Doesn't make sense...")
+        
+                
+            
         Note, though, that this is not the most performant thing to iterate over the dataset,
-        since the lookup has to be done on every iteration. Consider iterating over :any:`cameras`, :any:`imu` or :any:`mocap` instead.
+        since the lookup has to be done on every iteration. Consider iterating over :any:`cameras`, :any:`imu` or 
+        :any:`mocap` instead.
         """
-        value = StereoTUM.values.Value(self, stamp, 'world')    # world as dummy for the time stamp
-        g = StereoTUM.values.StereoImage.extrapolate(value, 'global', method='exact')
-        r = StereoTUM.values.StereoImage.extrapolate(value, 'rolling', method='exact')
-        i = StereoTUM.values.ImuValue.extrapolate(value, method='exact')
-        t = StereoTUM.values.GroundTruth.extrapolate(value, method='exact')
-        return g, r, i, t
-
+        if isinstance(stamp, slice):
+            if stamp.step is not None:
+                raise ValueError('Slicing a dataset with a step value like %s:%s:%s is not supported'
+                                 % (stamp.start, stamp.stop, stamp.step))
+            return self._find_data_between(stamp.start, stamp.stop)
+        else:
+            return self._find_data_for(stamp)
 

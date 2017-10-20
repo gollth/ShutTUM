@@ -5,7 +5,7 @@ cam1:
     exposure:
         min: 0.00898245614035088   # [ms]
         max: 33.3211228070175      # [ms]
-    transform:                     # from cam1 to self
+    _transform:                     # from cam1 to self
     - [1.0, 0.0, 0.0, 0.0]
     - [0.0, 1.0, 0.0, 0.0]
     - [0.0, 0.0, 1.0, 0.0]
@@ -18,14 +18,14 @@ cam2:
     exposure:
         min: 0.00898245614035088   # [ms]
         max: 33.3211228070175      # [ms]
-    transform:                     # from cam1 to self
+    _transform:                     # from cam1 to self
     - [0.0,-1.0, 0.0, 0.0]
     - [1.0, 0.0, 0.0, 0.0]
     - [0.0, 0.0, 1.0, 0.5]
     - [0.0, 0.0, 0.0, 1.0]
 
 imu:
-    transform:                     # from cam1 to self
+    _transform:                     # from cam1 to self
     - [1.0, 0.0, 0.0, 0.2]
     - [0.0, 1.0, 0.0, 0.3]
     - [0.0, 0.0, 1.0, 0.4]

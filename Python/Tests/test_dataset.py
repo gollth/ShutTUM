@@ -3,6 +3,7 @@ import yaml
 import numpy     as np
 import os.path   as p
 from StereoTUM.dataset import Dataset
+from collections import Iterable
 
 
 class TestDataset (unittest.TestCase):
@@ -130,41 +131,65 @@ class TestDataset (unittest.TestCase):
     def test_lookup_returns_image(self):
         dataset = Dataset(self._valid)
         A = dataset.cameras('global')[1]
-        img1, img2, imu, gt = dataset.lookup(A.stamp)
-        self.assertIsNotNone(img1)
-        self.assertIsNotNone(img2)
-        self.assertIsNotNone(imu)
-        self.assertIsNone(gt)
-        self.assertEqual(A, img1)
-        self.assertNotEqual(A, img2)
+        data = dataset[A.stamp]
+        self.assertIsNotNone(data.global_)
+        self.assertIsNotNone(data.rolling)
+        self.assertIsNotNone(data.imu)
+        self.assertIsNone(data.groundtruth)
+        self.assertEqual(A, data.global_)
+        self.assertNotEqual(A, data.rolling)
 
     def test_lookup_returns_imu(self):
         dataset = Dataset(self._valid)
         A = dataset.imu[1]
-        img1, img2, imu, gt = dataset.lookup(A.stamp)
-        self.assertIsNotNone(imu)
-        self.assertIsNone(img1)
-        self.assertIsNone(img2)
-        self.assertIsNone(gt)
-        self.assertEqual(A, imu)
+        data = dataset[A.stamp]
+        self.assertIsNotNone(data.imu)
+        self.assertIsNone(data.global_)
+        self.assertIsNone(data.rolling)
+        self.assertIsNone(data.groundtruth)
+        self.assertEqual(A, data.imu)
 
     def test_lookup_returns_gt(self):
         dataset = Dataset(self._valid)
         A = dataset.mocap[1]
-        img1, img2, imu, gt = dataset.lookup(A.stamp)
-        self.assertIsNotNone(gt)
-        self.assertIsNone(img1)
-        self.assertIsNone(img2)
-        self.assertIsNone(imu)
-        self.assertEqual(A, gt)
+        data = dataset[A.stamp]
+        self.assertIsNotNone(data.groundtruth)
+        self.assertIsNone(data.global_)
+        self.assertIsNone(data.rolling)
+        self.assertIsNone(data.imu)
+        self.assertEqual(A, data.groundtruth)
 
     def test_lookup_returns_only_nones_for_invalid_timestamp(self):
         dataset = Dataset(self._valid)
-        img1, img2, imu, gt = dataset.lookup(11547)
-        self.assertIsNone(img1)
-        self.assertIsNone(img2)
-        self.assertIsNone(imu)
-        self.assertIsNone(gt)
+        data = dataset[11547]
+        self.assertIsNone(data.global_)
+        self.assertIsNone(data.rolling)
+        self.assertIsNone(data.imu)
+        self.assertIsNone(data.groundtruth)
+
+    def test_slice_lookup_returns_more_then_one_element(self):
+        dataset = Dataset(self._valid)
+        datas = dataset[.1:.2]
+        self.assertIsInstance(datas, Iterable)
+        self.assertGreaterEqual(len([datas]), 1)
+
+    def test_slicing_with_step_raises_valueerror(self):
+        dataset = Dataset(self._valid)
+        with self.assertRaises(ValueError) as context:
+            x = dataset[1:2:.5]
+
+    def test_inverse_slicing_returns_empty(self):
+        dataset = Dataset(self._valid)
+        datas = dataset[2:1]
+        self.assertCountEqual(datas, [])
+
+    def test_none_end_slicing_will_yield_all_values_till_end(self):
+        dataset = Dataset(self._valid)
+        datas = dataset[.1:]
+        E  = dataset[dataset.end]   # get the last element of the actual dataset
+        A  = list(datas)[-1]        # get the last element of the generator
+
+        self.assertEqual(E.groundtruth, A.groundtruth)
 
 
 if __name__ == '__main__':
