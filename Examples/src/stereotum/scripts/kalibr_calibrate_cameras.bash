@@ -1,0 +1,2 @@
+#!/bin/bash
+rosrun kalibr kalibr_calibrate_cameras --bag $1/*.bag --topics /cam/global/L/image /cam/global/R/image /cam/rolling/L/image /cam/rolling/R/image --models pinhole-fov pinhole-fov pinhole-fov pinhole-fov --target $2

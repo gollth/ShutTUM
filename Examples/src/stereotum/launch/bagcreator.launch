@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+
+	<arg name="record" />
+	<arg name="bagname" default="record.bag" />
+	<arg name="rviz" default="false" />
+
+	<node name="playback" type="playback.py" pkg="stereotum" output="screen">
+		<param name="record" value="$(arg record)" />
+	</node>
+
+	<node pkg="rviz"   type="rviz"   name="rviz" if="$(arg rviz)" args="-d $(find stereotum)/playback.rviz"/>
+	<node pkg="rosbag" type="record" name="player" output="screen" args="record --all --output-name=$(arg record)/$(arg bagname)"/>
+
+</launch>

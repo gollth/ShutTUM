@@ -34,7 +34,7 @@ class Dataset(object):
     
     """
 
-    _Data = namedtuple('Data', 'global_ rolling imu groundtruth')
+    _Data = namedtuple('Data', 'global_ rolling imu groundtruth stamp')
 
     @staticmethod
     def _check_folder_exists(folder):
@@ -320,6 +320,7 @@ class Dataset(object):
     def _find_data_for(self, s):
         value = StereoTUM.values.Value(self, s, 'world')  # world as dummy for the time stamp
         return Dataset._Data(
+            stamp=s,
             global_=StereoTUM.values.StereoImage.extrapolate(value, 'global', method='exact'),
             rolling=StereoTUM.values.StereoImage.extrapolate(value, 'rolling', method='exact'),
             imu=StereoTUM.values.ImuValue.extrapolate(value, method='exact'),
@@ -340,6 +341,7 @@ class Dataset(object):
                                   :any:`end`, then the generator yield up to :any:`start` or :any:`end`, respectively.
                                   Note that times for the slice are both *inclusive* unlike normal python index slices.
         :return: either a named tuple with the fields 
+                  * ``stamp`` (float)
                   * ``global_`` (:any:`StereoImage`) 
                   * ``rolling`` (:any:`StereoImage`) 
                   * ``imu`` (:any:`ImuValue`) and 

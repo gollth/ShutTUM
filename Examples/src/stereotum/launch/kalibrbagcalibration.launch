@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+	
+	<arg name="record" />
+	<arg name="target" default="$(find stereotum)/params/aprilA0.yaml" />
+
+	<node name="kalibr_calibrator" type="kalibr_calibrate_cameras.bash" pkg="stereotum" args="$(arg record) $(arg target)" output="screen" />
+
+</launch>
