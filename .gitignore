@@ -4,3 +4,5 @@ build/
 devel/
 logs/
 .catkin_tools/
+.idea/
+*/Thumbs.db
