@@ -253,6 +253,13 @@ class Dataset(object):
         return self._time['duration']
 
     @property
+    def resolution(self):
+        r""" Returns the resolution of the cameras as a named tuple ``(width, height)`` """
+        Resolution = namedtuple('Resolution', 'width height')
+        return Resolution(width=1280, height=1024)
+
+
+    @property
     def exposure_limits(self):
         r"""
         :return: a Namped Tuple with the fields ``min`` and ``max`` which each contain a float indicating the minimum

@@ -1,3 +1,4 @@
+import os.path as p
 import StereoTUM.values
 
 
@@ -50,7 +51,11 @@ class StereoCamera:
         return self._data.shape[0]
 
     def __getitem__(self, item):
-        return StereoTUM.values.StereoImage(self._dataset, self._data[item], self._shutter)
+        # TODO add test for this 
+        try:
+            return StereoTUM.values.StereoImage(self._dataset, self._data[item], self._shutter) 
+        except:
+            return None
 
 
 class DuoStereoCamera:

@@ -3,6 +3,7 @@ import numpy as np
 import os.path as p
 import transforms3d as tf
 import StereoTUM
+from collections import namedtuple
 
 
 class Value(object):
@@ -15,14 +16,14 @@ class Value(object):
     
     1) They are single, time-discrete values (see :any:`stamp <StereoTUM.Value.stamp>`)
     2) They are related to a certain reference frame (see :any:`reference <StereoTUM.Value.reference>`)
-    3) They all have a transformation from its reference frame towards that of ``"cam1"`` (see :any:`_transform <StereoTUM.Value._transform>`)
+    3) They all have a transformation from its reference frame towards that of ``"cam1"``
     
     
     Since every value has these three properties, you can achieve easily get the transformations between different  values. 
     Therefore the leftshift ``<<`` and rightshift ``>>`` operator has been overloaded. Both accept as their right parameter either:
     
-    * a string indicating the desired reference to or from which to _transform (e.g. ``"cam1"``, ``"cam2"``, ``"world"``, ``"imu"`` ...)
-    * or another value, whose :any:`reference <StereoTUM.Value.reference>` property is used to determine the _transform
+    * a string indicating the desired reference to or from which to transform (e.g. ``"cam1"``, ``"cam2"``, ``"world"``, ``"imu"`` ...)
+    * or another value, whose :any:`reference <StereoTUM.Value.reference>` property is used to determine the transform
     
     The direction of the "shift" means "How is the transformation from reference x to y?"::
     
@@ -34,7 +35,7 @@ class Value(object):
         print("Image %s is associated with reference %s" % (image, image.reference))
         print("Ground Truth %s is associated with reference %s" % (gt, gt.reference))
         
-        # ... and also a _transform from the systems origin, which is "cam1"
+        # ... and also a transform from the systems origin, which is "cam1"
         print("T_cam1_2_image: %s" % image._transform)
         print("T_cam1_2_gt:    %s" % gt._transform)
         # BUT since they are "private" functions from value you should rather use something like this:
@@ -92,7 +93,9 @@ class Value(object):
         if isinstance(parent, str):
             if parent not in self._dataset._refs:
                 raise ValueError("Cannot find the (static) parent reference %s" % parent)
-            tparent = np.array(self._dataset._refs[parent]['_transform'])
+            
+            # TODO add test case cam1.L << 'world' (NOT WORKING!!!)
+            tparent = np.array(self._dataset._refs[parent]['transform'])
 
         elif isinstance(parent, Value):
             tparent = parent._transform
@@ -127,9 +130,11 @@ class Image(Value):
     The cameras record data at approximately **20 FPS**, but sometimes their might exist frame drops. 
 
     You can query a lot of information from an image such as its :any:`shutter <StereoTUM.Image.shutter>`, :any:`exposure <StereoTUM.Image.exposure>` time and :any:`ID <StereoTUM.Image.ID>`.
-    Since it is a :any:`Value` all _transform shenanigans apply.
+    Since it is a :any:`Value` all transform shenanigans apply.
     """
 
+    Vector2 = namedtuple('Vector2', 'x y')
+    
     def __init__(self, stereo, shutter, left):
         self._left = left
         self._stereo = stereo
@@ -149,6 +154,9 @@ class Image(Value):
             # Now we have found a camera matching the wanted shutter type and position
             super(Image, self).__init__(stereo._dataset, stereo._data[1], cam)
             break  # from any further for loop iteration
+
+        # TODO add test for this exception
+        if not p.exists(self.path): raise ValueError("Image %s does not exist" % self.path)
 
     def __eq__(self, other):
         if not isinstance(other, Image): return False
@@ -229,22 +237,48 @@ class Image(Value):
         """
         return cv2.imread(self.path, cv2.IMREAD_GRAYSCALE)
 
+    @property
+    def distortion(self):
+        r"""The FOV distortion parameter as ``float`` for the provided camera"""
+        return self._dataset._refs[self.reference]['distortion']
+    
+    @property
+    def focal(self):
+        r"""The focal length in both ``x`` and ``y`` as named tuple"""
+        return Image.Vector2(x=self._dataset._refs[self.reference]['intrinsics'][0],
+                             y=self._dataset._refs[self.reference]['intrinsics'][1])
+
+    @property
+    def principle(self):
+        r"""The image's principle point in both ``x`` and ``y`` as named tuple in image coordinates``"""
+        return Image.Vector2(x=self._dataset._refs[self.reference]['intrinsics'][2],
+                             y=self._dataset._refs[self.reference]['intrinsics'][3])
+
+    @property
+    def P(self):
+        r"""The projection or intrinsic camera matrix as 4x3 `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_"""
+        f = self.focal
+        p = self.principle
+        return np.array(((f.x,   0, p.x, 0),
+                         (  0, f.y, p.y, 0),
+                         (  0,   0,   1, 0)))
+
 
 class StereoImage(Value):
     r"""A stereo image contains of two individual :any:`Image` s, a left and a right one.
     It is more or less a container for the two.
 
     Note that for internal reasons a stereo image derives from :any:`Value`. However, you should
-    not use the _transform functions (``<<`` and ``>>``) with this, since a stereo image contains two 
+    not use the transform functions (``<<`` and ``>>``) with this, since a stereo image contains two 
     reference frames, one for each camera::
 
         stereo = dataset.cameras('rolling')[0]
 
         # The following is ambiguous
-        notok = stereo << "world"   # which camera of the two do you mean?
+        notok = stereo << "imu"   # which camera of the two do you mean?
 
         # Better would be
-        ok = stereo.L << "world"
+        ok = stereo.L << "imu"
 
 
     """
@@ -265,28 +299,32 @@ class StereoImage(Value):
 
         :return: The matching stereo image or None if no was found
         """
-        if method == 'closest':
-            f = value._dataset.raw.frames
-            i = np.abs(f[:, 1] - value.stamp).argmin()
-            return StereoImage(value._dataset, f[i, :], shutter)
+        try:
+            if method == 'closest':
+                f = value._dataset.raw.frames
+                i = np.abs(f[:, 1] - value.stamp).argmin()
+                return StereoImage(value._dataset, f[i, :], shutter)
 
-        if method == 'next':
-            f = value._dataset.raw.frames
-            frame = f[f[:, 1] > value.stamp, :]
-            if frame.size == 0: return None
-            return StereoImage(value._dataset, frame[0], shutter)
+            if method == 'next':
+                f = value._dataset.raw.frames
+                frame = f[f[:, 1] > value.stamp, :]
+                if frame.size == 0: return None
+                return StereoImage(value._dataset, frame[0], shutter)
 
-        if method == 'prev':
-            f = value._dataset.raw.frames
-            frame = f[f[:, 1] < value.stamp, :]
-            if frame.size == 0: return None
-            return StereoImage(value._dataset, frame[-1], shutter)
+            if method == 'prev':
+                f = value._dataset.raw.frames
+                frame = f[f[:, 1] < value.stamp, :]
+                if frame.size == 0: return None
+                return StereoImage(value._dataset, frame[-1], shutter)
 
-        if method == 'exact':
-            f = value._dataset.raw.frames
-            frame = f[f[:, 1] == value.stamp, :]
-            if frame.size == 0: return None
-            return StereoImage(value._dataset, frame[0], shutter)
+            if method == 'exact':
+                f = value._dataset.raw.frames
+                frame = f[f[:, 1] == value.stamp, :]
+                if frame.size == 0: return None
+                return StereoImage(value._dataset, frame[0], shutter)
+        
+        except ValueError:
+            return None
 
         raise ValueError(
             'Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")' % method)
@@ -440,6 +478,7 @@ class ImuValue(Value):
 
     @property
     def acceleration(self):
+        # TODO Add unit [gs] to docstring, and convert units to m/m**2
         r"""The acceleration 3D vector [x,y,z] of this measurement as `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_"""
         return self._acc
 
