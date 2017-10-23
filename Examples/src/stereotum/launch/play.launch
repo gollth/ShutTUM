@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+
+	<arg name="record" />
+	<arg name="loop"  default="false"/>
+	<arg name="rviz"  default="true" />
+	<arg name="start" default="" />
+	<arg name="end"   default="" />
+
+	<rosparam file="$(arg record)/params/params.yaml" />
+
+	<param name="robot_description" textfile="$(find stereotum)/StereoTUM.urdf" />
+
+	<node name="playback" type="playback.py" pkg="stereotum" output="screen">
+		<param name="record" value="$(arg record)" />
+		<param name="loop"   value="$(arg loop)" />
+		<param name="start"  value="$(arg start)" />
+		<param name="end"    value="$(arg end)" />
+	</node>
+
+	<node pkg="rviz"   type="rviz"   name="rviz" if="$(arg rviz)" args="-d $(find stereotum)/playback.rviz"/>
+	
+</launch>

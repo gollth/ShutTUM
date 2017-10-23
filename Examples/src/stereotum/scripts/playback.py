@@ -28,8 +28,10 @@ end       = ros.get_param('~end',   None)
 
 msg = 'Playback started [%s]' % record
 if loop:  msg += ' [LOOP]'
-if start: msg += ' [START: %ss]' % start
-if end:   msg += ' [END: %ss]' % end
+if start: msg += ' [START: %s s]' % start
+else: start = None
+if end:   msg += ' [END: %s s]' % end
+else: end = None
 ros.loginfo(msg)
 
 
@@ -51,7 +53,7 @@ cams = dict(map(create_camera_publisher, ['/cam/global/L', '/cam/global/R', '/ca
 def createheader(value): 
 	return Header(stamp=ros.Time.from_sec(value.stamp), frame_id=value.reference)
 
-def publishtf(value, fixed='world'):
+def publishtf(value, fixed):
 	if value.reference == fixed: return
 	pose = value << fixed
 	tffer.sendTransform(
@@ -99,6 +101,9 @@ while not ros.is_shutdown():
 			))
 			publishtf(data.imu, 'cam1')
 
+		# Ground truth
+		if data.groundtruth is not None:
+			publishtf(data.groundtruth, 'cam1')
 
 		# Spinning
 		dt = data.stamp - laststamp
@@ -107,3 +112,4 @@ while not ros.is_shutdown():
 
 	# if no looping was chosen, we break out the while loop 
 	if not loop: break
+	ros.loginfo('Playback restarting from beginning')

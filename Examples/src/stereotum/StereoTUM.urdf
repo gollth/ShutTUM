@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<robot name="myfirst">
+	<link name="cam1">
+		<visual>
+			<geometry>
+				<mesh filename="package://stereotum/StereoTUM.dae" />
+			</geometry>
+		</visual>
+	</link>
+</robot>
