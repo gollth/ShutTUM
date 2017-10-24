@@ -23,6 +23,12 @@ class TestStereoImage (unittest.TestCase):
         self.assertEqual(self.stereo.stamp, self.stereo.L.stamp)
         self.assertEqual(self.stereo.stamp, self.stereo.R.stamp)
 
+    def test_dt_is_correct(self):
+        for shutter in ['global', 'rolling']:
+            img1 = StereoImage(self.dataset, self.dataset.raw.frames[0, :], shutter)
+            img2 = StereoImage(self.dataset, self.dataset.raw.frames[1, :], shutter)
+            self.assertEqual(img2.dt, img2.stamp - img1.stamp)
+
     def test_timestamp_matches_frame_id(self):
         for image in self.dataset.cameras('rolling'):
             if image.ID == self.stereo.ID:

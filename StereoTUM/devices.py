@@ -51,10 +51,9 @@ class StereoCamera:
         return self._data.shape[0]
 
     def __getitem__(self, item):
-        # TODO add test for this 
         try:
             return StereoTUM.values.StereoImage(self._dataset, self._data[item], self._shutter) 
-        except:
+        except ValueError:
             return None
 
 
@@ -118,7 +117,7 @@ class Imu:
         return self.__next__()
 
     def __next__(self):
-        if len(self) >= self._index: raise StopIteration
+        if len(self) <= self._index: raise StopIteration
 
         imu = self[self._index]
         self._index += 1
@@ -128,7 +127,8 @@ class Imu:
         return self._data.shape[0]
 
     def __getitem__(self, item):
-        return StereoTUM.values.ImuValue(self._dataset, self._data[item])
+        v = StereoTUM.values.ImuValue(self._dataset, self._data[item])
+        return v
 
 
 class Mocap:
@@ -154,7 +154,7 @@ class Mocap:
         return self
 
     def __next__(self):
-        if len(self) >= self._index: raise StopIteration
+        if len(self) <= self._index: raise StopIteration
 
         gt = self[self._index]
         self._index += 1

@@ -189,7 +189,7 @@ class Dataset(object):
             
             # Iterate over all imu values
             for observation in dataset.imu:
-                print(imu.acceleration)
+                print(observation.acceleration)
             
         
         """

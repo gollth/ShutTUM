@@ -2,7 +2,7 @@ import unittest
 import os.path as p
 import numpy as np
 from StereoTUM.dataset import Dataset
-from StereoTUM.values import ImuValue
+from StereoTUM.values import ImuValue, GroundTruth
 
 
 class TestImuValue (unittest.TestCase):
@@ -18,6 +18,19 @@ class TestImuValue (unittest.TestCase):
 
         self.assertTrue(np.allclose(imu.acceleration, np.array((0,0,-1))))
         self.assertTrue(np.allclose(imu.angular_velocity, np.array((0,0,0))))
+
+    def test_dt_is_correct(self):
+        imu1 = ImuValue(self.dataset, self.dataset.raw.imu[0, :])
+        imu2 = ImuValue(self.dataset, self.dataset.raw.imu[1, :])
+        self.assertEqual(imu2.dt, imu2.stamp - imu1.stamp)
+
+    def test_imu_iteration_is_possible(self):
+        self.assertGreater(len(self.dataset.imu), 0)
+        for _ in self.dataset.imu:
+            self.assertTrue(True)
+            return
+
+        self.fail('Iterated zero times through imu')
 
     def test_stereo_closest_extrapolation(self):
         time = 0.175
@@ -74,10 +87,11 @@ class TestImuValue (unittest.TestCase):
         with self.assertRaises(ValueError):
             self.dataset.imu[0].stereo('rolling', extrapolation='unknown')
 
+    # TODO fix test
     def test_ground_truth_interpolation_is_correct(self):
         gti = np.genfromtxt(p.join(self.path, 'data', 'ground_truth_interpolated.csv'), skip_header=1)
         for observation in self.dataset.imu:
-            gt = observation.groundtruth >> observation
+            gt = observation.groundtruth() >> observation
             expected = gti[gti[:, 0] == observation.stamp, :]
             if expected.size == 0: self.fail("No interpolated gt in file found for time %.3f" % observation.stamp)
             expected = GroundTruth(self.dataset, expected[0])

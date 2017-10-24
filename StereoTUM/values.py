@@ -57,8 +57,11 @@ class Value(object):
         self._stamp = stamp
         if reference not in dataset._refs:
             raise ValueError("Cannot find the reference %s" % reference)
-
         self._reference = reference
+
+    @property
+    def _previous(self):
+        return None
 
     def __eq__(self, other):
         if not isinstance(other, Value): return False
@@ -79,6 +82,17 @@ class Value(object):
         """
         return self._reference
 
+    def dt(self, ifunknown=.001):
+        r"""
+        The time delta elapsed since the last :any:`Value` of this type.
+        Note that this value varies depending on the concrete type of value. That means dt will be about 1/20 s
+        for an :any:`Image` while around 1/100 s for a :any:`GroundTruth`. If a previous value is not present
+        this will return time specified by `ifunknown`.
+        """
+        previous = self._previous       # cache for performance
+        if previous is None: return ifunknown
+        else: return self.stamp - previous.stamp
+
     @property
     def _transform(self):
         r"""
@@ -92,7 +106,7 @@ class Value(object):
     def __lshift__(self, parent):
         if isinstance(parent, str):
             if parent not in self._dataset._refs:
-                raise ValueError("Cannot find the (static) parent reference %s" % parent)
+                raise ValueError("Cannot find the (_static) parent reference %s" % parent)
 
             tparent = np.array(self._dataset._refs[parent]['transform'])
 
@@ -107,7 +121,7 @@ class Value(object):
     def __rshift__(self, child):
         if isinstance(child, str):
             if child not in self._dataset._refs:
-                raise ValueError("Cannot find the (static) parent reference %s" % child)
+                raise ValueError("Cannot find the (_static) parent reference %s" % child)
             tchild = np.array(self._dataset._refs[child]['transform'])
         elif isinstance(child, Value):
             tchild = child._transform
@@ -155,6 +169,10 @@ class Image(Value):
             break  # from any further for loop iteration
 
         if not p.exists(self.path): raise ValueError("Image %s does not exist" % self.path)
+
+    @property
+    def _previous(self):
+        return self._stereo._previous
 
     def __eq__(self, other):
         if not isinstance(other, Image): return False
@@ -336,6 +354,10 @@ class StereoImage(Value):
         # Timestamp is in second column
         super(StereoImage, self).__init__(dataset, self._data[1], self._left.reference)
 
+    @property
+    def _previous(self):
+        return StereoImage.extrapolate(self, self.L.shutter, method='prev')
+
     def __eq__(self, other):
         if not isinstance(other, StereoImage): return False
         return super(StereoImage, self).__eq__(other) and np.allclose(self._data, other._data)
@@ -469,6 +491,10 @@ class ImuValue(Value):
         super(ImuValue, self).__init__(dataset, stamp=data[0], reference='imu')
         self._acc = np.array(data[1:4])
         self._gyro = np.array(data[4:7])
+
+    @property
+    def _previous(self):
+        return ImuValue.extrapolate(self, method='prev')
 
     def __eq__(self, other):
         if not isinstance(other, ImuValue): return False
@@ -608,8 +634,12 @@ class GroundTruth(Value):
         if len(data) < 8:
             raise ValueError(
                 "Data must have at least 8 entries [time1, position3, orientation4] but has %d" % len(data))
-        super(GroundTruth, self).__init__(dataset, stamp=data[0], reference='world')
         self._data = data
+        super(GroundTruth, self).__init__(dataset, stamp=data[0], reference='world')
+
+    @property
+    def _previous(self):
+        return GroundTruth.extrapolate(self, method='prev')
 
     def __eq__(self, other):
         if not isinstance(other, GroundTruth): return False

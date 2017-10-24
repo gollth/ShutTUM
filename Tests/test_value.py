@@ -71,7 +71,6 @@ class TestValue(unittest.TestCase):
         )
         actual_transform1 = cam2 >> imu
         actual_transform2 = imu << cam2
-        result = np.all(actual_transform1 == expected_transform)
         self.assertTrue(np.allclose(actual_transform1, expected_transform))
         self.assertTrue(np.allclose(actual_transform2, expected_transform))
 

@@ -22,6 +22,18 @@ class TestGroundTruth(unittest.TestCase):
         self.assertListEqual(list(self.gt.quaternion), list(self.raw[4:8]))
         self.assertEqual(self.gt.stamp, self.raw[0])
 
+    def test_mocap_iteration_is_possible(self):
+        self.assertGreater(len(self.dataset.mocap), 0)
+        for _ in self.dataset.mocap:
+            self.assertTrue(True)
+            return
+
+        self.fail('Iterated zero times through imu')
+
+    def test_dt_is_correct(self):
+        gt2 = GroundTruth(self.dataset, self.dataset.raw.groundtruth[1, :])
+        self.assertEqual(gt2.dt, gt2.stamp - self.gt.stamp)
+
     def test_rotation_times_translation_equals_pose(self):
         t = self.gt.translation.dot(self.gt.rotation)
         self.assertTrue(np.allclose(t, self.gt.pose))
