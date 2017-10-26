@@ -1,20 +1,26 @@
 #!/usr/bin/env python3
-
+import sys
 import cv2
 import numpy as np
+from argparse import ArgumentParser
+
+sys.path.append('/usr/stud/gollt/StereoTUM/')
 from StereoTUM.dataset import Dataset
 
 # Parameters
-path    = '../Tests/valid'  # The folder to the dataset to visualize
-shutter = 'global'          # The shutter you want to show
-speed   = .2                # The playback speed (0 for stills .. 1 for realtime)
+# Parameters
+parser = ArgumentParser()
+parser.add_argument('record', help="The record to visualize of the StereoTUM dataset")
+parser.add_argument('shutter', choices=['global', 'rolling'], help="The shutter type you want to see")
+parser.add_argument('--speed', type=float, default=1, help='Real time factor for the playback [default 1.0]')
+args = parser.parse_args()
 
 # Create a dataset
-dataset = Dataset(path)
+dataset = Dataset(args.record)
 
 
 # Iterate over all stereo images for the given shutter method
-for stereo in dataset.cameras(shutter):
+for stereo in dataset.cameras(args.shutter):
 
     # Create a combined stereo image
     display = np.concatenate((stereo.L.load(), stereo.R.load()), axis=1)
@@ -36,7 +42,7 @@ for stereo in dataset.cameras(shutter):
     cv2.imshow('StereoTUM', display)
 
     # Do the spinning
-    if speed == 0: cv2.waitKey(0)
-    else:          cv2.waitKey(int(stereo.dt(ifunknown=.1) * 1000 / speed))
+    if args.speed == 0: cv2.waitKey(0)
+    else:               cv2.waitKey(int(stereo.dt(ifunknown=.1) * 1000 / args.speed))
 
 cv2.waitKey(0)  # wait until user terminates
