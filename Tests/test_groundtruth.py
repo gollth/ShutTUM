@@ -32,7 +32,7 @@ class TestGroundTruth(unittest.TestCase):
 
     def test_dt_is_correct(self):
         gt2 = GroundTruth(self.dataset, self.dataset.raw.groundtruth[1, :])
-        self.assertEqual(gt2.dt, gt2.stamp - self.gt.stamp)
+        self.assertEqual(gt2.dt(), gt2.stamp - self.gt.stamp)
 
     def test_rotation_times_translation_equals_pose(self):
         t = self.gt.translation.dot(self.gt.rotation)
