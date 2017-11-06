@@ -17,20 +17,20 @@
 	</node>
 
 
-	<node name="decimator_global_L" type="decimator.py" pkg="stereotum">
+	<node name="decimator_global_L" type="decimator.py" pkg="stereotum" if="$(arg decimation)">
 		<param name="topic" value="/cam/global/L/image" />
 		<param name="decimation" value="$(arg decimation)" />
 	</node>
-	<node name="decimator_global_R" type="decimator.py" pkg="stereotum">
+	<node name="decimator_global_R" type="decimator.py" pkg="stereotum" if="$(arg decimation)">
 		<param name="topic" value="/cam/global/R/image" />
 		<param name="decimation" value="$(arg decimation)" />
 	</node>
 
-	<node name="decimator_rolling_L" type="decimator.py" pkg="stereotum">
+	<node name="decimator_rolling_L" type="decimator.py" pkg="stereotum" if="$(arg decimation)">
 		<param name="topic" value="/cam/rolling/L/image" />
 		<param name="decimation" value="$(arg decimation)" />
 	</node>
-	<node name="decimator_rolling_R" type="decimator.py" pkg="stereotum">
+	<node name="decimator_rolling_R" type="decimator.py" pkg="stereotum" if="$(arg decimation)">
 		<param name="topic" value="/cam/rolling/R/image" />
 		<param name="decimation" value="$(arg decimation)" />
 	</node>
