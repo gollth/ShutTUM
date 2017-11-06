@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<launch>
+
+	<arg name="record" />
+	<arg name="bag"        default="record.bag" />
+	<arg name="rviz"       default="false" />   <!-- Start RViZ vor simulatenous visualization? -->
+	<arg name="decimation" default="10" /> 		<!-- By which factor shal the image messages be decimated for geometric calibration? -->
+	<arg name="speed"      default="1" /> 		<!-- How fast shall the player playback the messages? -->
+	<arg name="start" default="" />
+	<arg name="end"   default="" />
+
+	<node name="player" type="playback.py" pkg="stereotum" output="screen">
+		<param name="record" value="$(arg record)" />
+		<param name="speed" value="$(arg speed)" />
+		<param name="start"  value="$(arg start)" />
+		<param name="end"    value="$(arg end)" />
+	</node>
+
+
+	<node name="decimator_global_L" type="decimator.py" pkg="stereotum">
+		<param name="topic" value="/cam/global/L/image" />
+		<param name="decimation" value="$(arg decimation)" />
+	</node>
+	<node name="decimator_global_R" type="decimator.py" pkg="stereotum">
+		<param name="topic" value="/cam/global/R/image" />
+		<param name="decimation" value="$(arg decimation)" />
+	</node>
+
+	<node name="decimator_rolling_L" type="decimator.py" pkg="stereotum">
+		<param name="topic" value="/cam/rolling/L/image" />
+		<param name="decimation" value="$(arg decimation)" />
+	</node>
+	<node name="decimator_rolling_R" type="decimator.py" pkg="stereotum">
+		<param name="topic" value="/cam/rolling/R/image" />
+		<param name="decimation" value="$(arg decimation)" />
+	</node>
+
+
+	<node pkg="rviz"   type="rviz"   name="rviz" if="$(arg rviz)" args="-d $(find stereotum)/playback.rviz"/>
+	<node pkg="rosbag" type="record" name="recorder" output="screen" args="record --all --output-name=$(arg bag) --buffsize=0"/>
+
+</launch>

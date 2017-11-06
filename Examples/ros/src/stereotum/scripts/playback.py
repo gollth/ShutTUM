@@ -11,6 +11,7 @@ from tf.transformations import translation_from_matrix, quaternion_from_matrix
 from collections       import namedtuple
 from std_msgs.msg      import Header, Float32
 from rosgraph_msgs.msg import Clock
+from geometry_msgs.msg import Vector3
 from sensor_msgs.msg   import Image, Imu, CameraInfo
 from cv_bridge         import CvBridge, CvBridgeError
 sys.path.append('/usr/stud/gollt/StereoTUM/')
@@ -25,6 +26,7 @@ dataset   = Dataset(record)
 loop      = ros.get_param('~loop', False) 
 start     = ros.get_param('~start', None)
 end       = ros.get_param('~end',   None)
+speed     = ros.get_param('~speed', 1)
 
 msg = 'Playback started [%s]' % record
 if loop:  msg += ' [LOOP]'
@@ -32,6 +34,8 @@ if start: msg += ' [START: %s s]' % start
 else: start = None
 if end:   msg += ' [END: %s s]' % end
 else: end = None
+if speed != 1: msg += ' [%.2fx]' % speed
+if speed == 0: ros.logwarning('Speed is zero, results might not be as expected')
 ros.loginfo(msg)
 
 
@@ -93,11 +97,14 @@ while not ros.is_shutdown():
 
 		# IMU
 		if data.imu is not None:
+			unknown = np.diag((-1,0,0)).flatten().tolist()	# according to message desc. we set first element to -1
 			imu.publish(Imu(
 				header=createheader(data.imu),
-				linear_acceleration_covariance=np.diag(data.imu.acceleration).flatten().tolist(),
-				angular_velocity_covariance   =np.diag(data.imu.angular_velocity).flatten().tolist(),
-				orientation_covariance=np.diag((-1,0,0)).flatten().tolist()	# according to message desc. we set first element to -1 since we dont have orientation
+				linear_acceleration=Vector3(*data.imu.acceleration),
+				linear_acceleration_covariance=unknown,
+				angular_velocity=Vector3(*data.imu.angular_velocity),
+				angular_velocity_covariance=unknown,
+				orientation_covariance=unknown
 			))
 			publishtf(data.imu, 'cam1')
 
@@ -108,7 +115,7 @@ while not ros.is_shutdown():
 		# Spinning
 		dt = data.stamp - laststamp
 		laststamp = data.stamp
-		if dt > 0: time.sleep(dt)
+		if dt > 0: time.sleep(dt / speed)
 
 	# if no looping was chosen, we break out the while loop 
 	if not loop: break
