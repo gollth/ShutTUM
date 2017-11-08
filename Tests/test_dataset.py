@@ -181,7 +181,7 @@ class TestDataset (unittest.TestCase):
     def test_inverse_slicing_returns_empty(self):
         dataset = Dataset(self._valid)
         datas = dataset[2:1]
-        self.assertCountEqual(datas, [])
+        self.assertEqual(sum(1 for i in datas), 0)
 
     def test_none_end_slicing_will_yield_all_values_till_end(self):
         dataset = Dataset(self._valid)

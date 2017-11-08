@@ -17,9 +17,9 @@ class TestStereoImage (unittest.TestCase):
         self.assertEqual(self.stereo.L.reference, 'cam1')
         self.assertEqual(self.stereo.R.reference, 'cam2')
 
-        self.assertEqual(self.stereo.L.ID, self.data[0])
-        self.assertEqual(self.stereo.R.ID, self.data[0])
-        self.assertEqual(self.stereo.stamp, self.data[1])
+        self.assertEqual(self.stereo.L.ID, self.data[1])
+        self.assertEqual(self.stereo.R.ID, self.data[1])
+        self.assertEqual(self.stereo.stamp, self.data[0])
         self.assertEqual(self.stereo.stamp, self.stereo.L.stamp)
         self.assertEqual(self.stereo.stamp, self.stereo.R.stamp)
 

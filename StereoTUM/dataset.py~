@@ -99,7 +99,7 @@ class Dataset(object):
         self._frames       = np.genfromtxt(f, delimiter='\t', skip_header=1)
         self._imu          = np.genfromtxt(i, delimiter='\t', skip_header=1)
         self._ground_truth = np.genfromtxt(g, delimiter='\t', skip_header=1)
-        self._times = list(sorted(set(self._frames[:,0]) | set(self._imu[:,0]) | set(self._ground_truth[:,0])))
+        self._times = list(sorted(set(self._frames[:,1]) | set(self._imu[:,0]) | set(self._ground_truth[:,0])))
 
         Raw = namedtuple('Raw', ['frames', 'imu', 'groundtruth'])
         self._raw = Raw(self._frames, self._imu, self._ground_truth)

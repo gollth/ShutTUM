@@ -165,7 +165,7 @@ class Image(Value):
             if not left and cam not in ['cam2', 'cam4']: continue
 
             # Now we have found a camera matching the wanted shutter type and position
-            super(Image, self).__init__(stereo._dataset, stereo._data[1], cam)
+            super(Image, self).__init__(stereo._dataset, stereo._data[0], cam)
             break  # from any further for loop iteration
 
         if not p.exists(self.path): raise ValueError("Image %s does not exist" % self.path)
@@ -318,24 +318,24 @@ class StereoImage(Value):
         try:
             if method == 'closest':
                 f = value._dataset.raw.frames
-                i = np.abs(f[:, 1] - value.stamp).argmin()
+                i = np.abs(f[:, 0] - value.stamp).argmin()
                 return StereoImage(value._dataset, f[i, :], shutter)
 
             if method == 'next':
                 f = value._dataset.raw.frames
-                frame = f[f[:, 1] > value.stamp, :]
+                frame = f[f[:, 0] > value.stamp, :]
                 if frame.size == 0: return None
                 return StereoImage(value._dataset, frame[0], shutter)
 
             if method == 'prev':
                 f = value._dataset.raw.frames
-                frame = f[f[:, 1] < value.stamp, :]
+                frame = f[f[:, 0] < value.stamp, :]
                 if frame.size == 0: return None
                 return StereoImage(value._dataset, frame[-1], shutter)
 
             if method == 'exact':
                 f = value._dataset.raw.frames
-                frame = f[f[:, 1] == value.stamp, :]
+                frame = f[f[:, 0] == value.stamp, :]
                 if frame.size == 0: return None
                 return StereoImage(value._dataset, frame[0], shutter)
         
@@ -352,7 +352,7 @@ class StereoImage(Value):
         self._right = Image(self, shutter, left=False)
 
         # Timestamp is in second column
-        super(StereoImage, self).__init__(dataset, self._data[1], self._left.reference)
+        super(StereoImage, self).__init__(dataset, self._data[0], self._left.reference)
 
     @property
     def _previous(self):
@@ -373,7 +373,7 @@ class StereoImage(Value):
     @property
     def ID(self):
         r"""The frame ID as int of this image. This number, prepended to 5 digits is also the name of the JPEG file"""
-        return int(self._data[0])
+        return int(self._data[1])
 
     @property
     def exposure(self):
@@ -382,6 +382,20 @@ class StereoImage(Value):
         :any:`L <StereoTUM.StereoImage.L>` and :any:`R <StereoTUM.StereoImage.R>`
         """
         return self._data[2]
+
+    @property
+    def illuminence(self):
+    	r"""
+    	The estimated illumnience measured by the `https://cdn-shop.adafruit.com/datasheets/TSL2561.pdf <TSL2561 Lux-sensor>`_. 
+    	This float is measured in lx but only an approximation. Based on this value, the estimated :any:`exposure` time is 
+    	calculated by the following formula:
+
+    	.. math:: t_e = some wild formulation(l)
+    	
+    	This will return None if no measurement was taken, such as during an I2C error.
+    	"""
+    	if len(self_data) < 4: return None
+    	else: return float(self._data[3])
 
     @property
     def L(self):

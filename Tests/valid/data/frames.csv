@@ -1,4 +1,4 @@
-Frame	Timestamp [s]	Exposure [ms]	Illuminence [lx]
-2	0.119197	0.945	796.42
-3	0.158728	0.945	796.42
-4	0.210231	0.945	796.42
+Timestamp [s]	Frame	Exposure [ms]	Illuminence [lx]
+0.119197	2	0.945	796.42
+0.158728	3	0.945	796.42
+0.210231	4	0.945	796.42
