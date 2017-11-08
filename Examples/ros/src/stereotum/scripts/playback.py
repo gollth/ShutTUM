@@ -21,14 +21,14 @@ from StereoTUM.dataset import Dataset
 ros.init_node('playback')
 ros.set_param('/use_sim_time', True)
 bridge    = CvBridge()
-record    = ros.get_param('~record')
-dataset   = Dataset(record)
+sequence    = ros.get_param('~sequence')
+dataset   = Dataset(sequence)
 loop      = ros.get_param('~loop', False) 
 start     = ros.get_param('~start', None)
 end       = ros.get_param('~end',   None)
 speed     = ros.get_param('~speed', 1)
 
-msg = 'Playback started [%s]' % record
+msg = 'Playback started [%s]' % sequence
 if loop:  msg += ' [LOOP]'
 if start: msg += ' [START: %s s]' % start
 else: start = None

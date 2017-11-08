@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <launch>
 
-	<arg name="record" />
-	<arg name="bag"        default="record.bag" />
+	<arg name="sequence" />
+	<arg name="bag"        default="sequence.bag" />
 	<arg name="rviz"       default="false" />   <!-- Start RViZ vor simulatenous visualization? -->
-	<arg name="decimation" default="10" /> 		<!-- By which factor shal the image messages be decimated for geometric calibration? -->
+	<arg name="decimation" default="0" /> 		<!-- By which factor shall the image messages be decimated for geometric calibration? -->
 	<arg name="speed"      default="1" /> 		<!-- How fast shall the player playback the messages? -->
 	<arg name="start" default="" />
 	<arg name="end"   default="" />
 
 	<node name="player" type="playback.py" pkg="stereotum" output="screen">
-		<param name="record" value="$(arg record)" />
+		<param name="sequence" value="$(arg sequence)" />
 		<param name="speed" value="$(arg speed)" />
 		<param name="start"  value="$(arg start)" />
 		<param name="end"    value="$(arg end)" />

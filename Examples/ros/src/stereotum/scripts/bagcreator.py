@@ -20,13 +20,13 @@ from StereoTUM.dataset import Dataset
 ros.init_node('bagcreator')
 ros.set_param('/use_sim_time', True)
 bridge    = CvBridge()
-record    = ros.get_param('~record')
+sequence    = ros.get_param('~sequence')
 dataset   = Dataset()
 loop      = ros.get_param('~loop', False) 
 start     = ros.get_param('~start', None)
 end       = ros.get_param('~end',   None)
 
-msg = 'Playback started [%s]' % record
+msg = 'Playback started [%s]' % sequence
 if loop:  msg += ' [LOOP]'
 if start: msg += ' [START: %ss]' % start
 if end:   msg += ' [END: %ss]' % end

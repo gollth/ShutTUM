@@ -3,7 +3,7 @@
 	
 	<arg name="bag" />
 	<arg name="target"   default="$(find stereotum)/params/aprilA0.yaml" />
-	<arg name="camchain" default="$(find stereotum)/params/camchain.yaml" />
+	<arg name="camchain" default="$(find stereotum)/params/cam12.yaml" />
 	<arg name="imu"      default="$(find stereotum)/params/imu.yaml" /> 
 	<arg name="start"    default="0" />
 	<arg name="end"      default="1000" />
