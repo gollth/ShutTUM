@@ -205,6 +205,15 @@ class Image(Value):
         return self._stereo.exposure
 
     @property
+    def illuminance(self):
+        r"""
+        The image's illuminance in lux.
+        
+        .. seealso:: :any:`StereoImage.illuminance <StereoTUM.StereoImage.illuminance>`
+        """
+        return self._stereo.illuminance
+
+    @property
     def path(self):
         r"""The path to the JPEG file of this image, relative to the the construction parameter of :any:`Dataset(...) <StereoTUM.Dataset.__init__>`"""
         return p.join(self._stereo._dataset._path, 'frames', self.reference, '%05d.jpeg' % self.ID)
@@ -384,13 +393,16 @@ class StereoImage(Value):
         return self._data[2]
 
     @property
-    def illuminence(self):
+    def illuminance(self):
     	r"""
-    	The estimated illumnience measured by the `https://cdn-shop.adafruit.com/datasheets/TSL2561.pdf <TSL2561 Lux-sensor>`_. 
-    	This float is measured in lx but only an approximation. Based on this value, the estimated :any:`exposure` time is 
-    	calculated by the following formula:
+        The estimated illumnience measured by the `TSL2561 Lux-sensor <https://cdn-shop.adafruit.com/datasheets/TSL2561.pdf>`_. 
+    	This float is measured in lx but only an approximation. This value is contant for both :any:`L <StereoTUM.StereoImage.L>` 
+        and :any:`R <StereoTUM.StereoImage.R>`. Based on this value, the estimated :any:`exposure` time can be computed with the 
+        following hand fitted formula:
 
-    	.. math:: t_e = some wild formulation(l)
+        .. image:: images/autoexposure.svg
+
+    	.. math:: t_{exposure} \left ( E_v \right ) = 198.1527 \\cdot E_v^{-0.8003}
     	
     	This will return None if no measurement was taken, such as during an I2C error.
     	"""
