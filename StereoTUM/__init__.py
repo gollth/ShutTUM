@@ -15,8 +15,8 @@ class Interpolation:
 
     .. image:: images/interpolation.svg       
 
-    **StereoTUM**'s data is recorded at different frequencies. Images are timestamped at around 20 Hz, Imu measurements at 
-    around 60 Hz (exactly three measurements per image), while Ground Truth data is clocked between 100 .. 120 Hz. To 
+    **StereoTUM**'s data is recorded at different frequencies. Images are timestamped at around 25 Hz, Imu measurements  
+    at around 160 Hz (exactly multiples per image), while Ground Truth data is clocked between 100 .. 120 Hz. To 
     get relateable measurements, you must sometimes interpolate between two values.
 
     StereoTUM supports currently three interpolation methods, namely :any:`linear`, :any:`cubic` 
@@ -31,6 +31,7 @@ class Interpolation:
         x = dataset.imu[0].interpolate(dataset, t, accelaration_interpolation=some_crazy_interpolation)
 
         # Now x is interpolated between the imu values closest to 1.5s with the crazy function
+        
     """
 
     @staticmethod

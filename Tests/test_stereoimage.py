@@ -1,4 +1,5 @@
 import unittest
+import math
 import numpy     as np
 import os.path   as p
 from StereoTUM.dataset import Dataset
@@ -10,7 +11,7 @@ class TestStereoImage (unittest.TestCase):
         d = p.dirname(p.realpath(__file__))
         self.path = p.join(d, 'valid')
         self.dataset = Dataset(self.path)
-        self.data = self.dataset.raw.frames[0,:]
+        self.data = self.dataset.raw.frames[0, :]
         self.stereo = StereoImage(self.dataset, self.data , 'rolling')
 
     def test_stereoimage_created_correctly(self):
@@ -86,6 +87,19 @@ class TestStereoImage (unittest.TestCase):
     def test_framedrop_will_raise_value_error(self):
         with self.assertRaises(ValueError) as context:
             StereoImage(self.dataset, [117, 100, 1], "rolling")
+
+
+    def test_illuminance_is_float_normally(self):
+        img = self.dataset.cameras('rolling')[0]
+        expected = self.data[3]
+        actual = img.illuminance
+        self.assertEqual(expected, actual)
+        self.assertIsInstance(actual, float)
+
+    def test_illuminance_is_nan_if_n_a(self):
+        img = self.dataset.cameras('rolling')[2]
+        lx = img.illuminance
+        self.assertTrue(math.isnan(lx), "N/A illuminance is not nan but %s" % lx);
 
 
 

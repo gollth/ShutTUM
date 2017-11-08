@@ -1,4 +1,3 @@
-import os.path as p
 import StereoTUM.values
 
 
@@ -51,7 +50,6 @@ class StereoCamera:
         return self._data.shape[0]
 
     def __getitem__(self, item):
-        # TODO add test for frame drops for this
         stereo = None
         while stereo is None and item < len(self):
             try:
@@ -65,7 +63,7 @@ class StereoCamera:
 class DuoStereoCamera:
     r"""
     A duo stereo camera consists of a two :any:`StereoCamera` s each with a left and a right one. Both stereo cameras
-    use usally (but not necessarily) different shutter methods. If you iterate over a duo stereo camera you go get a 
+    use usually (but not necessarily) different shutter methods. If you iterate over a duo stereo camera you go get a 
     tuple with both :any:`StereoImage` s in order::
 
         # You can use a "classic" for loop ... 

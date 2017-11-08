@@ -7,9 +7,9 @@ All classes broadly associated with the dataset creation and manipulation
 
 .. autosummary::
 
-   ~StereoTUM..Interpolation.cubic
-   ~StereoTUM..Interpolation.linear
-   ~StereoTUM..Interpolation.slerp
+   ~StereoTUM.Interpolation.cubic
+   ~StereoTUM.Interpolation.linear
+   ~StereoTUM.Interpolation.slerp
 
 :any:`Dataset`: Summary
 

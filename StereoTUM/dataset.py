@@ -96,7 +96,7 @@ class Dataset(object):
         Dataset._check_file_exists(i)
         Dataset._check_file_exists(g)
 
-        self._frames       = np.genfromtxt(f, delimiter='\t', skip_header=1)
+        self._frames       = np.genfromtxt(f, delimiter='\t', skip_header=1)#, dtype=(float, int, float, str))
         self._imu          = np.genfromtxt(i, delimiter='\t', skip_header=1)
         self._ground_truth = np.genfromtxt(g, delimiter='\t', skip_header=1)
         self._times = list(sorted(set(self._frames[:,0]) | set(self._imu[:,0]) | set(self._ground_truth[:,0])))

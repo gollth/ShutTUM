@@ -12,6 +12,8 @@ class Value(object):
     A camera might capture an :any:`Image`, an IMU will record :any:`ImuValue` or the motion capture system 
     :any:`GroundTruth`.
      
+    .. image:: images/frames.png 
+     
     All these values have some common properties in the StereoTUM:
     
     1) They are single, time-discrete values (see :any:`stamp <StereoTUM.Value.stamp>`)
@@ -394,20 +396,19 @@ class StereoImage(Value):
 
     @property
     def illuminance(self):
-    	r"""
+        r"""
         The estimated illumnience measured by the `TSL2561 Lux-sensor <https://cdn-shop.adafruit.com/datasheets/TSL2561.pdf>`_. 
-    	This float is measured in lx but only an approximation. This value is contant for both :any:`L <StereoTUM.StereoImage.L>` 
-        and :any:`R <StereoTUM.StereoImage.R>`. Based on this value, the estimated :any:`exposure` time can be computed with the 
-        following hand fitted formula:
+        This float is measured in lx but is only an approximation. This value is constant for both 
+        :any:`L <StereoTUM.StereoImage.L>` and :any:`R <StereoTUM.StereoImage.R>`. Based on this value, the estimated 
+        :any:`exposure` time can be computed with the following hand fitted formula:
 
         .. image:: images/autoexposure.svg
 
-    	.. math:: t_{exposure} \left ( E_v \right ) = 198.1527 \\cdot E_v^{-0.8003}
-    	
-    	This will return None if no measurement was taken, such as during an I2C error.
-    	"""
-    	if len(self_data) < 4: return None
-    	else: return float(self._data[3])
+        .. math:: t_{exposure} \left ( E_v \right ) = 198.1527 \cdot E_v^{-0.8003}
+        
+        This will return ``float('nan')`` if no measurement was taken, such as during an I2C error.
+        """
+        return self._data[3]
 
     @property
     def L(self):
@@ -437,10 +438,9 @@ class ImuValue(Value):
     the :any:`Imu` is synchronized in a way, that it measures exactly three times 
     per image. Any ImuValue consist of three acceleration measurements in X, Y and Z 
     and three angular velocity measurements around the X, Y, and Z axis.
-    
-     .. image:: images/imu.png
 
-    .. seealso:: :any:`Interpolation`
+    .. seealso:: :any:`Interpolation` for the data frequency & :any:`Value` for the reference frame
+
     """
 
     @staticmethod
@@ -579,9 +579,9 @@ class ImuValue(Value):
 class GroundTruth(Value):
     r"""
     A ground truth is a :any:`Value` with the reference ``"world"``.
-    The ground truth is taken with a higher frequency than all other values (around 100 Hz), but since the 
-    :any:`Mocap` system is stationary in one room only, it might not cover the whole duration of the datset 
-    (depending on the record).
+    The ground truth is taken with a higher frequency than the images (around 100 Hz), but slower than the `:any:Imu`. 
+    Since the :any:`Mocap` system is stationary in one room only, it might not cover the whole duration of the dataset 
+    (depending on the sequence).
     """
 
     @staticmethod
