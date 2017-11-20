@@ -21,7 +21,7 @@ function dataset = stereotum(path)
 
     if ~exist(path, 'dir'), error(['Record ' path ' does not exist!']); end
 
-    frames = dlmread(fullfile(path, 'data', 'frames.csv'), '\t', 1, 0);
+    frames = dlmread(fullfile(path, 'data', 'frames.csv'), '\t', 2, 0);
     imu    = dlmread(fullfile(path, 'data', 'imu.csv'), '\t', 1, 0);
     gt     = dlmread(fullfile(path, 'data', 'ground_truth.csv'), '\t', 1, 0);
 
