@@ -4,7 +4,8 @@
 	<arg name="sequence" />
 	<arg name="bag"        default="sequence.bag" />
 	<arg name="rviz"       default="false" />   <!-- Start RViZ vor simulatenous visualization? -->
-	<arg name="decimation" default="0" /> 		<!-- By which factor shall the image messages be decimated for geometric calibration? -->
+	<arg name="decimation" default="10" /> 		<!-- By which factor shall the image messages be decimated for geometric calibration? -->
+	<arg name="decimating" default="false" />
 	<arg name="speed"      default="1" /> 		<!-- How fast shall the player playback the messages? -->
 	<arg name="start" default="" />
 	<arg name="end"   default="" />
@@ -17,26 +18,26 @@
 	</node>
 
 
-	<node name="decimator_global_L" type="decimator.py" pkg="stereotum" if="$(arg decimation)">
+	<node name="decimator_global_L" type="decimator.py" pkg="stereotum" if="$(arg decimating)">
 		<param name="topic" value="/cam/global/L/image" />
 		<param name="decimation" value="$(arg decimation)" />
 	</node>
-	<node name="decimator_global_R" type="decimator.py" pkg="stereotum" if="$(arg decimation)">
+	<node name="decimator_global_R" type="decimator.py" pkg="stereotum" if="$(arg decimating)">
 		<param name="topic" value="/cam/global/R/image" />
 		<param name="decimation" value="$(arg decimation)" />
 	</node>
 
-	<node name="decimator_rolling_L" type="decimator.py" pkg="stereotum" if="$(arg decimation)">
+	<node name="decimator_rolling_L" type="decimator.py" pkg="stereotum" if="$(arg decimating)">
 		<param name="topic" value="/cam/rolling/L/image" />
 		<param name="decimation" value="$(arg decimation)" />
 	</node>
-	<node name="decimator_rolling_R" type="decimator.py" pkg="stereotum" if="$(arg decimation)">
+	<node name="decimator_rolling_R" type="decimator.py" pkg="stereotum" if="$(arg decimating)">
 		<param name="topic" value="/cam/rolling/R/image" />
 		<param name="decimation" value="$(arg decimation)" />
 	</node>
 
 
 	<node pkg="rviz"   type="rviz"   name="rviz" if="$(arg rviz)" args="-d $(find stereotum)/playback.rviz"/>
-	<node pkg="rosbag" type="record" name="recorder" output="screen" args="record --all --output-name=$(arg bag) --buffsize=0"/>
+	<!--<node pkg="rosbag" type="record" name="recorder" output="screen" args="record -all -output-name=$(arg bag) -buffsize=0"/>-->
 
 </launch>
