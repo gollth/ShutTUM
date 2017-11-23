@@ -130,7 +130,7 @@ class TestDataset (unittest.TestCase):
 
     def test_lookup_returns_image(self):
         dataset = Dataset(self._valid)
-        A = dataset.cameras('global')[1]
+        A = dataset.cameras('global')[0]
         data = dataset[A.stamp]
         self.assertIsNotNone(data.global_)
         self.assertIsNotNone(data.rolling)

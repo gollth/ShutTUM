@@ -356,14 +356,25 @@ class StereoImage(Value):
         raise ValueError(
             'Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")' % method)
 
-    def __init__(self, dataset, data, shutter):
+    def __init__(self, dataset, data, shutter, sync=True):
         self._data = data
         self._dataset = dataset
-        self._left = Image(self, shutter, left=True)
-        self._right = Image(self, shutter, left=False)
+        self._left, self._right = None, None
+        try:
+            self._left = Image(self, shutter, left=True)
+        except ValueError as e:
+            if sync: raise e
+        try:
+            self._right = Image(self, shutter, left=False)
+        except ValueError as e:
+            if sync: raise e
+
+        if self._left is None and self._right is None:
+            raise ValueError('Cannot find neither left or right image for ID %d' % data[1])
 
         # Timestamp is in second column
-        super(StereoImage, self).__init__(dataset, self._data[0], self._left.reference)
+        cam = self._left if self._left is not None else self._right
+        super(StereoImage, self).__init__(dataset, self._data[0], cam.reference)
 
     @property
     def _previous(self):
@@ -374,7 +385,9 @@ class StereoImage(Value):
         return super(StereoImage, self).__eq__(other) and np.allclose(self._data, other._data)
 
     def __str__(self):
-        return "StereoImage ({%s|%s}/%05d" % (self._left.reference, self._right.reference, self.ID)
+        l = self._left.reference if self._left is not None else 'None'
+        r = self._right.reference if self._right is not None else 'None'
+        return "StereoImage ({%s|%s}/%05d" % (l, r, self.ID)
 
     def _opposite(self, img):
         if img is self._left: return self._right

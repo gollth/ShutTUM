@@ -30,11 +30,20 @@ class StereoCamera:
         """
         self._dataset = dataset
         self._shutter = shutter
+        self._sync = True
         self._data = self._dataset.raw.frames
 
     def __iter__(self):
         self._index = 0
         return self
+
+    @property
+    def sync(self):
+        return self._sync
+
+    @sync.setter
+    def sync(self, value):
+        self._sync = value
 
     def next(self): # python2 support
         return self.__next__()
@@ -45,15 +54,19 @@ class StereoCamera:
         while img is None and self._index < len(self):
             try:
                 img = self[self._index]
+            except ValueError as e:
+                pass  # just try the next one
             finally:
                 self._index += 1
+
+            # When we are not required to find a synced frame, we just return None
         return img
 
     def __len__(self):
         return self._data.shape[0]
 
     def __getitem__(self, item):
-        return StereoTUM.values.StereoImage(self._dataset, self._data[item], self._shutter)
+        return StereoTUM.values.StereoImage(self._dataset, self._data[item], self._shutter, self._sync)
 
 
 class DuoStereoCamera:

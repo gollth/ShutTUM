@@ -156,7 +156,7 @@ class Dataset(object):
         """
         return self._raw
 
-    def cameras(self, shutter='both'):
+    def cameras(self, shutter='both', sync=True):
         r""" 
         :param str shutter: {both/global/rolling} the type of shutter you are interested in. 
         :return The reference of the cameras, which you can iterate either as :any:`StereoCamera` (global/rolling)or :any:`DuoStereoCamera` (both)
@@ -172,9 +172,16 @@ class Dataset(object):
                 print(r.R.stamp)
         
         """
-        if shutter == 'both': return self._cameras
-        if shutter == 'global': return self._cameras._global
-        if shutter == 'rolling': return self._cameras._rolling
+        if shutter == 'both':
+            self._cameras._global.sync = sync
+            self._cameras._rolling.sync = sync
+            return self._cameras
+        if shutter == 'global':
+            self._cameras._global.sync = sync
+            return self._cameras._global
+        if shutter == 'rolling':
+            self._cameras._rolling.sync = sync
+            return self._cameras._rolling
 
         raise ValueError('Unknown shutter type: use either "global", "rolling", or "both" and not %s' % shutter)
 

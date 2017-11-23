@@ -88,7 +88,6 @@ class TestStereoImage (unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             StereoImage(self.dataset, [117, 100, 1], "rolling")
 
-
     def test_illuminance_is_float_normally(self):
         img = self.dataset.cameras('rolling')[0]
         expected = self.data[3]
@@ -114,6 +113,25 @@ class TestStereoImage (unittest.TestCase):
         self.assertEqual(frame2.ID, 2)
         self.assertEqual(frame3.ID, 3)
         self.assertEqual(frame4.ID, 4)
+
+    def test_synced_frames_will_drop_if_only_one_is_missing(self):
+        dataset = Dataset(p.join(self.path, '..', 'framedrop'))
+        expected_ids = [2,4]
+        for expected, stereo in zip(expected_ids, dataset.cameras('global', sync=True)):
+            self.assertEqual(expected, stereo.ID)
+
+    def test_unsynced_frames_will_not_drop_if_only_one_is_missing(self):
+        dataset = Dataset(p.join(self.path, '..', 'framedrop'))
+        expectation = [(2,2), (None,3),(4,4)]
+        for expect, stereo in zip(expectation, dataset.cameras('global', sync=False)):
+            if expect[0] is None and stereo.L is not None:
+                self.fail('expected left image of %s to be none' % stereo)
+            if expect[0] is not None and stereo.L is None:
+                self.fail('expected left image of %s not to be none' % stereo)
+
+            if stereo.L is not None:
+                self.assertEqual(expect[0], stereo.L.ID)
+            self.assertEqual(expect[1], stereo.R.ID)
 
 if __name__ == '__main__':
     unittest.main()
