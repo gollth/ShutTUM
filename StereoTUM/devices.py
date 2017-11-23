@@ -41,23 +41,19 @@ class StereoCamera:
 
     def __next__(self):
         if len(self) <= self._index: raise StopIteration
-
-        img = self[self._index]
-        self._index += 1
+        img = None
+        while img is None and self._index < len(self):
+            try:
+                img = self[self._index]
+            finally:
+                self._index += 1
         return img
 
     def __len__(self):
         return self._data.shape[0]
 
     def __getitem__(self, item):
-        stereo = None
-        while stereo is None and item < len(self):
-            try:
-                stereo = StereoTUM.values.StereoImage(self._dataset, self._data[item], self._shutter) 
-            except ValueError:
-                item += 1    # try the next one
-
-        return stereo
+        return StereoTUM.values.StereoImage(self._dataset, self._data[item], self._shutter)
 
 
 class DuoStereoCamera:

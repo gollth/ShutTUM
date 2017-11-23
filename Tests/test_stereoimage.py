@@ -101,7 +101,19 @@ class TestStereoImage (unittest.TestCase):
         lx = img.illuminance
         self.assertTrue(math.isnan(lx), "N/A illuminance is not nan but %s" % lx);
 
+    def test_forloop_yield_next_frame_on_frame_drop(self):
+        expected_ids = [2,3,4]
+        for expected, stereo in zip(expected_ids, self.dataset.cameras('rolling')):
+            self.assertEqual(stereo.ID, expected)
 
+    def test_index_lookup_in_cam_with_frame_drop_matches(self):
+        frame2 = self.dataset.cameras('rolling')[0]
+        frame3 = self.dataset.cameras('rolling')[1]
+        frame4 = self.dataset.cameras('rolling')[2]
+
+        self.assertEqual(frame2.ID, 2)
+        self.assertEqual(frame3.ID, 3)
+        self.assertEqual(frame4.ID, 4)
 
 if __name__ == '__main__':
     unittest.main()
