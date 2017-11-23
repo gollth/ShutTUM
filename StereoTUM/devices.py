@@ -1,7 +1,7 @@
 import StereoTUM.values
 
 
-class StereoCamera:
+class StereoCamera(object):
     r"""
     A stereo camera consists of a left and a right camera facing both in the same direction. Both cameras have the same
     shutter method, so either rolling or global. If you iterate over a stereo camera you go through all the 
