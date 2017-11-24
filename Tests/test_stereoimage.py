@@ -114,13 +114,13 @@ class TestStereoImage (unittest.TestCase):
         self.assertEqual(frame3.ID, 3)
         self.assertEqual(frame4.ID, 4)
 
-    def test_synced_frames_will_drop_if_only_one_is_missing(self):
+    def test_synced_cameras_will_drop_if_only_one_is_missing(self):
         dataset = Dataset(p.join(self.path, '..', 'framedrop'))
         expected_ids = [2,4]
         for expected, stereo in zip(expected_ids, dataset.cameras('global', sync=True)):
             self.assertEqual(expected, stereo.ID)
 
-    def test_unsynced_frames_will_not_drop_if_only_one_is_missing(self):
+    def test_unsynced_cameras_will_not_drop_if_only_one_is_missing(self):
         dataset = Dataset(p.join(self.path, '..', 'framedrop'))
         expectation = [(2,2), (None,3),(4,4)]
         for expect, stereo in zip(expectation, dataset.cameras('global', sync=False)):
@@ -132,6 +132,12 @@ class TestStereoImage (unittest.TestCase):
             if stereo.L is not None:
                 self.assertEqual(expect[0], stereo.L.ID)
             self.assertEqual(expect[1], stereo.R.ID)
+
+    def test_unsynced_cameras_will_raise_if_both_images_are_missing(self):
+        dataset = Dataset(p.join(self.path, '..', 'framedrop'))
+        with self.assertRaises(ValueError) as context:
+            frame3 = dataset.cameras('rolling', sync=False)[1]
+            print(frame3)
 
 if __name__ == '__main__':
     unittest.main()
