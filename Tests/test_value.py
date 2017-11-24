@@ -4,6 +4,7 @@ import numpy     as np
 from StereoTUM.dataset import Dataset
 from StereoTUM.values import Value
 
+
 class TestValue(unittest.TestCase):
 
     def setUp(self):

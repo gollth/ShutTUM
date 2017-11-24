@@ -158,8 +158,9 @@ class Dataset(object):
 
     def cameras(self, shutter='both', sync=True):
         r""" 
-        :param str shutter: {both/global/rolling} the type of shutter you are interested in. 
-        :return The reference of the cameras, which you can iterate either as :any:`StereoCamera` (global/rolling)or :any:`DuoStereoCamera` (both)
+        :param str shutter: {both/global/rolling} the type of shutter you are interested in.
+        :param bool sync: Enables/Disables frame synchronization between cameras. (default True)
+        :return: The reference of the cameras, which you can iterate either as :any:`StereoCamera` (global/rolling)or :any:`DuoStereoCamera` (both)
         :raise: ValueError: for anything other then both/global/rolling
         
         Get a reference to one or both of the two stereo cameras, to iterate over their images
@@ -171,6 +172,25 @@ class Dataset(object):
                 print(g.L.ID)
                 print(r.R.stamp)
         
+        When working with stereo images you obviously need two images. Sometimes, however, one camera has recorded a 
+        frame while its :any:`opposite` has dropped a frame. With the `sync` flag you can specify how to handle these 
+        frame drops. 
+             
+        .. image:: images/camera-sync.svg
+        
+        With sync enabled, you iterate only over frames which have been captured by both cameras. With
+        sync disabled, you iterate over all stereo images which have at least one camera captured an image. If both 
+        cams occurred to drop the same frame, this will be skipped in the iterations. The dropped :any:`Image` is set
+        to None::
+        
+            left_drops, right_drops = [], []
+            for stereo in dataset.cameras('global', sync=False):
+                if stereo.L is None: left_drops.append(stereo.ID)
+                if stereo.R is None: right_drops.append(stereo.ID)
+                
+            print('Left Camera dropped frames:  %s' % left_drops)
+            print('Right Camera dropped frames: %s' % right_drops)
+            
         """
         if shutter == 'both':
             self._cameras._global.sync = sync
