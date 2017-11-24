@@ -280,13 +280,13 @@ class Image(Value):
     
     @property
     def focal(self):
-        r"""The focal length in both ``x`` and ``y`` as named tuple"""
+        r""" The camera's focal length as named tuple ``(x, y)`` in pixels """
         return Image._Vector2(x=self._dataset._refs[self.reference]['intrinsics'][0],
                               y=self._dataset._refs[self.reference]['intrinsics'][1])
 
     @property
     def principle(self):
-        r"""The image's principle point in both ``x`` and ``y`` as named tuple in image coordinates``"""
+        r""" The camera's principle point as named tuple ``(x, y)`` in pixels """
         return Image._Vector2(x=self._dataset._refs[self.reference]['intrinsics'][2],
                               y=self._dataset._refs[self.reference]['intrinsics'][3])
 
