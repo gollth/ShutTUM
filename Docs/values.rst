@@ -31,18 +31,20 @@ All types of values **StereoTUM** consists of
 
 .. autosummary::
 
-   ~StereoTUM.values.Image.ID
-   ~StereoTUM.values.Image.P
    ~StereoTUM.values.Image.distortion
    ~StereoTUM.values.Image.exposure
    ~StereoTUM.values.Image.focal
    ~StereoTUM.values.Image.groundtruth
+   ~StereoTUM.values.Image.ID
+   ~StereoTUM.values.Image.illuminance
    ~StereoTUM.values.Image.imu
    ~StereoTUM.values.Image.load
    ~StereoTUM.values.Image.opposite
+   ~StereoTUM.values.Image.P
    ~StereoTUM.values.Image.path
    ~StereoTUM.values.Image.principle
    ~StereoTUM.values.Image.shutter
+   ~StereoTUM.values.Image.resolution
 
 
 
@@ -50,13 +52,14 @@ All types of values **StereoTUM** consists of
 
 .. autosummary::
 
-   ~StereoTUM.values.StereoImage.ID
-   ~StereoTUM.values.StereoImage.L
-   ~StereoTUM.values.StereoImage.R
    ~StereoTUM.values.StereoImage.exposure
    ~StereoTUM.values.StereoImage.extrapolate
+   ~StereoTUM.values.StereoImage.ID
+   ~StereoTUM.values.StereoImage.illuminance
    ~StereoTUM.values.StereoImage.imu
-
+   ~StereoTUM.values.StereoImage.L
+   ~StereoTUM.values.StereoImage.R
+   ~StereoTUM.values.StereoImage.resolution
 
 
 :any:`ImuValue`: Summary

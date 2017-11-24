@@ -186,6 +186,15 @@ class Image(Value):
         return "Image (%s/#%05d/%.2f)" % (self.reference, self.ID, self.stamp)
 
     @property
+    def resolution(self):
+        r""" 
+        Returns the resolution of the cameras as a named tuple ``(width, height)``
+        
+        .. seealso:: :any:`Dataset.resolution <StereoTUM.Dataset.resolution>`
+        """
+        return self._dataset.resolution
+
+    @property
     def shutter(self):
         r""" The shutter method with which this image was captured as string, either ``"rolling"`` or ``"global"`` """
         return self._shutter
@@ -393,6 +402,15 @@ class StereoImage(Value):
         if img is self._left: return self._right
         if img is self._right: return self._left
         raise ValueError("Image %s unknown, cannot find opposite")
+
+    @property
+    def resolution(self):
+        r""" 
+        Returns the resolution of the cameras as a named tuple ``(width, height)``
+        
+        .. seealso:: :any:`Dataset.resolution <StereoTUM.Dataset.resolution>`
+        """
+        return self._dataset.resolution
 
     @property
     def ID(self):
