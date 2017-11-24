@@ -298,7 +298,7 @@ class Dataset(object):
             raise ValueError("Unknown camera name: %s" % cam)
         if input < 0 or input > 255:
             raise ValueError("Gamma function only defined for inputs from 0 .. 255 and not for %s" % input)
-        return self._gammas[cam][round(input)]
+        return self._gammas[cam][int(round(input))]
 
     def vignette(self, cam):
         r"""
