@@ -235,6 +235,11 @@ class Dataset(object):
             acc_in_g = map(lambda imu: imu.acceleration * 9.805, dataset.imu)
             acc_in_g = [ imu.acc * 9.805 for imu in dataset.imu ]
             
+            # Note that generators don't implement __len__()
+            # to get the amount of imu values in this dataset either use
+            N = len(list(dataset.imu))               # or:
+            N = sum([ 1 for value in dataset.imu ])  # which is the same as:
+            N = dataset.raw.imu.shape[0]
         
         """
         for row in self.raw.imu:

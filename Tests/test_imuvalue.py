@@ -24,6 +24,14 @@ class TestImuValue (unittest.TestCase):
         imu2 = Imu(self.dataset, self.dataset.raw.imu[1, :])
         self.assertEqual(imu2.dt(), imu2.stamp - imu1.stamp)
 
+    def test_imu_length_matches_raw_values(self):
+        n1 = len(list(self.dataset.imu))
+        n2 = sum([ 1 for _ in self.dataset.imu ])
+        n  = self.dataset.raw.imu.shape[0]
+
+        self.assertEqual(n, n1)
+        self.assertEqual(n, n2)
+
     def test_imu_iteration_is_possible(self):
         self.assertGreater(len([self.dataset.imu]), 0)
         for _ in self.dataset.imu:
