@@ -7,5 +7,4 @@ All classes associated with iteration over values measured by sensors
     :members:
 .. autoclass:: StereoTUM.devices.DuoStereoCamera
     :members:
-.. autoclass:: StereoTUM.devices.Mocap
-    :members:
+

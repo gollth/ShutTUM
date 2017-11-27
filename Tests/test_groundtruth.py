@@ -22,8 +22,15 @@ class TestGroundTruth(unittest.TestCase):
         self.assertListEqual(list(self.gt.quaternion), list(self.raw[4:8]))
         self.assertEqual(self.gt.stamp, self.raw[0])
 
+    def test_groundtruth_length_matches_raw_value(self):
+        n1 = len(list(self.dataset.mocap))
+        n2 = sum([1 for value in self.dataset.mocap])
+        n  = self.dataset.raw.groundtruth.shape[0]
+        self.assertEqual(n, n1)
+        self.assertEqual(n, n2)
+
     def test_mocap_iteration_is_possible(self):
-        self.assertGreater(len(self.dataset.mocap), 0)
+        self.assertGreater(len([self.dataset.mocap]), 0)
         for _ in self.dataset.mocap:
             self.assertTrue(True)
             return

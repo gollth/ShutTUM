@@ -152,7 +152,7 @@ class TestDataset (unittest.TestCase):
 
     def test_lookup_returns_gt(self):
         dataset = Dataset(self._valid)
-        A = dataset.mocap[1]
+        A = next(dataset.mocap)
         data = dataset[A.stamp]
         self.assertIsNotNone(data.groundtruth)
         self.assertIsNone(data.global_)

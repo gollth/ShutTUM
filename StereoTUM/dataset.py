@@ -141,7 +141,6 @@ class Dataset(object):
             self._gammas[cam] = np.genfromtxt(gamma, delimiter=' ')
 
         self._cameras = StereoTUM.devices.DuoStereoCamera(self)
-        self._mocap   = StereoTUM.devices.Mocap(self)
 
     def __str__(self):
         return "%s (%s)" % (type(self).__name__, p.basename(p.normpath(self._path)))
@@ -225,7 +224,7 @@ class Dataset(object):
             first_imu = next(dataset.imu)
             
             # When you absolutely need indexing convert the generator to a in memory list first
-            imus = [ dataset.imu ]
+            imus = list(dataset.imu)
             print(imus[17].stamp)
             
             # Use the usual python "functional" shenanigans
@@ -247,21 +246,38 @@ class Dataset(object):
 
     @property
     def mocap(self):
-        r"""
-        :return: The reference to the Ground Truth list as :any:`Mocap`
-       
-        Get a reference to the Motion Capture system to iterate over the ground truth values.
-         
-        Note that often you want to iterate directly over the Ground Truth values like so::
-            
-            # Iterate over all ground truth values
-            for gt in dataset.mocap:
-                print(gt.stamp)
-                print(gt.position)
-            
-        
+        r""" 
+        :return: Generator property, yielding one :any:`GroundTruth` value after the other
+
+        This property is a python generator, which you can use to iterate over all available
+        :any:`GroundTruth` s in this dataset. Note that generators do not support indexing. 
+
+        Note that often you want to directly iterate over the Mocap like so::
+
+           # Iterate over all ground truth values
+           for gt in dataset.mocap:
+               print(gt.position)
+
+           # When you want e.g. the first ground truth value use:
+           first_gt = next(dataset.mocap)
+
+           # When you absolutely need indexing convert the generator to a in memory list first
+           gts = list(dataset.mocap)
+           print(gts[17].stamp)
+
+           # Use the usual python "functional" shenanigans
+           gts_from_10s = filter(lambda gt: gt.stamp >= 10, dataset.mocap)
+           gts_from_10s = [ gt for gt in dataset.mocap if gt.stamp >= 10 ]
+
+           # Note that generators don't implement __len__()
+           # to get the amount of imu values in this dataset either use
+           N = len(list(dataset.mocap))               # or:
+           N = sum([ 1 for value in dataset.mocap ])  # which is the same as:
+           N = dataset.raw.groundtruth.shape[0]
+
         """
-        return self._mocap
+        for row in self.raw.groundtruth:
+            yield StereoTUM.values.GroundTruth(self, row)
 
     @property
     def times(self):

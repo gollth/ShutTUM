@@ -611,8 +611,8 @@ class Imu(Value):
 class GroundTruth(Value):
     r"""
     A ground truth is a :any:`Value` with the reference ``"world"``.
-    The ground truth is taken with a higher frequency than the images (around 100 Hz), but slower than the `:any:Imu`. 
-    Since the :any:`Mocap` system is stationary in one room only, it might not cover the whole duration of the dataset 
+    The ground truth is taken with a higher frequency than the images (around 120 Hz), but slower than the `:any:Imu`. 
+    Since the :any:`mocap` system is stationary in one room only, it might not cover the whole duration of the dataset 
     (depending on the sequence).
     """
 

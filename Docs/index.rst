@@ -22,8 +22,6 @@ Classes
 
      ~StereoTUM.devices.StereoCamera
      ~StereoTUM.devices.DuoStereoCamera
-     ~StereoTUM.devices.Imu
-     ~StereoTUM.devices.Mocap
 
      ~StereoTUM.values.Value
      ~StereoTUM.values.GroundTruth
