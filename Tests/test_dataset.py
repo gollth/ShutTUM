@@ -142,7 +142,7 @@ class TestDataset (unittest.TestCase):
 
     def test_lookup_returns_imu(self):
         dataset = Dataset(self._valid)
-        A = dataset.imu[1]
+        A = next(dataset.imu)   # get the first value
         data = dataset[A.stamp]
         self.assertIsNotNone(data.imu)
         self.assertIsNone(data.global_)

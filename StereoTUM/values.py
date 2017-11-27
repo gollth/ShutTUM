@@ -9,7 +9,7 @@ from collections import namedtuple
 class Value(object):
     r"""
     A Value represents every measurement of a sensor taken in a specific time instance.
-    A camera might capture an :any:`Image`, an IMU will record :any:`ImuValue` or the motion capture system 
+    A camera might capture an :any:`Image`, an IMU will record :any:`Imu` or the motion capture system 
     :any:`GroundTruth`.
      
     .. image:: images/frames.png 
@@ -231,7 +231,7 @@ class Image(Value):
 
     @property
     def imu(self):
-        r"""The matching :any:`ImuValue` for this image. Since the capture of an image is synchronized with the IMU,
+        r"""The matching :any:`Imu` for this image. Since the capture of an image is synchronized with the IMU,
         no interpolation is needed."""
         return self._stereo.imu
 
@@ -453,21 +453,21 @@ class StereoImage(Value):
 
     @property
     def imu(self):
-        r"""The matching :any:`ImuValue` for this image. Since the capture of an image is synchronized with the IMU,
+        r"""The matching :any:`Imu` for this image. Since the capture of an image is synchronized with the IMU,
                 no interpolation is needed."""
         i = self._dataset.raw.imu
         match = i[i[:, 0] == self.stamp]
-        if match.size > 0: return ImuValue(self._dataset, match[0])
+        if match.size > 0: return Imu(self._dataset, match[0])
 
         raise ValueError("It seems that %s has no matching IMU value" % self)
 
 
-class ImuValue(Value):
-    r""" An ImuValue represents the measurement of the :any:`Imu` at a specific time.
+class Imu(Value):
+    r""" An imu value represents the measurement of IMU sensor at a specific time.
 
     Since it is a :any:`Value` you can use it to calculate transforms with it. Also 
-    the :any:`Imu` is synchronized in a way, that it measures exactly three times 
-    per image. Any ImuValue consist of three acceleration measurements in X, Y and Z 
+    the IMU is synchronized in a way, that it measures exactly seven times 
+    per image. Any :any:`Imu` value consist of three acceleration measurements in X, Y and Z 
     and three angular velocity measurements around the X, Y, and Z axis.
 
     .. seealso:: :any:`Interpolation` for the data frequency & :any:`Value` for the reference frame
@@ -477,9 +477,9 @@ class ImuValue(Value):
     @staticmethod
     def extrapolate(value, method='closest'):
         r"""
-        Find a matching imuvalue for a certain :any:`Value` based on a extrapolation method
+        Find a matching :any:`Imu` value for a certain :any:`Value` based on a extrapolation method
 
-        :param value: The value for which to find a matching imuvalue
+        :param value: The value for which to find a matching :any:`Imu` value
         :param method: An optional extrapolation method to determine the rules for a "match":
 
             * ``"closest"``: the image with the least difference to value.stamp is chosen
@@ -492,25 +492,25 @@ class ImuValue(Value):
         if method == 'closest':
             f = value._dataset.raw.imu
             i = np.abs(f[:, 0] - value.stamp).argmin()
-            return ImuValue(value._dataset, f[i, :])
+            return Imu(value._dataset, f[i, :])
 
         if method == 'next':
             f = value._dataset.raw.imu
             imu = f[f[:, 0] > value.stamp, :]
             if imu.size == 0: return None
-            return ImuValue(value._dataset, imu[0])
+            return Imu(value._dataset, imu[0])
 
         if method == 'prev':
             f = value._dataset.raw.imu
             imu = f[f[:, 0] < value.stamp, :]
             if imu.size == 0: return None
-            return ImuValue(value._dataset, imu[-1])
+            return Imu(value._dataset, imu[-1])
 
         if method == 'exact':
             f = value._dataset.raw.imu
             imu = f[f[:, 0] == value.stamp, :]
             if imu.size == 0: return None
-            return ImuValue(value._dataset, imu[0])
+            return Imu(value._dataset, imu[0])
 
         raise ValueError(
             'Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")' % method)
@@ -519,13 +519,13 @@ class ImuValue(Value):
     def interpolate(dataset, stamp, accelaration_interpolation=StereoTUM.Interpolation.linear,
                     angvelo_interpolation=StereoTUM.Interpolation.linear):
         r"""
-        This function enables you to find the interpolated imu values of a record given a certain timestamp.
+        This function enables you to find the interpolated :any:`Imu` values of a record given a certain timestamp.
 
         :param dataset: the dataset which holds all imu values to interpolate over 
         :param float stamp: the time at which to interpolate (in seconds, with decimal places) 
         :param accelaration_interpolation: A predefined or custom interpolation function
         :param angvelo_interpolation: A predefined or custom interpolation function
-        :return: A :any:`ImuValue`
+        :return: A :any:`Imu`
 
         .. seealso:: :any:`Interpolation`
         """
@@ -540,22 +540,22 @@ class ImuValue(Value):
             tg = angvelo_interpolation(imu[idx - 1, 0], imu[idx, 0], stamp)
             gyr = (1 - tg) * imu[idx - 1, 1:4] + tg * imu[idx, 1:4]
 
-        return ImuValue(dataset, np.concatenate(([stamp], acc, gyr)))
+        return Imu(dataset, np.concatenate(([stamp], acc, gyr)))
 
     def __init__(self, dataset, data):
         if len(data) < 7: raise ValueError(
-            "Data must have at least 7 entries [time1, acc3, gyro3] but has %d" % len(data))
-        super(ImuValue, self).__init__(dataset, stamp=data[0], reference='imu')
+            "[%s] Data must have at least 7 entries [time1, acc3, gyro3] but has %d" % (self._dataset, len(data)))
+        super(Imu, self).__init__(dataset, stamp=data[0], reference='imu')
         self._acc = np.array(data[1:4])
         self._gyro = np.array(data[4:7])
 
     @property
     def _previous(self):
-        return ImuValue.extrapolate(self, method='prev')
+        return Imu.extrapolate(self, method='prev')
 
     def __eq__(self, other):
-        if not isinstance(other, ImuValue): return False
-        return (super(ImuValue, self).__eq__(other)
+        if not isinstance(other, Imu): return False
+        return (super(Imu, self).__eq__(other)
                 and np.allclose(self._acc, other._acc)
                 and np.allclose(self._gyro, other._gyro))
 
@@ -564,7 +564,8 @@ class ImuValue(Value):
         r"""
         The acceleration 3D vector [x,y,z] of this measurement as 
         `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_ 
-        in .. math:: \frac{m}{s^2}"""
+        in :math:`\frac{m}{s^2}`
+        """
         return self._acc
 
     @property
@@ -572,13 +573,13 @@ class ImuValue(Value):
         r"""
         The angular velocity 3D vector around [x,y,z] of this measurement as 
         `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
-        in .. math:: \frac{rad}{s}
+        in :math:`\frac{rad}{s}`
         """
         return self._gyro
 
     def stereo(self, shutter, extrapolation='closest'):
         r"""
-        The matching stereo image for this imu measurement
+        The matching stereo image for this :any:`Imu` measurement
         :param shutter: The shutter type of the images to find (``"global"``, ``"rolling"``, **not** ``"both"``) 
         :param extrapolation: An optional extrapolation method to determine the rules for a "match":
 
@@ -595,8 +596,8 @@ class ImuValue(Value):
     def groundtruth(self, position_interpolation=StereoTUM.Interpolation.linear,
                     orientation_interpolation=StereoTUM.Interpolation.slerp):
         r"""
-        Find the matching :any:`GroundTruth` value for this imu value. Since the motion capture system and the :any:`Imu`
-        are not synced, we need to interpolate between ground truths by time stamp of the imu value.
+        Find the matching :any:`GroundTruth` value for this :any:`Imu` value. Since the motion capture system and the 
+        IMU sensor are not synced, we need to interpolate between ground truths by time stamp of this :any:`Imu` value.
 
         :param position_interpolation: a predefined or custom interpolation function to interpolate positions 
         :param orientation_interpolation: a predefined or custom interpolation function to interpolate quaternions

@@ -2,7 +2,7 @@ import unittest
 import os.path as p
 import numpy as np
 from StereoTUM.dataset import Dataset
-from StereoTUM.values import ImuValue, GroundTruth
+from StereoTUM.values import Imu, GroundTruth
 
 
 class TestImuValue (unittest.TestCase):
@@ -12,7 +12,7 @@ class TestImuValue (unittest.TestCase):
         self.dataset = Dataset(self.path)
 
     def test_imuvalue_created_correctly(self):
-        imu = ImuValue(self.dataset, [0, 0,0,-1, 0,0,0])
+        imu = Imu(self.dataset, [0, 0, 0, -1, 0, 0, 0])
         self.assertIsInstance(imu.acceleration, np.ndarray)
         self.assertIsInstance(imu.angular_velocity, np.ndarray)
 
@@ -20,12 +20,12 @@ class TestImuValue (unittest.TestCase):
         self.assertTrue(np.allclose(imu.angular_velocity, np.array((0,0,0))))
 
     def test_dt_is_correct(self):
-        imu1 = ImuValue(self.dataset, self.dataset.raw.imu[0, :])
-        imu2 = ImuValue(self.dataset, self.dataset.raw.imu[1, :])
+        imu1 = Imu(self.dataset, self.dataset.raw.imu[0, :])
+        imu2 = Imu(self.dataset, self.dataset.raw.imu[1, :])
         self.assertEqual(imu2.dt(), imu2.stamp - imu1.stamp)
 
     def test_imu_iteration_is_possible(self):
-        self.assertGreater(len(self.dataset.imu), 0)
+        self.assertGreater(len([self.dataset.imu]), 0)
         for _ in self.dataset.imu:
             self.assertTrue(True)
             return
@@ -34,7 +34,7 @@ class TestImuValue (unittest.TestCase):
 
     def test_stereo_closest_extrapolation(self):
         time = 0.175
-        imu = ImuValue(self.dataset, [time, 0,0,-1, 0,0,0])
+        imu = Imu(self.dataset, [time, 0, 0, -1, 0, 0, 0])
         stereo = imu.stereo('rolling', extrapolation='closest')
         delta = abs(stereo.stamp - time)
         for image in self.dataset.cameras('rolling'):
@@ -43,7 +43,7 @@ class TestImuValue (unittest.TestCase):
 
     def test_stereo_next_extrapolation(self):
         time = 0.16
-        imu = ImuValue(self.dataset, [time, 0,0,-1, 0,0,0])
+        imu = Imu(self.dataset, [time, 0, 0, -1, 0, 0, 0])
         stereo = imu.stereo('rolling', extrapolation='next')
         for image in self.dataset.cameras('rolling'):
             if image.stamp < time: continue
@@ -53,13 +53,13 @@ class TestImuValue (unittest.TestCase):
 
     def test_stereo_next_extrapolation_returns_none_if_no_more_frames_exist(self):
         time = 200
-        imu = ImuValue(self.dataset, [time, 0, 0, -1, 0, 0, 0])
+        imu = Imu(self.dataset, [time, 0, 0, -1, 0, 0, 0])
         stereo = imu.stereo('rolling', extrapolation='next')
         self.assertIsNone(stereo)
 
     def test_stereo_prev_extrapolation(self):
         time = 0.19
-        imu = ImuValue(self.dataset, [time, 0, 0, -1, 0, 0, 0])
+        imu = Imu(self.dataset, [time, 0, 0, -1, 0, 0, 0])
         stereo = imu.stereo('rolling', extrapolation='prev')
         previous = None
         images = list(self.dataset.cameras('rolling'))
@@ -73,7 +73,7 @@ class TestImuValue (unittest.TestCase):
 
     def test_stereo_prev_extrapolation_returns_none_if_no_earier_frames_exist(self):
         time = 0
-        imu = ImuValue(self.dataset, [time, 0,0,-1,0,0,0])
+        imu = Imu(self.dataset, [time, 0, 0, -1, 0, 0, 0])
         stereo = imu.stereo('rolling', extrapolation='prev')
         self.assertIsNone(stereo)
 
@@ -86,7 +86,8 @@ class TestImuValue (unittest.TestCase):
 
     def test_stereo_extrapolation_raises_value_error_on_unknown_extrapolation_method(self):
         with self.assertRaises(ValueError):
-            self.dataset.imu[0].stereo('rolling', extrapolation='unknown')
+            imu = next(self.dataset.imu)
+            imu.stereo('rolling', extrapolation='unknown')
 
     def test_ground_truth_interpolation_is_correct(self):
         gti = np.genfromtxt(p.join(self.path, 'data', 'ground_truth_interpolated.csv'), skip_header=1)

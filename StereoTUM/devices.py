@@ -111,44 +111,6 @@ class DuoStereoCamera:
         return self._global[item], self._rolling[item]
 
 
-class Imu:
-    r"""
-    An IMU is an iterable container of all :any:`ImuValue` s. You can iterate over all of its observations like so::
-    
-        # Iteration via "classic" for loop
-        for observation in dataset.imu:
-            print(observation.acceleration)
-    
-        # Or use simple index based access
-        print(dataset.imu[0].stamp)
-        
-    """
-    def __init__(self, dataset):
-        self._dataset = dataset
-        self._data = self._dataset.raw.imu
-
-    def __iter__(self):
-        self._index = 0
-        return self
-
-    def next(self): # python2 support
-        return self.__next__()
-
-    def __next__(self):
-        if len(self) <= self._index: raise StopIteration
-
-        imu = self[self._index]
-        self._index += 1
-        return imu
-
-    def __len__(self):
-        return self._data.shape[0]
-
-    def __getitem__(self, item):
-        v = StereoTUM.values.ImuValue(self._dataset, self._data[item])
-        return v
-
-
 class Mocap:
     r"""
     The Motion Capture system is an iterable container for all (recorded) :any:`GroundTruth` values in a dataset::

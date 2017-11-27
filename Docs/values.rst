@@ -62,16 +62,16 @@ All types of values **StereoTUM** consists of
    ~StereoTUM.values.StereoImage.resolution
 
 
-:any:`ImuValue`: Summary
+:any:`Imu`: Summary
 
 .. autosummary::
 
-   ~StereoTUM.values.ImuValue.acceleration
-   ~StereoTUM.values.ImuValue.angular_velocity
-   ~StereoTUM.values.ImuValue.extrapolate
-   ~StereoTUM.values.ImuValue.groundtruth
-   ~StereoTUM.values.ImuValue.interpolate
-   ~StereoTUM.values.ImuValue.stereo
+   ~StereoTUM.values.Imu.acceleration
+   ~StereoTUM.values.Imu.angular_velocity
+   ~StereoTUM.values.Imu.extrapolate
+   ~StereoTUM.values.Imu.groundtruth
+   ~StereoTUM.values.Imu.interpolate
+   ~StereoTUM.values.Imu.stereo
 
 
 
@@ -94,7 +94,7 @@ All types of values **StereoTUM** consists of
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: StereoTUM.values.ImuValue
+.. autoclass:: StereoTUM.values.Imu
    :members:
    :undoc-members:
    :show-inheritance:

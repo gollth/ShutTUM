@@ -29,4 +29,4 @@ Classes
      ~StereoTUM.values.GroundTruth
      ~StereoTUM.values.Image
      ~StereoTUM.values.StereoImage
-     ~StereoTUM.values.ImuValue
+     ~StereoTUM.values.Imu

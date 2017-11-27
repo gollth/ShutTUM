@@ -21,7 +21,7 @@ class Interpolation:
 
     StereoTUM supports currently three interpolation methods, namely :any:`linear`, :any:`cubic` 
     and :any:`slerp`. However it is possible to define your own function and hand it over to interpolating 
-    methods, such as  :any:`GroundTruth.interpolate` or :any:`ImuValue.interpolate`::
+    methods, such as  :any:`GroundTruth.interpolate` or :any:`Imu.interpolate`::
 
         def some_crazy_interpolation(a,b,t, a0, b0):
             return a + b - 17*t**2

@@ -141,7 +141,6 @@ class Dataset(object):
             self._gammas[cam] = np.genfromtxt(gamma, delimiter=' ')
 
         self._cameras = StereoTUM.devices.DuoStereoCamera(self)
-        self._imu     = StereoTUM.devices.Imu(self)
         self._mocap   = StereoTUM.devices.Mocap(self)
 
     def __str__(self):
@@ -211,19 +210,35 @@ class Dataset(object):
     @property
     def imu(self):
         r""" 
-        :return: The reference of the Imu for this dataset, which you can iterate as :any:`Imu`
+        :return: Generator property, yielding one :any:`Imu` after the other
         
-        Get a reference to the IMU to iterate over its values.
+        This property is a python generator, which you can use to iterate over all available
+        :any:`Imu` s in this dataset. Note that generators do not support indexing. 
         
         Note that often you want to directly iterate over the Imu like so::
             
             # Iterate over all imu values
             for observation in dataset.imu:
                 print(observation.acceleration)
+                
+            # When you want e.g. the first imu value use:
+            first_imu = next(dataset.imu)
+            
+            # When you absolutely need indexing convert the generator to a in memory list first
+            imus = [ dataset.imu ]
+            print(imus[17].stamp)
+            
+            # Use the usual python "functional" shenanigans
+            imus_up_to_10s = filter(lambda imu: imu.stamp <= 10, dataset.imu)
+            imus_up_to_10s = [ imu for imu in dataset.imu if imu.stamp <= 10 ]
+            
+            acc_in_g = map(lambda imu: imu.acceleration * 9.805, dataset.imu)
+            acc_in_g = [ imu.acc * 9.805 for imu in dataset.imu ]
             
         
         """
-        return self._imu
+        for row in self.raw.imu:
+            yield StereoTUM.values.Imu(self, row)
 
     @property
     def mocap(self):
@@ -353,7 +368,7 @@ class Dataset(object):
             stamp=s,
             global_=StereoTUM.values.StereoImage.extrapolate(value, 'global', method='exact'),
             rolling=StereoTUM.values.StereoImage.extrapolate(value, 'rolling', method='exact'),
-            imu=StereoTUM.values.ImuValue.extrapolate(value, method='exact'),
+            imu=StereoTUM.values.Imu.extrapolate(value, method='exact'),
             groundtruth=StereoTUM.values.GroundTruth.extrapolate(value, method='exact')
         )
 
@@ -374,7 +389,7 @@ class Dataset(object):
                   * ``stamp`` (float)
                   * ``global_`` (:any:`StereoImage`) 
                   * ``rolling`` (:any:`StereoImage`) 
-                  * ``imu`` (:any:`ImuValue`) and 
+                  * ``imu`` (:any:`Imu`) and 
                   * ``groundtruth`` (:any:`GroundTruth`). 
                  
                  or a generator yielding multiple (or none) of these. If any of the values of the above tuple does not 
