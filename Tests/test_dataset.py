@@ -86,14 +86,15 @@ class TestDataset (unittest.TestCase):
 
     def test_camera_iteration_with_filter(self):
         dataset = Dataset(self._valid)
-        x = filter(lambda item: item.ID == 2, dataset.cameras('rolling'))
+        cam = dataset.cameras('rolling')
+        x = filter(lambda item: item.ID == 2, cam)
         self.assertEqual(list(x)[0].ID, 2)
 
     def test_camera_iteration_with_list_comprehension(self):
         dataset = Dataset(self._valid)
-
-        x = [ image.stamp for image in dataset.cameras('rolling') if image.ID == 2]
-        self.assertEqual(x[0], dataset.cameras('rolling')[0].stamp)
+        wanted_id = 2
+        x = [ image.stamp for image in dataset.cameras('rolling') if image.ID == wanted_id]
+        self.assertEqual(x[0], dataset.cameras('rolling')[wanted_id].stamp)
 
     def test_times_contain_framestamps(self):
         dataset = Dataset(self._valid)
@@ -130,7 +131,7 @@ class TestDataset (unittest.TestCase):
 
     def test_lookup_returns_image(self):
         dataset = Dataset(self._valid)
-        A = dataset.cameras('global')[0]
+        A = dataset.cameras('global')[2]
         data = dataset[A.stamp]
         self.assertIsNotNone(data.global_)
         self.assertIsNotNone(data.rolling)

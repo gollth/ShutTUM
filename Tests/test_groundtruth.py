@@ -40,7 +40,7 @@ class TestGroundTruth(unittest.TestCase):
 
     def test_tf_lookup_from_cam1_is_correct(self):
         ta = self.gt << 'cam1'
-        tb = self.gt << self.dataset.cameras('rolling')[0].L.reference
+        tb = self.gt << self.dataset.cameras('rolling')[2].L.reference
 
         expected = GroundTruth(self.dataset, [0.0, -0.4032,0.5288,1.3405,0.6874,-0.7259,-0.0069,0.0234])
         expected = np.linalg.inv(expected.pose)
@@ -52,7 +52,7 @@ class TestGroundTruth(unittest.TestCase):
         
     def test_tf_lookup_to_cam1_is_correct(self):
         ta = self.gt >> 'cam1'
-        tb = self.gt >> self.dataset.cameras('rolling')[0].L.reference
+        tb = self.gt >> self.dataset.cameras('rolling')[2].L.reference
 
         expected = GroundTruth(self.dataset, [0.0, -0.4032, 0.5288, 1.3405, 0.6874, -0.7259, -0.0069, 0.0234])
 
@@ -62,8 +62,8 @@ class TestGroundTruth(unittest.TestCase):
         self.assertTrue(np.allclose(ta, expected.pose))
 
     def test_image_lookup_closest_extrapolation_is_correct(self):
-        img1 = self.dataset.cameras('rolling')[0]
-        img2 = self.dataset.cameras('rolling')[1]
+        img1 = self.dataset.cameras('rolling')[2]
+        img2 = self.dataset.cameras('rolling')[3]
 
         # Create an Ground Truth pose, which is at 80% between img1 and img2
         t  = Interpolation.linear(img1.stamp, img2.stamp, .8)
@@ -75,8 +75,8 @@ class TestGroundTruth(unittest.TestCase):
         self.assertNotEqual(stereo.ID, img1.ID)
 
     def test_image_lookup_next_extrapolation_is_correct(self):
-        img1 = self.dataset.cameras('rolling')[0]
-        img2 = self.dataset.cameras('rolling')[1]
+        img1 = self.dataset.cameras('rolling')[2]
+        img2 = self.dataset.cameras('rolling')[3]
 
         # Create a Ground truth pose which is at 20% between img1 and img2
         t  = Interpolation.linear(img1.stamp, img2.stamp, .2)
@@ -88,8 +88,8 @@ class TestGroundTruth(unittest.TestCase):
         self.assertNotEqual(stereo.ID, img1.ID)
 
     def test_image_lookup_prev_extrapolation_is_correct(self):
-        img1 = self.dataset.cameras('rolling')[0]
-        img2 = self.dataset.cameras('rolling')[1]
+        img1 = self.dataset.cameras('rolling')[2]
+        img2 = self.dataset.cameras('rolling')[3]
 
         # Create a Ground truth pose which is at 80% between img1 and img2
         t = Interpolation.linear(img1.stamp, img2.stamp, .8)
@@ -101,8 +101,8 @@ class TestGroundTruth(unittest.TestCase):
         self.assertNotEqual(stereo.ID, img2.ID)
 
     def test_image_lookup_exact_extrapolation_fails_with_nones(self):
-        img1 = self.dataset.cameras('rolling')[0]
-        img2 = self.dataset.cameras('rolling')[1]
+        img1 = self.dataset.cameras('rolling')[2]
+        img2 = self.dataset.cameras('rolling')[3]
 
         # Create a Ground truth pose which is somewhere between img1 & img2
         t = Interpolation.linear(img1.stamp, img2.stamp, .5)

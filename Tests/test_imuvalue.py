@@ -62,7 +62,8 @@ class TestImuValue (unittest.TestCase):
         imu = ImuValue(self.dataset, [time, 0, 0, -1, 0, 0, 0])
         stereo = imu.stereo('rolling', extrapolation='prev')
         previous = None
-        for image in reversed(self.dataset.cameras('rolling')):
+        images = list(self.dataset.cameras('rolling'))
+        for image in reversed(images):
             if image.stamp > time: continue
             previous = image
             break

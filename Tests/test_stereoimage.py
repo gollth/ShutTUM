@@ -89,62 +89,16 @@ class TestStereoImage (unittest.TestCase):
             StereoImage(self.dataset, [117, 100, 1], "rolling")
 
     def test_illuminance_is_float_normally(self):
-        img = self.dataset.cameras('rolling')[0]
+        img = self.dataset.cameras('rolling')[2]
         expected = self.data[3]
         actual = img.illuminance
         self.assertEqual(expected, actual)
         self.assertIsInstance(actual, float)
 
     def test_illuminance_is_nan_if_n_a(self):
-        img = self.dataset.cameras('rolling')[2]
+        img = self.dataset.cameras('rolling')[4]
         lx = img.illuminance
         self.assertTrue(math.isnan(lx), "N/A illuminance is not nan but %s" % lx);
-
-    def test_forloop_yield_next_frame_on_frame_drop(self):
-        expected_ids = [2,3,4]
-        for expected, stereo in zip(expected_ids, self.dataset.cameras('rolling')):
-            self.assertEqual(stereo.ID, expected)
-
-    def test_index_lookup_in_cam_with_frame_drop_matches(self):
-        frame2 = self.dataset.cameras('rolling')[0]
-        frame3 = self.dataset.cameras('rolling')[1]
-        frame4 = self.dataset.cameras('rolling')[2]
-
-        self.assertEqual(frame2.ID, 2)
-        self.assertEqual(frame3.ID, 3)
-        self.assertEqual(frame4.ID, 4)
-
-    def test_synced_cameras_will_drop_if_only_one_is_missing(self):
-        dataset = Dataset(p.join(self.path, '..', 'framedrop'))
-        expected_ids = [2]
-        for expected, stereo in zip(expected_ids, dataset.cameras('global', sync=True)):
-            self.assertEqual(expected, stereo.ID)
-
-    def test_unsynced_cameras_will_not_drop_if_only_one_is_missing(self):
-        dataset = Dataset(p.join(self.path, '..', 'framedrop'))
-        expectation = [(2,2), (None,3), (4,None)]
-        for expect, stereo in zip(expectation, dataset.cameras('global', sync=False)):
-            if expect[0] is None and stereo.L is not None:
-                self.fail('expected left image of %s to be none' % stereo)
-            if expect[0] is not None and stereo.L is None:
-                self.fail('expected left image of %s not to be none' % stereo)
-
-            if expect[1] is None and stereo.R is not None:
-                self.fail('expected right image of %s to be none' % stereo)
-            if expect[1] is not None and stereo.R is None:
-                self.fail('expected right image of %s not to be none' % stereo)
-
-
-            if stereo.L is not None:
-                self.assertEqual(expect[0], stereo.L.ID)
-            if stereo.R is not None:
-                self.assertEqual(expect[1], stereo.R.ID)
-
-    def test_unsynced_cameras_will_raise_if_both_images_are_missing(self):
-        dataset = Dataset(p.join(self.path, '..', 'framedrop'))
-        with self.assertRaises(ValueError) as context:
-            frame3 = dataset.cameras('rolling', sync=False)[1]
-            print(frame3)
 
 
 if __name__ == '__main__':
