@@ -164,19 +164,21 @@ class Dataset(object):
     @property
     def stereosync(self):
         r"""
-        Enables/Disables frame synchronization between cameras. (default True)
+        Enables/Disables frame synchronization between cameras. (default ``True``)
         
         When working with stereo images you obviously need two images. Sometimes, however, one camera has recorded a 
-        frame while its :any:`opposite` has dropped a frame. With the `stereosync` flag you can specify how to handle these 
-        frame drops. 
+        frame while its :any:`opposite` has dropped a frame. With the ``stereosync`` option you can specify how to 
+        handle these frame drops. 
              
-        .. image:: images/camera-stereosync.svg
+        .. image:: images/stereosync.svg
         
-        With stereosync enabled, you iterate only over frames which have been captured by both cameras. With
-        stereosync disabled, you iterate over all stereo images which have at least one camera captured an image. If both 
+        With ``stereosync`` enabled, you iterate only over frames which have been captured by *both* cameras. With
+        stereosync disabled, you iterate over all stereo images which have *at least one* camera captured an image. If both 
         cams occurred to drop the same frame, this will be skipped in the iterations. The dropped :any:`Image` is set
         to None::
         
+            dataset.stereosync = False
+            
             left_drops, right_drops = [], []
             for stereo in dataset.cameras('global'):
                 if stereo.L is None: left_drops.append(stereo.ID)

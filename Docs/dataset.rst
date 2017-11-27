@@ -27,6 +27,7 @@ All classes broadly associated with the dataset creation and manipulation
     ~StereoTUM.dataset.Dataset.raw
     ~StereoTUM.dataset.Dataset.resolution
     ~StereoTUM.dataset.Dataset.rolling_shutter_speed
+    ~StereoTUM.dataset.Dataset.stereosync
     ~StereoTUM.dataset.Dataset.start
     ~StereoTUM.dataset.Dataset.times
     ~StereoTUM.dataset.Dataset.vignette
