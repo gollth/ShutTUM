@@ -334,55 +334,67 @@ class StereoImage(Value):
             * ``"exact"``: the image where value.stamp == image.stamp holds is chosen, None otherwise
 
         :return: The matching stereo image or None if no was found
-        """
-        try:
-            if method == 'closest':
-                f = value._dataset.raw.frames
-                i = np.abs(f[:, 0] - value.stamp).argmin()
-                return StereoImage(value._dataset, f[i, :], shutter)
-
-            if method == 'next':
-                f = value._dataset.raw.frames
-                frame = f[f[:, 0] > value.stamp, :]
-                if frame.size == 0: return None
-                return StereoImage(value._dataset, frame[0], shutter)
-
-            if method == 'prev':
-                f = value._dataset.raw.frames
-                frame = f[f[:, 0] < value.stamp, :]
-                if frame.size == 0: return None
-                return StereoImage(value._dataset, frame[-1], shutter)
-
-            if method == 'exact':
-                f = value._dataset.raw.frames
-                frame = f[f[:, 0] == value.stamp, :]
-                if frame.size == 0: return None
-                return StereoImage(value._dataset, frame[0], shutter)
         
-        except ValueError:
-            return None
+        .. seealso:: :any:`Dataset.cameras <StereoTUM.Dataset.cameras>`
+        
+        """
+        if method == 'closest':
+            f = value._dataset.raw.frames
+            i = np.abs(f[:, 0] - value.stamp).argmin()
+            return StereoImage(value._dataset, f[i, :], shutter)
 
-        raise ValueError(
-            'Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")' % method)
+        if method == 'next':
+            f = value._dataset.raw.frames
+            frame = f[f[:, 0] > value.stamp, :]
+            if frame.size == 0: return None
+            return StereoImage(value._dataset, frame[0], shutter)
 
-    def __init__(self, dataset, data, shutter, sync=True):
+        if method == 'prev':
+            f = value._dataset.raw.frames
+            frame = f[f[:, 0] < value.stamp, :]
+            if frame.size == 0: return None
+            return StereoImage(value._dataset, frame[-1], shutter)
+
+        if method == 'exact':
+            f = value._dataset.raw.frames
+            frame = f[f[:, 0] == value.stamp, :]
+            if frame.size == 0: return None
+            return StereoImage(value._dataset, frame[0], shutter)
+
+        raise ValueError('[%s] Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")'
+                         % (value._dataset, method))
+
+    def __init__(self, dataset, data, shutter):
         self._data = data
         self._dataset = dataset
-        self._left, self._right = None, None
-        try:
-            self._left = Image(self, shutter, left=True)
-        except ValueError as e:
-            if sync: raise e
-        try:
-            self._right = Image(self, shutter, left=False)
-        except ValueError as e:
-            if sync: raise e
+        L, R = None, None
+        frames = dataset.raw.frames
+        id = self._data[1]
+        while True:
+            try: L = Image(self, shutter, left=True)
+            except ValueError: L = None
+            try: R = Image(self, shutter, left=False)
+            except ValueError: R = None
 
-        if self._left is None and self._right is None:
-            raise ValueError('[%s] Cannot find neither left or right image for ID %d ("%s")' % (self._dataset, data[1], shutter))
+            # If stereosync is required, the stereo image is only valid, if we found both L/R images
+            if dataset.stereosync and L is not None and R is not None: break
+
+            # If no stereosync is required, it suffices if we find only one
+            if not dataset.stereosync and (L is not None or R is not None): break
+
+            # Otherwise we look for the next data in frames.csv and try again ...
+            id += 1
+            self._data = frames[frames[:,1] == id]
+            if not self._data.size == 0:
+                self._data = self._data[0]
+                continue
+
+            raise ValueError('[%s] Cannot find no more stereo images due to frame drops for camera "%s"'
+                             % (self._dataset, shutter))
 
         # Timestamp is in second column
-        cam = self._left if self._left is not None else self._right
+        cam = L if L is not None else R
+        self._left, self._right = L, R
         super(StereoImage, self).__init__(dataset, self._data[0], cam.reference)
 
     @property

@@ -67,9 +67,10 @@ class Dataset(object):
         if key not in dictionary:
             raise ValueError("Could not find %s in %s, record folder seems not to be valid!" % (key, file))
 
-    def __init__(self, path):
+    def __init__(self, path, stereosync=True):
         r""" 
         :param str path: the path to *one* record of the dataset, such as ``~/StereoTUM/0001``
+        :param bool stereosync: possiblity to set the :any:`stereosync` option in constructor
         :raises: ValueError: if anything goes wrong 
         Load the dataset into memory (except images) and do basic data consistency checks.
         
@@ -79,9 +80,12 @@ class Dataset(object):
         4. The ``params/time.yaml`` is loaded
         5. The ``params/params.yaml`` is loaded
            
+        .. seealso:: :any:`stereosync`
+        
         """
         path = p.expandvars(p.expanduser(path))
         self._path = path
+        self._sync = stereosync
 
         # Consistency Check
         Dataset._check_folder_exists(p.join(path, 'data'))
@@ -157,10 +161,40 @@ class Dataset(object):
         """
         return self._raw
 
-    def cameras(self, shutter='both', sync=True):
+    @property
+    def stereosync(self):
+        r"""
+        Enables/Disables frame synchronization between cameras. (default True)
+        
+        When working with stereo images you obviously need two images. Sometimes, however, one camera has recorded a 
+        frame while its :any:`opposite` has dropped a frame. With the `stereosync` flag you can specify how to handle these 
+        frame drops. 
+             
+        .. image:: images/camera-stereosync.svg
+        
+        With stereosync enabled, you iterate only over frames which have been captured by both cameras. With
+        stereosync disabled, you iterate over all stereo images which have at least one camera captured an image. If both 
+        cams occurred to drop the same frame, this will be skipped in the iterations. The dropped :any:`Image` is set
+        to None::
+        
+            left_drops, right_drops = [], []
+            for stereo in dataset.cameras('global'):
+                if stereo.L is None: left_drops.append(stereo.ID)
+                if stereo.R is None: right_drops.append(stereo.ID)
+                
+            print('Left Camera dropped frames:  %s' % left_drops)
+            print('Right Camera dropped frames: %s' % right_drops)
+            
+        """
+        return self._sync
+
+    @stereosync.setter
+    def stereosync(self, value):
+        self._sync = value
+
+    def cameras(self, shutter='both'):
         r""" 
         :param str shutter: {both/global/rolling} the type of shutter you are interested in.
-        :param bool sync: Enables/Disables frame synchronization between cameras. (default True)
         :return: The reference of the cameras, which you can iterate either as :any:`StereoCamera` (global/rolling)or :any:`DuoStereoCamera` (both)
         :raise: ValueError: for anything other then both/global/rolling
         
@@ -173,36 +207,13 @@ class Dataset(object):
                 print(g.L.ID)
                 print(r.R.stamp)
         
-        When working with stereo images you obviously need two images. Sometimes, however, one camera has recorded a 
-        frame while its :any:`opposite` has dropped a frame. With the `sync` flag you can specify how to handle these 
-        frame drops. 
-             
-        .. image:: images/camera-sync.svg
         
-        With sync enabled, you iterate only over frames which have been captured by both cameras. With
-        sync disabled, you iterate over all stereo images which have at least one camera captured an image. If both 
-        cams occurred to drop the same frame, this will be skipped in the iterations. The dropped :any:`Image` is set
-        to None::
-        
-            left_drops, right_drops = [], []
-            for stereo in dataset.cameras('global', sync=False):
-                if stereo.L is None: left_drops.append(stereo.ID)
-                if stereo.R is None: right_drops.append(stereo.ID)
-                
-            print('Left Camera dropped frames:  %s' % left_drops)
-            print('Right Camera dropped frames: %s' % right_drops)
-            
+        .. seealso:: :any:`StereoTUM.Dataset.stereosync`
+       
         """
-        if shutter == 'both':
-            self._cameras._global.sync = sync
-            self._cameras._rolling.sync = sync
-            return self._cameras
-        if shutter == 'global':
-            self._cameras._global.sync = sync
-            return self._cameras._global
-        if shutter == 'rolling':
-            self._cameras._rolling.sync = sync
-            return self._cameras._rolling
+        if shutter == 'both':    return self._cameras
+        if shutter == 'global':  return self._cameras._global
+        if shutter == 'rolling': return self._cameras._rolling
 
         raise ValueError('Unknown shutter type: use either "global", "rolling", or "both" and not %s' % shutter)
 
@@ -323,7 +334,6 @@ class Dataset(object):
         r""" Returns the resolution of the cameras as a named tuple ``(width, height)`` """
         Resolution = namedtuple('Resolution', 'width height')
         return Resolution(width=1280, height=1024)
-
 
     @property
     def exposure_limits(self):

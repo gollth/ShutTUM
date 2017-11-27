@@ -30,7 +30,6 @@ class StereoCamera(object):
         """
         self._dataset = dataset
         self._shutter = shutter
-        self._sync = True
         self._data = self._dataset.raw.frames
 
     def __iter__(self):
@@ -38,33 +37,19 @@ class StereoCamera(object):
         self._max = int(self._data[-1,1]) # take the last ID (column 1) in the last row
         return self
 
-    @property
-    def sync(self):
-        return self._sync
-
-    @sync.setter
-    def sync(self, value):
-        self._sync = value
-
     def next(self): # python2 support
         return self.__next__()
 
     def __next__(self):
-        if self._id > self._max:
-            self._id = int(self._data[0, 1])  # reset the id for next iteration
-            raise StopIteration
-
-        img = None
-        while img is None and self._id <= self._max:
+        while True:
             try:
                 img = self[self._id]
-            except ValueError as e:
-                pass  # just try the next one
-            finally:
-                self._id += 1
+                self._id = img.ID + 1
+                return img
 
-        if self._id > self._max and img is None: raise StopIteration
-        return img
+            except ValueError:
+                self._id = int(self._data[0, 1])  # need to reset so list(...) works again
+                raise StopIteration
 
     def __len__(self):
         return sum([1 for frame in self])
@@ -72,7 +57,7 @@ class StereoCamera(object):
     def __getitem__(self, id):
         row = self._data[self._data[:,1] == id, :]
         if row.size == 0: raise ValueError('[%s] No Frame for stereo camera "%s" found with ID %d' % (self._dataset, self._shutter, id))
-        return StereoTUM.values.StereoImage(self._dataset, row[0], self._shutter, self._sync)
+        return StereoTUM.values.StereoImage(self._dataset, row[0], self._shutter)
 
 
 class DuoStereoCamera:
