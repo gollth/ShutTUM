@@ -2,7 +2,7 @@ import unittest
 import os.path as p
 
 from StereoTUM.dataset import  Dataset
-from StereoTUM.values import Imu
+from StereoTUM.values import Imu, GroundTruth
 
 
 class TestFrameDrops (unittest.TestCase):
@@ -52,9 +52,9 @@ class TestFrameDrops (unittest.TestCase):
             if stereo.R is not None:
                 self.assertEqual(expect[1], stereo.R.ID)
 
-    def test_imu_extrapolation_skips_frame_drop(self):
+    def test_imu_extrapolation_skips_frame_drop_sync(self):
         frame1 = self.dataset.cameras('rolling')[1]
-        imu = Imu.extrapolate(frame1)
+        imu    = Imu.extrapolate(frame1)
 
         expected = self.dataset.cameras('rolling')[4]
         actual   = imu.stereo('rolling', extrapolation='next')
@@ -71,9 +71,30 @@ class TestFrameDrops (unittest.TestCase):
         actual   = imu.stereo('global', extrapolation='next')
 
         self.assertEqual(expected.stamp, actual.stamp)
-        self.assertEqual(actual.ID,      actual.ID)
+        self.assertEqual(expected.ID,    actual.ID)
         self.assertIsNone(actual.L)
-        
+
+    def test_groundtruth_extrapolation_skips_frame_drop_sync(self):
+        frame1 = self.dataset.cameras('rolling')[1]
+        gt     = GroundTruth.extrapolate(frame1, method='next')
+
+        expected = self.dataset.cameras('rolling')[4]
+        actual   = gt.stereo('rolling', extrapolation='next')
+
+        self.assertEqual(expected.stamp, actual.stamp)
+        self.assertEqual(expected.ID,    actual.ID)
+
+    def test_groundtruth_extrapolation_skips_frame_drop_unsync(self):
+        self.dataset.stereosync = False
+
+        frame2 = self.dataset.cameras('global')[3]
+        gt     = GroundTruth.extrapolate(frame2, method='next')
+        expected = self.dataset.cameras('global')[4]
+        actual   = gt.stereo('global', extrapolation='next')
+
+        self.assertEqual(expected.stamp, actual.stamp)
+        self.assertEqual(expected.ID,    actual.ID)
+        self.assertIsNone(actual.R)
 
 if __name__ == '__main__':
     unittest.main()
