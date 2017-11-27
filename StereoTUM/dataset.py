@@ -144,6 +144,9 @@ class Dataset(object):
         self._imu     = StereoTUM.devices.Imu(self)
         self._mocap   = StereoTUM.devices.Mocap(self)
 
+    def __str__(self):
+        return "%s (%s)" % (type(self).__name__, p.basename(p.normpath(self._path)))
+
     @property
     def raw(self):
         r"""

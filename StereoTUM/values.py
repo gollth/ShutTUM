@@ -170,7 +170,7 @@ class Image(Value):
             super(Image, self).__init__(stereo._dataset, stereo._data[0], cam)
             break  # from any further for loop iteration
 
-        if not p.exists(self.path): raise ValueError("Image %s does not exist" % self.path)
+        if not p.exists(self.path): raise ValueError('[%s] Image "%s" does not exist' % (self._dataset, self.path))
 
     @property
     def _previous(self):
@@ -379,7 +379,7 @@ class StereoImage(Value):
             if sync: raise e
 
         if self._left is None and self._right is None:
-            raise ValueError('Cannot find neither left or right image for ID %d' % data[1])
+            raise ValueError('[%s] Cannot find neither left or right image for ID %d ("%s")' % (self._dataset, data[1], shutter))
 
         # Timestamp is in second column
         cam = self._left if self._left is not None else self._right
