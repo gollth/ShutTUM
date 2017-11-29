@@ -280,7 +280,10 @@ class Image(Value):
 
     @property
     def P(self):
-        r"""The projection or intrinsic camera matrix as 4x3 `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_"""
+        r"""
+        The projection or intrinsic camera matrix as 4x3 
+        `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
+        """
         f = self.focal
         p = self.principle
         return np.array(((f.x,   0, p.x, 0),
@@ -289,7 +292,8 @@ class Image(Value):
 
 
 class StereoImage(Value):
-    r"""A stereo image contains of two individual :any:`Image` s, a left and a right one.
+    r"""
+    A stereo image contains of two individual :any:`Image` s, a left and a right one.
     It is more or less a container for the two.
 
     Note that for internal reasons a stereo image derives from :any:`Value`. However, you should
