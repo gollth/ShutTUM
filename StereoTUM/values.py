@@ -58,7 +58,7 @@ class Value(object):
         self._dataset = dataset
         self._stamp = stamp
         if reference not in dataset._refs:
-            raise ValueError("Cannot find the reference %s" % reference)
+            raise ValueError("[%s] Cannot find the reference %s" % (dataset, reference))
         self._reference = reference
 
     @property
@@ -108,7 +108,7 @@ class Value(object):
     def __lshift__(self, parent):
         if isinstance(parent, str):
             if parent not in self._dataset._refs:
-                raise ValueError("Cannot find the (_static) parent reference %s" % parent)
+                raise ValueError("[%s] Cannot find the parent reference %s" % (self._dataset, parent))
 
             tparent = np.array(self._dataset._refs[parent]['transform'])
 
@@ -123,12 +123,12 @@ class Value(object):
     def __rshift__(self, child):
         if isinstance(child, str):
             if child not in self._dataset._refs:
-                raise ValueError("Cannot find the (_static) parent reference %s" % child)
+                raise ValueError("[%s] Cannot find the parent reference %s" % self._dataset, child)
             tchild = np.array(self._dataset._refs[child]['transform'])
         elif isinstance(child, Value):
             tchild = child._transform
         else:
-            raise TypeError("Cannot only lookup transforms for type string or StereoTUM.Value")
+            raise TypeError("[%s] Cannot only lookup transforms for type string or StereoTUM.values.Value" % self._dataset)
 
         tparent = self._transform
         return np.dot(np.linalg.inv(tparent), tchild)
@@ -156,7 +156,7 @@ class Image(Value):
         self._shutter = shutter
 
         if shutter not in ['global', 'rolling']:
-            raise ValueError('Shutter type can only be "global" or "rolling"')
+            raise ValueError('[%s] Shutter type can only be "global" or "rolling"' % stereo._dataset)
 
         for cam in stereo._dataset._cams:
             # Check if the shutter matches
@@ -413,7 +413,7 @@ class StereoImage(Value):
     def _opposite(self, img):
         if img is self._left: return self._right
         if img is self._right: return self._left
-        raise ValueError("Image %s unknown, cannot find opposite")
+        raise ValueError("[%s] Image %s unknown, cannot find opposite" % self._dataset)
 
     @property
     def resolution(self):
@@ -441,6 +441,7 @@ class StereoImage(Value):
     def illuminance(self):
         r"""
         The estimated illumnience measured by the `TSL2561 Lux-sensor <https://cdn-shop.adafruit.com/datasheets/TSL2561.pdf>`_. 
+        
         This float is measured in lx but is only an approximation. This value is constant for both 
         :any:`L <StereoTUM.StereoImage.L>` and :any:`R <StereoTUM.StereoImage.R>`. Based on this value, the estimated 
         :any:`exposure` time can be computed with the following hand fitted formula:
@@ -471,7 +472,7 @@ class StereoImage(Value):
         match = i[i[:, 0] == self.stamp]
         if match.size > 0: return Imu(self._dataset, match[0])
 
-        raise ValueError("It seems that %s has no matching IMU value" % self)
+        raise ValueError("[%s] It seems that %s has no matching IMU value" % (self._dataset, self))
 
 
 class Imu(Value):
@@ -524,18 +525,18 @@ class Imu(Value):
             if imu.size == 0: return None
             return Imu(value._dataset, imu[0])
 
-        raise ValueError(
-            'Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")' % method)
+        raise ValueError('[%s] Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")'
+                         % (value._dataset, method))
 
     @staticmethod
-    def interpolate(dataset, stamp, accelaration_interpolation=StereoTUM.Interpolation.linear,
+    def interpolate(dataset, stamp, acceleration_interpolation=StereoTUM.Interpolation.linear,
                     angvelo_interpolation=StereoTUM.Interpolation.linear):
         r"""
         This function enables you to find the interpolated :any:`Imu` values of a record given a certain timestamp.
 
         :param dataset: the dataset which holds all imu values to interpolate over 
         :param float stamp: the time at which to interpolate (in seconds, with decimal places) 
-        :param accelaration_interpolation: A predefined or custom interpolation function
+        :param acceleration_interpolation: A predefined or custom interpolation function
         :param angvelo_interpolation: A predefined or custom interpolation function
         :return: A :any:`Imu`
 
@@ -547,7 +548,7 @@ class Imu(Value):
         acc = np.ones((1, 3)) * np.nan
         gyr = np.ones((1, 4)) * np.nan
         if idx != 0 and idx != imu.shape[0]:
-            ta = accelaration_interpolation(imu[idx - 1, 0], imu[idx, 0], stamp)
+            ta = acceleration_interpolation(imu[idx - 1, 0], imu[idx, 0], stamp)
             acc = (1 - ta) * imu[idx - 1, 1:4] + ta * imu[idx, 1:4]
             tg = angvelo_interpolation(imu[idx - 1, 0], imu[idx, 0], stamp)
             gyr = (1 - tg) * imu[idx - 1, 1:4] + tg * imu[idx, 1:4]
@@ -623,8 +624,8 @@ class Imu(Value):
 class GroundTruth(Value):
     r"""
     A ground truth is a :any:`Value` with the reference ``"world"``.
-    The ground truth is taken with a higher frequency than the images (around 120 Hz), but slower than the `:any:Imu`. 
-    Since the :any:`mocap` system is stationary in one room only, it might not cover the whole duration of the dataset 
+    The ground truth is taken with a higher frequency than the images (around 120 Hz), but slower than the imu. 
+    Since the mocap system is stationary in one room only, it might not cover the whole duration of the dataset 
     (depending on the sequence).
     """
 
@@ -632,7 +633,7 @@ class GroundTruth(Value):
     def interpolate(dataset, stamp, position_interpolation=StereoTUM.Interpolation.linear,
                     orientation_interpolation=StereoTUM.Interpolation.slerp):
         r"""
-        This function enables you to find the interpolated groundtruth of a record given a certain timestamp.
+        This function enables you to find the interpolated ground truth of a record given a certain timestamp.
 
         :param dataset: the dataset which holds all ground truth values to interpolate over 
         :param float stamp: the time at which to interpolate (in seconds, with decimal places) 
@@ -697,13 +698,13 @@ class GroundTruth(Value):
             if gt.size == 0: return None
             return GroundTruth(value._dataset, gt[0])
 
-        raise ValueError(
-            'Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")' % method)
+        raise ValueError('[%s] Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")'
+                         % (value._dataset, method))
 
     def __init__(self, dataset, data):
         if len(data) < 8:
-            raise ValueError(
-                "Data must have at least 8 entries [time1, position3, orientation4] but has %d" % len(data))
+            raise ValueError("[%s] Data must have at least 8 entries [time1, position3, orientation4] but has %d" %
+                             (dataset, len(data)))
         self._data = data
         super(GroundTruth, self).__init__(dataset, stamp=data[0], reference='world')
 
@@ -717,24 +718,36 @@ class GroundTruth(Value):
 
     @property
     def position(self):
-        r"""The position of this ground truth as 3D `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_"""
+        r"""
+        The position of this ground truth as 3D 
+        `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
+        """
         return self._data[1:4]
 
     @property
     def quaternion(self):
-        r"""The orientation in quaternion representation with the scalar (w) component as first element in a 4D `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_"""
+        r"""
+        The orientation in quaternion representation with the scalar (w) component as first element in a 4D 
+        `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
+        """
         return self._data[4:8]
 
     @property
     def rotation(self):
-        r"""The rotation matrix only **WITHOUT** the translational part as 4x4 `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_ """
+        r"""
+        The rotation matrix only **WITHOUT** the translational part as 4x4 
+        `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_ 
+        """
         t = np.eye(4)
         t[0:3, 0:3] = tf.quaternions.quat2mat(self.quaternion)
         return t
 
     @property
     def translation(self):
-        r"""The translation matrix only **WITHOUT** the rotational part as 4x4 `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_"""
+        r"""
+        The translation matrix only **WITHOUT** the rotational part as 4x4 
+        `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
+        """
         t = np.eye(4)
         t[0:3, 3] = self.position
         return t
@@ -758,7 +771,8 @@ class GroundTruth(Value):
         Find a matching stereo image pair for this ground truth value.
 
         :param shutter: The shutter type of the images to find (``"global"``, ``"rolling"``, **not** ``"both"``) 
-        :param extrapolation: An optional extrapolation method to determine the rules for a "match" (one of ``"closest"``, ``"next"``, ``"prev"``, ``"exact"``)
+        :param extrapolation: An optional extrapolation method to determine the rules for a "match" 
+                            (one of ``"closest"``, ``"next"``, ``"prev"``, ``"exact"``)
         :return: The matching stereo image or None if no was found
 
         .. seealso:: :any:`StereoTUM.StereoImage.extrapolate`
