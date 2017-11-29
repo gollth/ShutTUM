@@ -247,19 +247,7 @@ class Image(Value):
 
         .. seealso:: :any:`StereoTUM.GroundTruth.interpolate`
         """
-        # The ground truth value is from world to our reference
-        # Therefore we first get the gt from world -> cam1 ...
-        gt1 = GroundTruth.interpolate(self._dataset, self.stamp, position_interpolation, orientation_interpolation)
-
-        # ... then from cam1 -> us
-        t1 = self << 'cam1'
-
-        # which delivers from world -> us
-        A = gt1.pose.dot(t1)
-        T, R, _, _ = tf.affines.decompose44(A)
-        q = tf.quaternions.mat2quat(R)
-        p = np.array(T)
-        return GroundTruth(self._dataset, np.concatenate(([gt1.stamp], p, q)))
+        return GroundTruth.interpolate(self._dataset, self.stamp, position_interpolation, orientation_interpolation)
 
     def load(self):
         r"""
@@ -706,6 +694,7 @@ class GroundTruth(Value):
             raise ValueError("[%s] Data must have at least 8 entries [time1, position3, orientation4] but has %d" %
                              (dataset, len(data)))
         self._data = data
+        self._dataset = dataset
         super(GroundTruth, self).__init__(dataset, stamp=data[0], reference='world')
 
     @property
@@ -717,54 +706,13 @@ class GroundTruth(Value):
         return super(GroundTruth, self).__eq__(other) and np.allclose(self._data, other._data)
 
     @property
-    def position(self):
-        r"""
-        The position of this ground truth as 3D 
-        `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
-        """
-        return self._data[1:4]
-
-    @property
-    def quaternion(self):
-        r"""
-        The orientation in quaternion representation with the scalar (w) component as first element in a 4D 
-        `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
-        """
-        return self._data[4:8]
-
-    @property
-    def rotation(self):
-        r"""
-        The rotation matrix only **WITHOUT** the translational part as 4x4 
-        `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_ 
-        """
-        t = np.eye(4)
-        t[0:3, 0:3] = tf.quaternions.quat2mat(self.quaternion)
-        return t
-
-    @property
-    def translation(self):
-        r"""
-        The translation matrix only **WITHOUT** the rotational part as 4x4 
-        `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
-        """
-        t = np.eye(4)
-        t[0:3, 3] = self.position
-        return t
-
-    @property
-    def pose(self):
-        r"""The complete pose of the ground truth including both translation and orientation"""
-        return tf.affines.compose(
-            T=self.position,
-            R=tf.quaternions.quat2mat(self.quaternion),
+    def _transform(self):
+        return (self.marker >> 'cam1').dot(tf.affines.compose(
+            T=self._data[1:4],
+            R=tf.quaternions.quat2mat(self._data[4:8]),
             Z=np.ones(3),
             S=np.zeros(3)
-        )
-
-    @property
-    def _transform(self):
-        return np.linalg.inv(self.pose)
+        ))
 
     def stereo(self, shutter, extrapolation='closest'):
         r"""
@@ -776,5 +724,25 @@ class GroundTruth(Value):
         :return: The matching stereo image or None if no was found
 
         .. seealso:: :any:`StereoTUM.StereoImage.extrapolate`
+        
         """
         return StereoImage.extrapolate(self, shutter, method=extrapolation)
+
+    @property
+    def marker(self):
+        r""" Returns the :any:`Marker`, which got tracked by this ground truth. """
+        return Marker(self._dataset, self.stamp)
+
+
+class Marker(Value):
+    r"""
+    The marker is an IR ball placed on top of the setup to be tracked by the mocap.
+    
+    To enable transformation calculations, this class inherits from :any:`Value`,
+    though its transformation stays constant over time.
+    
+    .. seealso:: :any:`Value`
+    
+    """
+    def __init__(self, dataset, stamp):
+        super(Marker, self).__init__(dataset, stamp, reference='marker')

@@ -100,11 +100,11 @@ class TestImuValue (unittest.TestCase):
     def test_ground_truth_interpolation_is_correct(self):
         gti = np.genfromtxt(p.join(self.path, 'data', 'ground_truth_interpolated.csv'), skip_header=1)
         for observation in self.dataset.imu:
-            gt = observation.groundtruth()
+            gt = observation.groundtruth() >> 'cam1'
             expected = gti[gti[:, 0] == observation.stamp, :]
             if expected.size == 0: self.fail("No interpolated gt in file found for time %.3f" % observation.stamp)
-            expected = GroundTruth(self.dataset, expected[0])
-            self.assertTrue(np.allclose(gt.pose, expected.pose))
+            expected = GroundTruth(self.dataset, expected[0]) >> 'cam1'
+            self.assertTrue(np.allclose(gt, expected))
 
 if __name__ == '__main__':
     unittest.main()

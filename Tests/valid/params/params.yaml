@@ -43,9 +43,26 @@ cam4:
   - [0.0, 0.0, 0.0, 1.0]
 
 imu:
+  accelerometer_noise_density: 0.0033182  # Noise density measured by allan deviation (/10)
+  accelerometer_random_walk:   0.3060     # Bias walk measured by allan deviation (x100)
+
+  gyroscope_noise_density:     0.008830   # Noise density measured by allan deviation
+  gyroscope_random_walk:       0.001168   # Bias walk measured by allan deviation (*2)
+
+  update_rate:                 175        # [Hz]
+
   transform:
   - [1.0, 0.0, 0.0, 0.2]
   - [0.0, 1.0, 0.0, 0.3]
   - [0.0, 0.0, 1.0, 0.4]
   - [0.0, 0.0, 0.0, 1.0]
+
 world: fix
+
+marker:
+  transform:                              # from cam1 -> marker (relative pose)
+  - [1.0, 0.0, 0.0, 0.5]
+  - [0.0, 1.0, 0.0, 0.6]
+  - [0.0, 0.0, 1.0, 0.7]
+  - [0.0, 0.0, 0.0, 1.0]
+
