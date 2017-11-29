@@ -115,7 +115,7 @@ class Value(object):
         elif isinstance(parent, Value):
             tparent = parent._transform
         else:
-            raise TypeError("Cannot only lookup transforms for type string or StereoTUM.Value")
+            raise TypeError("[%s] Cannot only lookup transforms for type string or StereoTUM.values.Value" % self._dataset)
 
         tchild = self._transform
         return np.dot(np.linalg.inv(tparent), tchild)
@@ -123,7 +123,7 @@ class Value(object):
     def __rshift__(self, child):
         if isinstance(child, str):
             if child not in self._dataset._refs:
-                raise ValueError("[%s] Cannot find the parent reference %s" % self._dataset, child)
+                raise ValueError("[%s] Cannot find the parent reference %s" % (self._dataset, child))
             tchild = np.array(self._dataset._refs[child]['transform'])
         elif isinstance(child, Value):
             tchild = child._transform
