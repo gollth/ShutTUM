@@ -30,28 +30,18 @@ class Value(object):
     The direction of the "shift" means "How is the transformation from reference x to y?"::
     
         # assume we have an image and a ground truth value
-        image = dataset.cameras('global')[0]
-        gt    = dataset.groundtruth[0]
+        image = next(iter(dataset.cameras('global')))   # first frame
+        gt    = next(dataset.groundtruth)               # first ground truth
         
         # Since both Image and GroundTruth derive from Value, they have a reference ...
         print("Image %s is associated with reference %s" % (image, image.reference))
-        print("Ground Truth %s is associated with reference %s" % (gt, gt.reference))
-        
-        # ... and also a transform from the systems origin, which is "cam1"
-        print("T_cam1_2_image: %s" % image._transform)
-        print("T_cam1_2_gt:    %s" % gt._transform)
-        # BUT since they are "private" functions from value you should rather use something like this:
-         
+        print("Ground Truth %s is associated with reference %s" % (gt, gt.reference)) 
          
         # Since we know both transforms to "cam1", we can compute the transformation between the two
-        T_image_2_gt = image >> gt
-        T_image_2_gt = gt << image        # same as line above
-        # T_image_2_gt = gt.reference << image # This fails, since the shift operators cannot be overloaded for strings in the first place
-        
-        T_gt_2_image = gt >> image
-        T_gt_2_image = image << gt
-        T_gt_2_image = gt >> "cam2"       # for example, if image was taken by "cam2"
-        # T_gt_2_image = "cam2" << gt.reference  # obviously this will also not work ...
+        P_img_wrld = image << gt     # pose of the image relative to the world 
+        P_img_wrld = gt << image     # same as line above
+        P_img_wrld = gt >> "cam1"    # you can also specify the reference (on the right) as string directly
+        # P_img_wrld = "cam1" << gt  # This fails, since the shift operators cannot be overloaded for strings in the first place
     
     """
     def __init__(self, dataset, stamp, reference):
@@ -87,9 +77,9 @@ class Value(object):
     def dt(self, ifunknown=.001):
         r"""
         The time delta elapsed since the last :any:`Value` of this type.
-        Note that this value varies depending on the concrete type of value. That means dt will be about 1/20 s
-        for an :any:`Image` while around 1/100 s for a :any:`GroundTruth`. If a previous value is not present
-        this will return time specified by `ifunknown`.
+        Note that this value varies depending on the concrete type of value. That means dt will be about 1/25 s
+        for an :any:`Image` while around 1/120 s for a :any:`GroundTruth`. If a previous value is not present
+        this will return time specified by ``ifunknown``.
         """
         previous = self._previous       # cache for performance
         if previous is None: return ifunknown
@@ -98,7 +88,8 @@ class Value(object):
     @property
     def _transform(self):
         r"""
-        The transformation from ``"cam1"`` to this value`s :any:`reference <StereoTUM.Value.reference>` as 4x4 `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_ homogenous matrix 
+        The transformation from ``"cam1"`` to this value`s :any:`reference <StereoTUM.Value.reference>` as 4x4 
+        `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_ homogeneous matrix 
         """
         return np.array(self._dataset._refs[self._reference]['transform'])
 
@@ -413,6 +404,7 @@ class StereoImage(Value):
         Returns the resolution of the cameras as a named tuple ``(width, height)``
         
         .. seealso:: :any:`Dataset.resolution <StereoTUM.Dataset.resolution>`
+        
         """
         return self._dataset.resolution
 
@@ -432,7 +424,7 @@ class StereoImage(Value):
     @property
     def illuminance(self):
         r"""
-        The estimated illumnience measured by the `TSL2561 Lux-sensor <https://cdn-shop.adafruit.com/datasheets/TSL2561.pdf>`_. 
+        The estimated illuminance measured by the `TSL2561 Lux-sensor <https://cdn-shop.adafruit.com/datasheets/TSL2561.pdf>`_. 
         
         This float is measured in lx but is only an approximation. This value is constant for both 
         :any:`L <StereoTUM.StereoImage.L>` and :any:`R <StereoTUM.StereoImage.R>`. Based on this value, the estimated 
