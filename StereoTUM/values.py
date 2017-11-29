@@ -163,8 +163,8 @@ class Image(Value):
             if stereo._dataset._cams[cam]['shutter']['type'] != shutter: continue
 
             # Check if the camera position (left/right) matches the camera name
-            if left and cam not in ['cam1', 'cam3']: continue
-            if not left and cam not in ['cam2', 'cam4']: continue
+            if left and cam not in ['cam1', 'cam4']: continue
+            if not left and cam not in ['cam2', 'cam3']: continue
 
             # Now we have found a camera matching the wanted shutter type and position
             super(Image, self).__init__(stereo._dataset, stereo._data[0], cam)
