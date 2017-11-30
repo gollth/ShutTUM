@@ -226,19 +226,23 @@ class Image(Value):
         no interpolation is needed."""
         return self._stereo.imu
 
-    def groundtruth(self, position_interpolation=StereoTUM.Interpolation.linear,
+    def groundtruth(self, max_stamp_delta=.5,
+                    position_interpolation=StereoTUM.Interpolation.linear,
                     orientation_interpolation=StereoTUM.Interpolation.slerp):
         r"""
         Find the matching :any:`GroundTruth` value for this image. Since the motion capture system and the cameras
         are not synced, we need to interpolate between ground truths by image's time stamp.
-
+        
+        :param max_stamp_delta: specify the maximal allowed time deviation [s] for interpolation. When the previous 
+                                (or next) closest ground truth value is older (or newer) then this delta, None will be 
+                                returned. 
         :param position_interpolation: a predefined or custom interpolation function to interpolate positions 
         :param orientation_interpolation: a predefined or custom interpolation function to interpolate quaternions
-        :return: the matching interpolated ground truth
+        :return: the matching interpolated ground truth or None, if any of its values was NaN
 
         .. seealso:: :any:`StereoTUM.GroundTruth.interpolate`
         """
-        return GroundTruth.interpolate(self._dataset, self.stamp, position_interpolation, orientation_interpolation)
+        return GroundTruth.interpolate(self._dataset, self.stamp, max_stamp_delta, position_interpolation, orientation_interpolation)
 
     def load(self):
         r"""
@@ -587,22 +591,29 @@ class Imu(Value):
         :return: The matching stereo image or None if no was found
 
         .. seealso:: :any:`StereoTUM.StereoImage.extrapolate`
+        
         """
         return StereoImage.extrapolate(self, shutter, method=extrapolation)
 
-    def groundtruth(self, position_interpolation=StereoTUM.Interpolation.linear,
+    def groundtruth(self, max_stamp_delta=.5,
+                    position_interpolation=StereoTUM.Interpolation.linear,
                     orientation_interpolation=StereoTUM.Interpolation.slerp):
         r"""
         Find the matching :any:`GroundTruth` value for this :any:`Imu` value. Since the motion capture system and the 
         IMU sensor are not synced, we need to interpolate between ground truths by time stamp of this :any:`Imu` value.
 
+        :param max_stamp_delta: specify the maximal allowed time deviation [s] for interpolation. When the previous 
+                                (or next) closest ground truth value is older (or newer) then this delta, None will be 
+                                returned. 
         :param position_interpolation: a predefined or custom interpolation function to interpolate positions 
         :param orientation_interpolation: a predefined or custom interpolation function to interpolate quaternions
         :return: the matching interpolated ground truth
 
         .. seealso:: :any:`StereoTUM.GroundTruth.interpolate`
+        
         """
-        return GroundTruth.interpolate(self._dataset, self.stamp, position_interpolation, orientation_interpolation)
+        return GroundTruth.interpolate(self._dataset, self.stamp, max_stamp_delta,
+                                       position_interpolation, orientation_interpolation)
 
 
 class GroundTruth(Value):
@@ -614,13 +625,17 @@ class GroundTruth(Value):
     """
 
     @staticmethod
-    def interpolate(dataset, stamp, position_interpolation=StereoTUM.Interpolation.linear,
+    def interpolate(dataset, stamp, max_stamp_delta=.5,
+                    position_interpolation=StereoTUM.Interpolation.linear,
                     orientation_interpolation=StereoTUM.Interpolation.slerp):
         r"""
         This function enables you to find the interpolated ground truth of a record given a certain timestamp.
 
         :param dataset: the dataset which holds all ground truth values to interpolate over 
         :param float stamp: the time at which to interpolate (in seconds, with decimal places) 
+        :param max_stamp_delta: specify the maximal allowed time deviation [s] for interpolation. When the previous 
+                                (or next) closest ground truth value is older (or newer) then this delta, None will be 
+                                returned. 
         :param position_interpolation: A predefined or custom interpolation function
         :param orientation_interpolation: A predefined or custom interpolation function
         :return: A :any:`GroundTruth` -Value
@@ -632,7 +647,10 @@ class GroundTruth(Value):
         p = np.ones((1, 3)) * np.nan
         q = np.ones((1, 4)) * np.nan
         if idx != 0 and idx != poses.shape[0]:
-            t = (stamp - poses[idx - 1, 0]) / (poses[idx, 0] - poses[idx - 1, 0])
+            dt = stamp - poses[idx -1, 0]
+            if dt > max_stamp_delta: return None
+
+            t = dt / (poses[idx, 0] - poses[idx - 1, 0])
 
             # Compute previous values for interpolation method, if existant
             a0, b0 = np.zeros((3, 1)), np.zeros((3, 1))
@@ -642,6 +660,8 @@ class GroundTruth(Value):
 
             p = position_interpolation(poses[idx - 1, 1:4], poses[idx, 1:4], t, a0, b0)
             q = orientation_interpolation(poses[idx - 1, 4:8], poses[idx, 4:8], t, qa0, qb0)
+            if np.any(np.isnan(p)) or np.any(np.isnan(q)): return None
+
         return GroundTruth(dataset, np.concatenate(([stamp], p, q)))
 
     @staticmethod
