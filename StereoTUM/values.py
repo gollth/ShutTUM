@@ -723,12 +723,12 @@ class GroundTruth(Value):
 
     @property
     def _transform(self):
-        return (self.marker >> 'cam1').dot(tf.affines.compose(
+        return tf.affines.compose(
             T=self._data[1:4],
             R=tf.quaternions.quat2mat(self._data[4:8]),
             Z=np.ones(3),
             S=np.zeros(3)
-        ))
+        ).dot(self.marker >> 'cam1')
 
     def stereo(self, shutter, extrapolation='closest'):
         r"""
