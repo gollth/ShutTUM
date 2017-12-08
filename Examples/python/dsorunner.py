@@ -31,18 +31,20 @@ def play(sequence_path, shutter, side, debug=False, options=[], dso_prefix=''):
 	if p.exists(temp): shutil.rmtree(temp)
 	os.mkdir(temp)
 
-	cams = sequence.cameras(shutter, sync=False)
+	cams = sequence.cameras(shutter)
 	
 	# Create the camera.txt file for DSO
 	calib = p.join(temp, 'camera.txt')
+	sequence.stereosync = True
+	firstframe = next(iter(cams))
+	firstframe = firstframe.L if side == 'L' else firstframe.R
 	with open (calib, 'w') as file:
-		cam = cams[0].L if side == 'L' else cams[0].R
 		file.write('%.6f\t%.6f\t%.6f\t%.6f\t%.6f' % (
-			cam.focal.x / sequence.resolution.width,
-			cam.focal.y / sequence.resolution.height,
-			cam.principle.x / sequence.resolution.width,
-			cam.principle.y / sequence.resolution.height,
-			cam.distortion
+			firstframe.focal.x / sequence.resolution.width,
+			firstframe.focal.y / sequence.resolution.height,
+			firstframe.principle.x / sequence.resolution.width,
+			firstframe.principle.y / sequence.resolution.height,
+			firstframe.distortion
 		))
 		
 		file.write(os.linesep)
@@ -55,7 +57,8 @@ def play(sequence_path, shutter, side, debug=False, options=[], dso_prefix=''):
 
 	with open (p.join(sequence_path, 'frames', 'times.txt'), 'w') as file:
 		i = 0
-		for image in sequence.cameras(shutter, sync=False):
+		sequence.stereosync = False
+		for image in sequence.cameras(shutter):
 			i += 1
 			cam = image.L if side == 'L' else image.R
 			if cam is None: 
@@ -68,13 +71,10 @@ def play(sequence_path, shutter, side, debug=False, options=[], dso_prefix=''):
 			))
 			file.write(os.linesep)
 
-	from os import listdir
-	from os.path import isfile, join
 	
-
-	images = p.join(sequence_path, 'frames', cam.reference)
-	gamma  = p.join(sequence_path, 'params', cam.reference, 'gamma.txt')
-	vignette = p.join(sequence_path, 'params', cam.reference, 'vignette.png')
+	images = p.join(sequence_path, 'frames', firstframe.reference)
+	gamma  = p.join(sequence_path, 'params', firstframe.reference, 'gamma.txt')
+	vignette = p.join(sequence_path, 'params', firstframe.reference, 'vignette.png')
 	try:
 		if not filter(lambda o: o.startswith('nogui='), options): options.append('nogui=1')
 		cmd = [
@@ -91,9 +91,9 @@ def play(sequence_path, shutter, side, debug=False, options=[], dso_prefix=''):
 
 	except CalledProcessError:
 		pass  # CTRL-C
-		
+
 	else:
-		if not p.exists('result.txt'): raise IOError("DSO seems to have created 'result.txt' file...")
+		if not p.exists('result.txt'): return None
 
 		results = np.genfromtxt('result.txt')
 		results[:,[4,5,6,7]] = results[:,[7,4,5,6]]	# Quaternion xyzw -> wxyz
@@ -101,6 +101,8 @@ def play(sequence_path, shutter, side, debug=False, options=[], dso_prefix=''):
 
 	finally:
 		if not debug: shutil.rmtree(temp)
+
+		
 		
 
 if __name__ == '__main__':
@@ -118,22 +120,33 @@ if __name__ == '__main__':
 
 	# optional
 	parser.add_argument('--result', default=None, 
-						help="The path for the csv file containing the DSO poses [defaults to <sequence>/data/dso-{global,rolling}-{L,R}.csv]")
+						help="The path for the csv file containing the DSO poses [defaults to <sequence>/data/dso-{global,rolling}-{L,R}(-<repeat>).csv]")
 	parser.add_argument('--debug', action='store_true', 
 						help="Prints the executing command & does not remove the .temp directory")
 	parser.add_argument('--dsoprefix', default='',
 						help="A path prefix to where the 'dso_dataset' executable lies (default '')")
-	
+	parser.add_argument('--repeats', default=1, type=int,
+						help="How often to repeat the run")
+
 	args = parser.parse_args()
-	if args.result is None: args.result = p.join(args.sequence, 'data', 'dso-%s-%s.csv' % (args.shutter, args.side))
+
+	for rep in range(args.repeats):
+		result = args.result
+		if result is None: 
+			repstr = ''
+			if args.repeats > 1: repstr = '-%02d' % (rep+1)
+			result = p.join(args.sequence, 'data', 'dso-%s-%s%s.csv' % (args.shutter, args.side, repstr))
 		
-	print("[DSO runner] Starting sequence %s" % args.sequence)
-	odometry = play(args.sequence, args.shutter, args.side, debug=args.debug, options=args.options, dso_prefix=args.dsoprefix)
-	
-	title = 'Timestamp [s]\tPosition X [m]\tPosition Y [m]\tPosition Z[m]\tOrientation W\tOrientation X\tOrientation Y\tOrientation Z'
-	print("[DSO runner] Saving odometry to %s" % args.result)
-	np.savetxt(args.result, odometry, fmt='%.6f', delimiter='\t', header=title, comments='')
-	
+		print('[DSO runner] Starting sequence %s for shutter "%s" (repetition %d)' % (args.sequence, args.shutter, rep+1))
+		odometry = play(args.sequence, args.shutter, args.side, debug=args.debug, options=args.options, dso_prefix=args.dsoprefix)
+		if odometry is None:
+			print("[DSO runner] no results.txt has generated, skipping this run =(")
+			continue
+
+		title = 'Timestamp [s]\tPosition X [m]\tPosition Y [m]\tPosition Z[m]\tOrientation W\tOrientation X\tOrientation Y\tOrientation Z'
+		print("[DSO runner] Saving odometry to %s" % result)
+		np.savetxt(result, odometry, fmt='%.6f', delimiter='\t', header=title, comments='')
+		
 	print("[DSO runner] Finished")
 		
 		
