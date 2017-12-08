@@ -187,11 +187,19 @@ class TestDataset (unittest.TestCase):
     def test_none_end_slicing_will_yield_all_values_till_end(self):
         dataset = Dataset(self._valid)
         datas = dataset[.1:]
-        E  = dataset[dataset.end]   # get the last element of the actual dataset
-        A  = list(datas)[-1]        # get the last element of the generator
+        E  = dataset[dataset.duration]   # get the last element of the actual dataset
+        A  = list(datas)[-1]             # get the last element of the generator
 
-        self.assertEqual(E.groundtruth, A.groundtruth)
+        self.assertEqual(E.stamp, A.stamp)
 
+    def test_larger_end_will_slice_only_till_end(self):
+        dataset = Dataset(self._valid)
+        datas = dataset[:1000]
+
+        E = dataset[dataset.duration]  # get the last element of the actual dataset
+        A = list(datas)[-1]  # get the last element of the generator
+
+        self.assertEqual(E.stamp, A.stamp)
 
 if __name__ == '__main__':
     unittest.main()
