@@ -395,6 +395,32 @@ class Dataset(object):
                 return shutter['speed']
         raise ValueError('No cams in %s had rolling shutter enabled!' % self._path)
 
+    @property
+    def shutter_types(self):
+        r"""
+        Which shutter method uses each camera.
+        
+        Returns one of the two following dictionaries:
+        
+            # For sequences with odd ID
+            {
+                'cam1': 'global'
+                'cam2': 'global'
+                'cam3': 'rolling'
+                'cam4': 'rolling'
+            }
+            
+            # For sequences with even ID
+            {
+                'cam1': 'rolling'
+                'cam2': 'rolling'
+                'cam3': 'global'
+                'cam4': 'global'
+            }
+            
+        """
+        return { cam: self._cams[cam]['shutter']['type'] for cam in self._cams }
+
     def _find_data_for(self, s):
         value = StereoTUM.values.Value(self, s, 'world')  # world as dummy for the time stamp
         return Dataset._Data(

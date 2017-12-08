@@ -201,5 +201,21 @@ class TestDataset (unittest.TestCase):
 
         self.assertEqual(E.stamp, A.stamp)
 
+    def test_shutter_types_matches_params_file(self):
+        dataset = Dataset(self._valid)
+        with open(p.join(self._valid, 'params', 'params.yaml')) as stream:
+            refs = yaml.load(stream)
+
+        shutters = dataset.shutter_types
+        for cam in ["cam1", "cam2", "cam3", "cam4"]:
+            if cam not in shutters:
+                self.fail('Shutter types does not contain key "%s"' % cam)
+            if shutters[cam] not in ['global', 'rolling']:
+                self.fail('Shutter type for key "%s" unknown: %s, only "global" and "rolling" supported'
+                          % (cam, shutters[cam]))
+
+            self.assertEqual(refs[cam]['shutter']['type'], shutters[cam])
+
+
 if __name__ == '__main__':
     unittest.main()
