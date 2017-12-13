@@ -107,8 +107,6 @@ class Dataset(object):
 
         Raw = namedtuple('Raw', ['frames', 'imu', 'groundtruth'])
         self._raw = Raw(self._frames, self._imu, self._ground_truth)
-        self._zipped = np.all([p.exists(p.join(path, 'frames', folder))
-                               for folder in ['cam1.zip', 'cam2.zip', 'cam3.zip', 'cam4.zip']])
         self._time = {}
         timefile = p.join(path, 'params', 'time.yaml')
         Dataset._check_file_exists(timefile)
@@ -167,11 +165,6 @@ class Dataset(object):
         
         """
         return self._raw
-
-    @property
-    def zipped(self):
-        r"""Returns True if this sequence contains the framed in .zip folders, False if not"""
-        return self._zipped
 
     @property
     def stereosync(self):
