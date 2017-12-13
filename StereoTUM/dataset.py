@@ -433,15 +433,19 @@ class Dataset(object):
         """
         return { cam: self._cams[cam]['shutter']['type'] for cam in self._cams }
 
-    # TODO ADD TEST AND DOC!
     def lookup_cam_name(self, shutter, side):
+        r""" Find the corresponding name of the camera for a given shutter and side
+        
+        :param shutter: either one of {``"global"``, ``"rolling"``} 
+        :param side: either one of {``'L'``, ``'R'`` }
+        :return: one of {``"cam1"`` .. ``"cam4"``} or raises ValueError on invalid parameters
+        """
         for name in self._cams:
             if self._cams[name]['shutter']['type'] != shutter: continue
             if side == 'L' and name in ['cam1', 'cam4']: return name
             if side == 'R' and name in ['cam2', 'cam3']: return name
 
         raise ValueError('%s Cannot lookup cam name for shutter "%s" on side "%s"' % (self, shutter, side))
-
 
     def _find_data_for(self, s):
         value = StereoTUM.values.Value(self, s, 'world')  # world as dummy for the time stamp

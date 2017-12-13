@@ -216,6 +216,18 @@ class TestDataset (unittest.TestCase):
 
             self.assertEqual(refs[cam]['shutter']['type'], shutters[cam])
 
+    def test_cam_name_lookup_works(self):
+        dataset = Dataset(self._valid)
+        self.assertEqual('cam1', dataset.lookup_cam_name('rolling', 'L'))
+        self.assertEqual('cam2', dataset.lookup_cam_name('rolling', 'R'))
+        self.assertEqual('cam3', dataset.lookup_cam_name('global', 'R'))
+        self.assertEqual('cam4', dataset.lookup_cam_name('global', 'L'))
+
+        with self.assertRaises(ValueError) as ctx:
+            dataset.lookup_cam_name('invalid_shutter_name', 'L')
+
+        with self.assertRaises(ValueError) as ctx:
+            dataset.lookup_cam_name('global', 'invalid_side_name')
 
 if __name__ == '__main__':
     unittest.main()
