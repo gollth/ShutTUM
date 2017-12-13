@@ -107,6 +107,8 @@ class Dataset(object):
 
         Raw = namedtuple('Raw', ['frames', 'imu', 'groundtruth'])
         self._raw = Raw(self._frames, self._imu, self._ground_truth)
+        self._zipped = np.all([p.exists(p.join(path, 'frames', folder))
+                               for folder in ['cam1.zip', 'cam2.zip', 'cam3.zip', 'cam4.zip']])
         self._time = {}
         timefile = p.join(path, 'params', 'time.yaml')
         Dataset._check_file_exists(timefile)
@@ -150,6 +152,11 @@ class Dataset(object):
         return "%s (%s)" % (type(self).__name__, p.basename(p.normpath(self._path)))
 
     @property
+    def path(self):
+        r"""The path to this sequence. Environment variables get expanded automatically"""
+        return self._path
+
+    @property
     def raw(self):
         r"""
         The raw values in matrix form. This property is a Named Tuple with the following fields:
@@ -160,6 +167,11 @@ class Dataset(object):
         
         """
         return self._raw
+
+    @property
+    def zipped(self):
+        r"""Returns True if this sequence contains the framed in .zip folders, False if not"""
+        return self._zipped
 
     @property
     def stereosync(self):
@@ -420,6 +432,16 @@ class Dataset(object):
             
         """
         return { cam: self._cams[cam]['shutter']['type'] for cam in self._cams }
+
+    # TODO ADD TEST AND DOC!
+    def lookup_cam_name(self, shutter, side):
+        for name in self._cams:
+            if self._cams[name]['shutter']['type'] != shutter: continue
+            if side == 'L' and name in ['cam1', 'cam4']: return name
+            if side == 'R' and name in ['cam2', 'cam3']: return name
+
+        raise ValueError('%s Cannot lookup cam name for shutter "%s" on side "%s"' % (self, shutter, side))
+
 
     def _find_data_for(self, s):
         value = StereoTUM.values.Value(self, s, 'world')  # world as dummy for the time stamp

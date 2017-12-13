@@ -13,6 +13,7 @@ setup(
         'cv2',
         'numpy'
         'transforms3d',
-        'yaml'
+        'yaml',
+        'zipfile'
     ]
 )

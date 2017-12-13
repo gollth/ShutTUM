@@ -3,6 +3,7 @@ import numpy as np
 import os.path as p
 import transforms3d as tf
 import StereoTUM
+from zipfile import ZipFile
 from collections import namedtuple
 
 
@@ -161,7 +162,9 @@ class Image(Value):
             super(Image, self).__init__(stereo._dataset, stereo._data[0], cam)
             break  # from any further for loop iteration
 
-        if not p.exists(self.path): raise ValueError('[%s] Image "%s" does not exist' % (self._dataset, self.path))
+        if self._dataset.zipped: return
+        if not p.exists(self.path):
+            raise ValueError('[%s] Image "%s" does not exist' % (self._dataset, self.path))
 
     @property
     def _previous(self):
@@ -217,8 +220,15 @@ class Image(Value):
 
     @property
     def path(self):
-        r"""The path to the JPEG file of this image, relative to the the construction parameter of :any:`Dataset(...) <StereoTUM.Dataset.__init__>`"""
-        return p.join(self._stereo._dataset._path, 'frames', self.reference, '%05d.jpeg' % self.ID)
+        r"""
+        The path to the JPEG file of this image, relative to the the construction parameter of 
+        :any:`Dataset(...) <StereoTUM.Dataset.__init__>`.
+        
+        Note when the images are in :any:`zipped` form, this path yield something like: ``.../frames/cam2.zip/0005.zip`` 
+        """
+        folder = '%s'
+        if self._dataset.zipped: folder = '%s.zip'
+        return p.join(self._stereo._dataset._path, 'frames', folder % self.reference, '%05d.jpeg' % self.ID)
 
     @property
     def imu(self):
@@ -254,7 +264,14 @@ class Image(Value):
             print(type(pixels))     # numpy.ndarray
 
         """
-        return cv2.imread(self.path, cv2.IMREAD_GRAYSCALE)
+        path = self.path
+        if self._dataset.zipped:
+            name = self._dataset.lookup_cam_name(self._shutter, 'L' if self._left else 'R')
+            archive = ZipFile(p.join(self._dataset.path, 'frames', '%s.zip' % name))
+            buffer = archive.read('%05d.jpeg' % self.ID)
+            return cv2.imdecode(np.frombuffer(buffer, np.uint8), cv2.IMREAD_GRAYSCALE)
+        else:
+            return cv2.imread(self.path, cv2.IMREAD_GRAYSCALE)
 
     @property
     def distortion(self):
