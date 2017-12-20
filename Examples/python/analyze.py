@@ -249,7 +249,7 @@ if __name__ == '__main__':
 	parser = ArgumentParser()
 	parser.add_argument('sequence', help="The sequence number/identifier")
 	part = parser.add_subparsers(help='Which part of the sequence do you want to analyze?', dest='part')
-	frames = part.add_parser('frames', help="Cameras")
+	frames = part.add_parser('frame', help="Cameras")
 	imu    = part.add_parser('imu',    help="IMU")
 	gt     = part.add_parser('groundtruth', help="Ground truth")
 
