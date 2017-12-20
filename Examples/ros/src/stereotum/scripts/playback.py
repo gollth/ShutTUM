@@ -57,9 +57,9 @@ cams = dict(map(create_camera_publisher, ['/cam/global/L', '/cam/global/R', '/ca
 def createheader(value): 
 	return Header(stamp=ros.Time.from_sec(value.stamp), frame_id=value.reference)
 
-def publishtf(value, fixed):
+def publishtf(value, fixed, invert=False):
 	if value.reference == fixed: return
-	pose = value << fixed
+	pose = value << fixed if not invert else value >> fixed
 	tffer.sendTransform(
 		translation_from_matrix(pose), quaternion_from_matrix(pose), 
 		ros.Time.from_sec(value.stamp), value.reference, fixed)
@@ -110,7 +110,9 @@ while not ros.is_shutdown():
 
 		# Ground truth
 		if data.groundtruth is not None:
-			publishtf(data.groundtruth, 'cam1')
+			publishtf(data.groundtruth, 'cam1', invert=True)
+			publishtf(data.groundtruth.marker, 'cam1')
+
 
 		# Spinning
 		dt = data.stamp - laststamp
