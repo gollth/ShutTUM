@@ -22,6 +22,7 @@ ros.set_param('/use_sim_time', True)
 bridge    = CvBridge()
 sequence    = ros.get_param('~sequence')
 dataset   = Dataset()
+dataset.stereosync = True
 loop      = ros.get_param('~loop', False) 
 start     = ros.get_param('~start', None)
 end       = ros.get_param('~end',   None)
