@@ -109,45 +109,73 @@ if __name__ == '__main__':
 
 
 	parser = ArgumentParser()
-	# required
-	parser.add_argument('sequence', help="The sequence number/identifier")
-	parser.add_argument('shutter', choices=['global', 'rolling'],
-						help="Which shutter type of the sequence shall be used")
-	parser.add_argument('side', choices=['L', 'R'],
-						help="To work with the left or right camera")
-	parser.add_argument('--options', default=[], nargs='*',
-						help="Additional arguments for dso in the format [name]=[value] (e.g. quiet, nogui, nolog...). Caution with nogui=0 this script will not terminate until you close Pangolin")
+	part = parser.add_subparsers(dest="part", help="Evaluate one or many sequences")
+	single = part.add_parser('one', help="Evaluate one sequence")
+	multi  = part.add_parser('all', help="Evaluate multiple sequences")
+	parser.add_argument('--side', default='both', choices=['L','R','both'])
+	parser.add_argument('--shutter', default='both', choices=['global', 'rolling', 'both'])
+	
 
-	# optional
-	parser.add_argument('--result', default=None, 
-						help="The path for the csv file containing the DSO poses [defaults to <sequence>/data/dso-{global,rolling}-{L,R}(-<repeat>).csv]")
+
+	single.add_argument('sequence', help="The sequence number/identifier")
+	multi.add_argument('path', help="The path for all the sequences to run")
+	
+	# Global options
 	parser.add_argument('--debug', action='store_true', 
 						help="Prints the executing command & does not remove the .temp directory")
 	parser.add_argument('--dsoprefix', default='',
 						help="A path prefix to where the 'dso_dataset' executable lies (default '')")
 	parser.add_argument('--repeats', default=1, type=int,
-						help="How often to repeat the run")
-
+						help="How often to repeat the run(s)")
+	parser.add_argument('--options', default=[], nargs='*',
+						help="Additional arguments for dso in the format [name]=[value] (e.g. quiet, nogui, nolog...). Caution with nogui=0 this script will not terminate until you close Pangolin")
+	parser.add_argument('result', default=None, 
+						help="Where to put the results (path for the csv file containing the DSO poses)")
+	
 	args = parser.parse_args()
-
+	side     = [args.side]    if args.side    != 'both' else ['L','R']
+	shutter  = [args.shutter] if args.shutter != 'both' else ['global', 'rolling']
+	
 	for rep in range(args.repeats):
-		result = args.result
-		if result is None: 
-			repstr = ''
-			if args.repeats > 1: repstr = '-%02d' % (rep+1)
-			result = p.join(args.sequence, 'data', 'dso-%s-%s%s.csv' % (args.shutter, args.side, repstr))
-		
-		print('[DSO runner] Starting sequence %s for shutter "%s" (repetition %d)' % (args.sequence, args.shutter, rep+1))
-		odometry = play(args.sequence, args.shutter, args.side, debug=args.debug, options=args.options, dso_prefix=args.dsoprefix)
-		if odometry is None:
-			print("[DSO runner] no results.txt has generated, skipping this run =(")
-			continue
+		for lr in side:
+			for gr in shutter:
+				repstr = ''
+				if args.repeats > 1: repstr = '-%02d' % (rep+1)
+				result = p.join(args.result, 'dso-%s-%s%s.csv' % (gr, lr, repstr))
+				
+				if args.part == 'one':
+					print('[DSO runner] Starting sequence %s for shutter "%s", cam %s (repetition %d)' % (args.sequence, gr, lr, rep+1))
+				
+					odometry = play(args.sequence, gr, lr, debug=args.debug, options=args.options, dso_prefix=args.dsoprefix)
+					if odometry is None:
+						print("[DSO runner] no results.txt has generated, skipping this run =(")
+						continue
 
-		title = 'Timestamp [s]\tPosition X [m]\tPosition Y [m]\tPosition Z[m]\tOrientation W\tOrientation X\tOrientation Y\tOrientation Z'
-		print("[DSO runner] Saving odometry to %s" % result)
-		np.savetxt(result, odometry, fmt='%.6f', delimiter='\t', header=title, comments='')
-		
-	print("[DSO runner] Finished")
-		
+					title = 'Timestamp [s]\tPosition X [m]\tPosition Y [m]\tPosition Z[m]\tOrientation W\tOrientation X\tOrientation Y\tOrientation Z'
+					print("[DSO runner] Saving odometry to %s" % result)
+					np.savetxt(result, odometry, fmt='%.6f', delimiter='\t', header=title, comments='')
+					print("[DSO runner] Finished")
+				
+
+				if args.part == 'all':
+					for item in sorted(os.listdir(args.path)):
+						sequence = p.join(args.path, item)
+						if not p.isdir(sequence): continue
+						print('[DSO runner] Starting sequence %s for shutter "%s", cam %s (repetition %d)' % (sequence, gr, lr, rep+1))
+				
+						odometry = play(sequence, gr, lr, debug=args.debug, options=args.options, dso_prefix=args.dsoprefix)
+						if odometry is None:
+							print("[DSO runner] no results.txt has generated, skipping this run =(")
+							continue
+
+						title = 'Timestamp [s]\tPosition X [m]\tPosition Y [m]\tPosition Z[m]\tOrientation W\tOrientation X\tOrientation Y\tOrientation Z'
+						print("[DSO runner] Saving odometry to %s" % result)
+						np.savetxt(result, odometry, fmt='%.6f', delimiter='\t', header=title, comments='')
+						print("[DSO runner] Finished")
+
+	print('[DSO runner] all sequences done!')
+	
+
+			
 		
 
