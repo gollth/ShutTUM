@@ -3,7 +3,6 @@ import numpy as np
 import os.path as p
 import transforms3d as tf
 import StereoTUM
-from zipfile import ZipFile
 from collections import namedtuple
 
 
@@ -182,7 +181,7 @@ class Image(Value):
     @property
     def resolution(self):
         r""" 
-        Returns the resolution of the cameras as a named tuple ``(width, height)``
+        Returns the resolution of the cameras as a named tuple ``Resolution(width, height)``
         
         .. seealso:: :any:`Dataset.resolution <StereoTUM.Dataset.resolution>`
         """
@@ -423,7 +422,7 @@ class StereoImage(Value):
     @property
     def resolution(self):
         r""" 
-        Returns the resolution of the cameras as a named tuple ``(width, height)``
+        Returns the resolution of the cameras as a named tuple ``Resolution(width, height)``
         
         .. seealso:: :any:`Dataset.resolution <StereoTUM.Dataset.resolution>`
         

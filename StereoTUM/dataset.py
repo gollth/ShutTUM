@@ -338,15 +338,15 @@ class Dataset(object):
 
     @property
     def resolution(self):
-        r""" Returns the resolution of the cameras as a named tuple ``(width, height)`` """
+        r""" Returns the resolution of the cameras as a named tuple ``Resolution (width, height)`` """
         Resolution = namedtuple('Resolution', 'width height')
         return Resolution(width=1280, height=1024)
 
     @property
     def exposure_limits(self):
         r"""
-        :return: a Namped Tuple with the fields ``min`` and ``max`` which each contain a float indicating the minimum
-        and maximum exposure time in milliseconds
+        :return: a Namped Tuple ``Limits(min, max)`` indicating the minimum
+        and maximum exposure time in milliseconds which occurred during this sequence
         
         The minimal & maximal exposure used for all cameras. Note that these values are the *limits*
         not the extrema of the record, so most of the time, these will not be reached, but if, clamped accordingly.::
