@@ -30,8 +30,8 @@ class Value(object):
     The direction of the "shift" means "How is the transformation from reference x to y?"::
     
         # assume we have an image and a ground truth value
-        image = next(iter(dataset.cameras('global')))   # first frame
-        gt    = next(dataset.groundtruth)               # first ground truth
+        image = next(iter(sequence.cameras('global')))   # first frame
+        gt    = next(sequence.groundtruth)               # first ground truth
         
         # Since both Image and GroundTruth derive from Value, they have a reference ...
         print("Image %s is associated with reference %s" % (image, image.reference))
@@ -44,11 +44,11 @@ class Value(object):
         # P_img_wrld = "cam1" << gt  # This fails, since the shift operators cannot be overloaded for strings in the first place
     
     """
-    def __init__(self, dataset, stamp, reference):
-        self._dataset = dataset
+    def __init__(self, sequence, stamp, reference):
+        self._sequence = sequence
         self._stamp = stamp
-        if reference not in dataset._refs:
-            raise ValueError("[%s] Cannot find the reference %s" % (dataset, reference))
+        if reference not in sequence._refs:
+            raise ValueError("[%s] Cannot find the reference %s" % (sequence, reference))
         self._reference = reference
 
     @property
@@ -91,35 +91,35 @@ class Value(object):
         The transformation from ``"cam1"`` to this value`s :any:`reference <StereoTUM.Value.reference>` as 4x4 
         `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_ homogeneous matrix 
         """
-        return np.array(self._dataset._refs[self._reference]['transform'])
+        return np.array(self._sequence._refs[self._reference]['transform'])
 
     def __str__(self):
         return "%s (%s/%.2f)" % (type(self).__name__, self.reference, self.stamp)
 
     def __lshift__(self, parent):
         if isinstance(parent, str):
-            if parent not in self._dataset._refs:
-                raise ValueError("[%s] Cannot find the parent reference %s" % (self._dataset, parent))
+            if parent not in self._sequence._refs:
+                raise ValueError("[%s] Cannot find the parent reference %s" % (self._sequence, parent))
 
-            tparent = np.array(self._dataset._refs[parent]['transform'])
+            tparent = np.array(self._sequence._refs[parent]['transform'])
 
         elif isinstance(parent, Value):
             tparent = parent._transform
         else:
-            raise TypeError("[%s] Cannot only lookup transforms for type string or StereoTUM.values.Value" % self._dataset)
+            raise TypeError("[%s] Cannot only lookup transforms for type string or StereoTUM.values.Value" % self._sequence)
 
         tchild = self._transform
         return np.dot(np.linalg.inv(tparent), tchild)
 
     def __rshift__(self, child):
         if isinstance(child, str):
-            if child not in self._dataset._refs:
-                raise ValueError("[%s] Cannot find the parent reference %s" % (self._dataset, child))
-            tchild = np.array(self._dataset._refs[child]['transform'])
+            if child not in self._sequence._refs:
+                raise ValueError("[%s] Cannot find the parent reference %s" % (self._sequence, child))
+            tchild = np.array(self._sequence._refs[child]['transform'])
         elif isinstance(child, Value):
             tchild = child._transform
         else:
-            raise TypeError("[%s] Cannot only lookup transforms for type string or StereoTUM.values.Value" % self._dataset)
+            raise TypeError("[%s] Cannot only lookup transforms for type string or StereoTUM.values.Value" % self._sequence)
 
         tparent = self._transform
         return np.dot(np.linalg.inv(tparent), tchild)
@@ -130,7 +130,7 @@ class Image(Value):
     An image is a :any:`Value` with its reference set to one of ``"cam1"`` ... ``"cam4"``.
 
     Each image is recorded by a :any:`StereoCamera`, which has a shutter type, so as its images. Note, though,
-    that each camera might differ its shutter methods between dataset records, to achieve statistical independence. 
+    that each camera might differ its shutter methods between sequences, to achieve statistical independence. 
     That means, that you cannot rely on e.g. ``"cam1"`` always having ``"global"`` or ``"rolling"`` shutter, nor as the other cams.
 
     The cameras record data at approximately **20 FPS**, but sometimes their might exist frame drops. 
@@ -148,22 +148,22 @@ class Image(Value):
         self._shutter = shutter
 
         if shutter not in ['global', 'rolling']:
-            raise ValueError('[%s] Shutter type can only be "global" or "rolling"' % stereo._dataset)
+            raise ValueError('[%s] Shutter type can only be "global" or "rolling"' % stereo._sequence)
 
-        for cam in stereo._dataset._cams:
+        for cam in stereo._sequence._cams:
             # Check if the shutter matches
-            if stereo._dataset._cams[cam]['shutter']['type'] != shutter: continue
+            if stereo._sequence._cams[cam]['shutter']['type'] != shutter: continue
 
             # Check if the camera position (left/right) matches the camera name
             if left and cam not in ['cam1', 'cam4']: continue
             if not left and cam not in ['cam2', 'cam3']: continue
 
             # Now we have found a camera matching the wanted shutter type and position
-            super(Image, self).__init__(stereo._dataset, stereo._data[0], cam)
+            super(Image, self).__init__(stereo._sequence, stereo._data[0], cam)
             break  # from any further for loop iteration
 
         if not p.exists(self.path):
-            raise ValueError('[%s] Image "%s" does not exist' % (self._dataset, self.path))
+            raise ValueError('[%s] Image "%s" does not exist' % (self._sequence, self.path))
 
     @property
     def _previous(self):
@@ -183,9 +183,9 @@ class Image(Value):
         r""" 
         Returns the resolution of the cameras as a named tuple ``Resolution(width, height)``
         
-        .. seealso:: :any:`Dataset.resolution <StereoTUM.Dataset.resolution>`
+        .. seealso:: :any:`Sequence.resolution <StereoTUM.Sequence.resolution>`
         """
-        return self._dataset.resolution
+        return self._sequence.resolution
 
     @property
     def shutter(self):
@@ -221,9 +221,9 @@ class Image(Value):
     def path(self):
         r"""
         The path to the JPEG file of this image, relative to the the construction parameter of 
-        :any:`Dataset(...) <StereoTUM.Dataset.__init__>`.
+        :any:`Sequence(...) <StereoTUM.Sequence.__init__>`.
         """
-        return p.join(self._stereo._dataset._path, 'frames', self.reference, '%05d.jpeg' % self.ID)
+        return p.join(self._stereo._sequence._path, 'frames', self.reference, '%05d.jpeg' % self.ID)
 
     @property
     def imu(self):
@@ -247,7 +247,7 @@ class Image(Value):
 
         .. seealso:: :any:`StereoTUM.GroundTruth.interpolate`
         """
-        return GroundTruth.interpolate(self._dataset, self.stamp, max_stamp_delta, position_interpolation, orientation_interpolation)
+        return GroundTruth.interpolate(self._sequence, self.stamp, max_stamp_delta, position_interpolation, orientation_interpolation)
 
     def load(self):
         r"""
@@ -269,26 +269,26 @@ class Image(Value):
         the four elements ``DistCooefs(k1, k2, r1, r2)`` for Rad Tan model.
         """
         if model == 'fov':
-            return self._dataset._refs[self.reference]['distortion'][model]
+            return self._sequence._refs[self.reference]['distortion'][model]
 
         elif model == 'radtan':
-            coeffs = self._dataset._refs[self.reference]['distortion'][model]
+            coeffs = self._sequence._refs[self.reference]['distortion'][model]
             return self._DistCoeffs(k1=coeffs[0], k2=coeffs[1], r1=coeffs[2], r2=coeffs[3])
 
         else:
-            raise ValueError("[%s] Unknown distortion model: %s" % (self._dataset, model))
+            raise ValueError("[%s] Unknown distortion model: %s" % (self._sequence, model))
 
     @property
     def focal(self):
         r""" The camera's focal length as named tuple ``Vector2(x, y)`` in pixels """
-        return Image._Vector2(x=self._dataset._refs[self.reference]['intrinsics'][0],
-                              y=self._dataset._refs[self.reference]['intrinsics'][1])
+        return Image._Vector2(x=self._sequence._refs[self.reference]['intrinsics'][0],
+                              y=self._sequence._refs[self.reference]['intrinsics'][1])
 
     @property
     def principle(self):
         r""" The camera's principle point as named tuple ``Vector2(x, y)`` in pixels """
-        return Image._Vector2(x=self._dataset._refs[self.reference]['intrinsics'][2],
-                              y=self._dataset._refs[self.reference]['intrinsics'][3])
+        return Image._Vector2(x=self._sequence._refs[self.reference]['intrinsics'][2],
+                              y=self._sequence._refs[self.reference]['intrinsics'][3])
 
     @property
     def K(self):
@@ -312,7 +312,7 @@ class StereoImage(Value):
     not use the transform functions (``<<`` and ``>>``) with this, since a stereo image contains two 
     reference frames, one for each camera::
 
-        stereo = dataset.cameras('rolling')[0]
+        stereo = sequence.cameras('rolling')[0]
 
         # The following is ambiguous
         notok = stereo << "imu"   # which camera of the two do you mean?
@@ -339,40 +339,40 @@ class StereoImage(Value):
 
         :return: The matching stereo image or None if no was found
         
-        .. seealso:: :any:`Dataset.cameras <StereoTUM.Dataset.cameras>`
+        .. seealso:: :any:`Sequence.cameras <StereoTUM.Sequence.cameras>`
         
         """
         if method == 'closest':
-            f = value._dataset.raw.frames
+            f = value._sequence.raw.frames
             i = np.abs(f[:, 0] - value.stamp).argmin()
-            return StereoImage(value._dataset, f[i, :], shutter)
+            return StereoImage(value._sequence, f[i, :], shutter)
 
         if method == 'next':
-            f = value._dataset.raw.frames
+            f = value._sequence.raw.frames
             frame = f[f[:, 0] > value.stamp, :]
             if frame.size == 0: return None
-            return StereoImage(value._dataset, frame[0], shutter)
+            return StereoImage(value._sequence, frame[0], shutter)
 
         if method == 'prev':
-            f = value._dataset.raw.frames
+            f = value._sequence.raw.frames
             frame = f[f[:, 0] < value.stamp, :]
             if frame.size == 0: return None
-            return StereoImage(value._dataset, frame[-1], shutter)
+            return StereoImage(value._sequence, frame[-1], shutter)
 
         if method == 'exact':
-            f = value._dataset.raw.frames
+            f = value._sequence.raw.frames
             frame = f[f[:, 0] == value.stamp, :]
             if frame.size == 0: return None
-            return StereoImage(value._dataset, frame[0], shutter)
+            return StereoImage(value._sequence, frame[0], shutter)
 
         raise ValueError('[%s] Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")'
-                         % (value._dataset, method))
+                         % (value._sequence, method))
 
-    def __init__(self, dataset, data, shutter):
+    def __init__(self, sequence, data, shutter):
         self._data = data
-        self._dataset = dataset
+        self._sequence = sequence
         L, R = None, None
-        frames = dataset.raw.frames
+        frames = sequence.raw.frames
         id = self._data[1]
         while True:
             try: L = Image(self, shutter, left=True)
@@ -381,10 +381,10 @@ class StereoImage(Value):
             except ValueError: R = None
 
             # If stereosync is required, the stereo image is only valid, if we found both L/R images
-            if dataset.stereosync and L is not None and R is not None: break
+            if sequence.stereosync and L is not None and R is not None: break
 
             # If no stereosync is required, it suffices if we find only one
-            if not dataset.stereosync and (L is not None or R is not None): break
+            if not sequence.stereosync and (L is not None or R is not None): break
 
             # Otherwise we look for the next data in frames.csv and try again ...
             id += 1
@@ -394,12 +394,12 @@ class StereoImage(Value):
                 continue
 
             raise ValueError('[%s] Cannot find no more stereo images due to frame drops for camera "%s"'
-                             % (self._dataset, shutter))
+                             % (self._sequence, shutter))
 
         # Timestamp is in second column
         cam = L if L is not None else R
         self._left, self._right = L, R
-        super(StereoImage, self).__init__(dataset, self._data[0], cam.reference)
+        super(StereoImage, self).__init__(sequence, self._data[0], cam.reference)
 
     @property
     def _previous(self):
@@ -417,17 +417,17 @@ class StereoImage(Value):
     def _opposite(self, img):
         if img is self._left: return self._right
         if img is self._right: return self._left
-        raise ValueError("[%s] Image %s unknown, cannot find opposite" % self._dataset)
+        raise ValueError("[%s] Image %s unknown, cannot find opposite" % self._sequence)
 
     @property
     def resolution(self):
         r""" 
         Returns the resolution of the cameras as a named tuple ``Resolution(width, height)``
         
-        .. seealso:: :any:`Dataset.resolution <StereoTUM.Dataset.resolution>`
+        .. seealso:: :any:`Sequence.resolution <StereoTUM.Sequence.resolution>`
         
         """
-        return self._dataset.resolution
+        return self._sequence.resolution
 
     @property
     def ID(self):
@@ -473,11 +473,11 @@ class StereoImage(Value):
     def imu(self):
         r"""The matching :any:`Imu` for this image. Since the capture of an image is synchronized with the IMU,
                 no interpolation is needed."""
-        i = self._dataset.raw.imu
+        i = self._sequence.raw.imu
         match = i[i[:, 0] == self.stamp]
-        if match.size > 0: return Imu(self._dataset, match[0])
+        if match.size > 0: return Imu(self._sequence, match[0])
 
-        raise ValueError("[%s] It seems that %s has no matching IMU value" % (self._dataset, self))
+        raise ValueError("[%s] It seems that %s has no matching IMU value" % (self._sequence, self))
 
 
 class Imu(Value):
@@ -508,38 +508,38 @@ class Imu(Value):
         :return: The matching stereo image or None if no was found
         """
         if method == 'closest':
-            f = value._dataset.raw.imu
+            f = value._sequence.raw.imu
             i = np.abs(f[:, 0] - value.stamp).argmin()
-            return Imu(value._dataset, f[i, :])
+            return Imu(value._sequence, f[i, :])
 
         if method == 'next':
-            f = value._dataset.raw.imu
+            f = value._sequence.raw.imu
             imu = f[f[:, 0] > value.stamp, :]
             if imu.size == 0: return None
-            return Imu(value._dataset, imu[0])
+            return Imu(value._sequence, imu[0])
 
         if method == 'prev':
-            f = value._dataset.raw.imu
+            f = value._sequence.raw.imu
             imu = f[f[:, 0] < value.stamp, :]
             if imu.size == 0: return None
-            return Imu(value._dataset, imu[-1])
+            return Imu(value._sequence, imu[-1])
 
         if method == 'exact':
-            f = value._dataset.raw.imu
+            f = value._sequence.raw.imu
             imu = f[f[:, 0] == value.stamp, :]
             if imu.size == 0: return None
-            return Imu(value._dataset, imu[0])
+            return Imu(value._sequence, imu[0])
 
         raise ValueError('[%s] Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")'
-                         % (value._dataset, method))
+                         % (value._sequence, method))
 
     @staticmethod
-    def interpolate(dataset, stamp, acceleration_interpolation=StereoTUM.Interpolation.linear,
+    def interpolate(sequence, stamp, acceleration_interpolation=StereoTUM.Interpolation.linear,
                     angvelo_interpolation=StereoTUM.Interpolation.linear):
         r"""
         This function enables you to find the interpolated :any:`Imu` values of a record given a certain timestamp.
 
-        :param dataset: the dataset which holds all imu values to interpolate over 
+        :param sequence: the sequence which holds all imu values to interpolate over 
         :param float stamp: the time at which to interpolate (in seconds, with decimal places) 
         :param acceleration_interpolation: A predefined or custom interpolation function
         :param angvelo_interpolation: A predefined or custom interpolation function
@@ -548,7 +548,7 @@ class Imu(Value):
         .. seealso:: :any:`Interpolation`
         """
 
-        imu = dataset.raw.imu
+        imu = sequence.raw.imu
         idx = np.searchsorted(imu[:, 0], stamp)
         acc = np.ones((1, 3)) * np.nan
         gyr = np.ones((1, 4)) * np.nan
@@ -558,12 +558,12 @@ class Imu(Value):
             tg = angvelo_interpolation(imu[idx - 1, 0], imu[idx, 0], stamp)
             gyr = (1 - tg) * imu[idx - 1, 1:4] + tg * imu[idx, 1:4]
 
-        return Imu(dataset, np.concatenate(([stamp], acc, gyr)))
+        return Imu(sequence, np.concatenate(([stamp], acc, gyr)))
 
-    def __init__(self, dataset, data):
+    def __init__(self, sequence, data):
         if len(data) < 7: raise ValueError(
-            "[%s] Data must have at least 7 entries [time1, acc3, gyro3] but has %d" % (self._dataset, len(data)))
-        super(Imu, self).__init__(dataset, stamp=data[0], reference='imu')
+            "[%s] Data must have at least 7 entries [time1, acc3, gyro3] but has %d" % (self._sequence, len(data)))
+        super(Imu, self).__init__(sequence, stamp=data[0], reference='imu')
         self._acc = np.array(data[1:4])
         self._gyro = np.array(data[4:7])
 
@@ -629,7 +629,7 @@ class Imu(Value):
         .. seealso:: :any:`StereoTUM.GroundTruth.interpolate`
         
         """
-        return GroundTruth.interpolate(self._dataset, self.stamp, max_stamp_delta,
+        return GroundTruth.interpolate(self._sequence, self.stamp, max_stamp_delta,
                                        position_interpolation, orientation_interpolation)
 
 
@@ -637,18 +637,17 @@ class GroundTruth(Value):
     r"""
     A ground truth is a :any:`Value` with the reference ``"world"``.
     The ground truth is taken with a higher frequency than the images (around 120 Hz), but slower than the imu. 
-    Since the mocap system is stationary in one room only, it might not cover the whole duration of the dataset 
-    (depending on the sequence).
+    Since the mocap system is stationary in one room only, it will not cover the whole duration of this sequence.
     """
 
     @staticmethod
-    def interpolate(dataset, stamp, max_stamp_delta=.5,
+    def interpolate(sequence, stamp, max_stamp_delta=.5,
                     position_interpolation=StereoTUM.Interpolation.linear,
                     orientation_interpolation=StereoTUM.Interpolation.slerp):
         r"""
         This function enables you to find the interpolated ground truth of a record given a certain timestamp.
 
-        :param dataset: the dataset which holds all ground truth values to interpolate over 
+        :param sequence: the sequence which holds all ground truth values to interpolate over 
         :param float stamp: the time at which to interpolate (in seconds, with decimal places) 
         :param max_stamp_delta: specify the maximal allowed time deviation [s] for interpolation. When the previous 
                                 (or next) closest ground truth value is older (or newer) then this delta, None will be 
@@ -659,7 +658,7 @@ class GroundTruth(Value):
 
         .. seealso:: :any:`Interpolation`
         """
-        poses = dataset.raw.groundtruth
+        poses = sequence.raw.groundtruth
         idx = np.searchsorted(poses[:, 0], stamp)
         p = np.ones((1, 3)) * np.nan
         q = np.ones((1, 4)) * np.nan
@@ -679,7 +678,7 @@ class GroundTruth(Value):
             q = orientation_interpolation(poses[idx - 1, 4:8], poses[idx, 4:8], t, qa0, qb0)
             if np.any(np.isnan(p)) or np.any(np.isnan(q)): return None
 
-        return GroundTruth(dataset, np.concatenate(([stamp], p, q)))
+        return GroundTruth(sequence, np.concatenate(([stamp], p, q)))
 
     @staticmethod
     def extrapolate(value, method='closest'):
@@ -697,38 +696,38 @@ class GroundTruth(Value):
         :return: The matching stereo image or None if no was found
         """
         if method == 'closest':
-            f = value._dataset.raw.groundtruth
+            f = value._sequence.raw.groundtruth
             i = np.abs(f[:, 0] - value.stamp).argmin()
-            return GroundTruth(value._dataset, f[i, :])
+            return GroundTruth(value._sequence, f[i, :])
 
         if method == 'next':
-            f = value._dataset.raw.groundtruth
+            f = value._sequence.raw.groundtruth
             gt = f[f[:, 0] > value.stamp, :]
             if gt.size == 0: return None
-            return GroundTruth(value._dataset, gt[0])
+            return GroundTruth(value._sequence, gt[0])
 
         if method == 'prev':
-            f = value._dataset.raw.groundtruth
+            f = value._sequence.raw.groundtruth
             gt = f[f[:, 0] < value.stamp, :]
             if gt.size == 0: return None
-            return GroundTruth(value._dataset, gt[-1])
+            return GroundTruth(value._sequence, gt[-1])
 
         if method == 'exact':
-            f = value._dataset.raw.groundtruth
+            f = value._sequence.raw.groundtruth
             gt = f[f[:, 0] == value.stamp, :]
             if gt.size == 0: return None
-            return GroundTruth(value._dataset, gt[0])
+            return GroundTruth(value._sequence, gt[0])
 
         raise ValueError('[%s] Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")'
-                         % (value._dataset, method))
+                         % (value._sequence, method))
 
-    def __init__(self, dataset, data):
+    def __init__(self, sequence, data):
         if len(data) < 8:
             raise ValueError("[%s] Data must have at least 8 entries [time1, position3, orientation4] but has %d" %
-                             (dataset, len(data)))
+                             (sequence, len(data)))
         self._data = data
-        self._dataset = dataset
-        super(GroundTruth, self).__init__(dataset, stamp=data[0], reference='world')
+        self._sequence = sequence
+        super(GroundTruth, self).__init__(sequence, stamp=data[0], reference='world')
 
     @property
     def _previous(self):
@@ -764,7 +763,7 @@ class GroundTruth(Value):
     @property
     def marker(self):
         r""" Returns the :any:`Marker`, which got tracked by this ground truth. """
-        return Marker(self._dataset, self.stamp)
+        return Marker(self._sequence, self.stamp)
 
 
 class Marker(Value):
@@ -777,5 +776,5 @@ class Marker(Value):
     .. seealso:: :any:`Value`
     
     """
-    def __init__(self, dataset, stamp):
-        super(Marker, self).__init__(dataset, stamp, reference='marker')
+    def __init__(self, sequence, stamp):
+        super(Marker, self).__init__(sequence, stamp, reference='marker')

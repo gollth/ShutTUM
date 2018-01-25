@@ -8,29 +8,29 @@ class StereoCamera(object):
     :any:`StereoImage` in order::
         
         # You can use a "classic" for loop ... 
-        for stereo in dataset.cameras('global')
+        for stereo in sequence.cameras('global')
             print(stereo.stamp)
         
         # Or filter/map functions ...
-        stereo = filter(lambda item: item.ID == 2, dataset.cameras('rolling'))
+        stereo = filter(lambda item: item.ID == 2, sequence.cameras('rolling'))
         print(list(stereo))
         
         # Or even list & dict comprehensions
-        stereo = [ image.stamp for image in dataset.cameras('rolling') if image.ID == 2]
+        stereo = [ image.stamp for image in sequence.cameras('rolling') if image.ID == 2]
         print(stereo)
     
     """
-    def __init__(self, dataset, shutter):
+    def __init__(self, sequence, shutter):
         r"""
         Creates a new StereoCamera as iterable container for images. Usually you will not invoke this constructor
-        directly but rather get a reference via :any:`cameras <StereoTUM.Dataset.cameras>`
+        directly but rather get a reference via :any:`cameras <StereoTUM.Sequence.cameras>`
         
-        :param Dataset dataset: The reference to the dataset 
+        :param Sequence sequence: The reference to the sequence 
         :param str shutter: the name of the shutter this camera uses (usually "rolling" or "global")
         """
-        self._dataset = dataset
+        self._sequence = sequence
         self._shutter = shutter
-        self._data = self._dataset.raw.frames
+        self._data = self._sequence.raw.frames
 
     def __iter__(self):
         self._id = int(self._data[0,1])   # take the first ID (column 1) in the first row (0th)
@@ -56,8 +56,8 @@ class StereoCamera(object):
 
     def __getitem__(self, id):
         row = self._data[self._data[:,1] == id, :]
-        if row.size == 0: raise ValueError('[%s] No Frame for stereo camera "%s" found with ID %d' % (self._dataset, self._shutter, id))
-        return StereoTUM.values.StereoImage(self._dataset, row[0], self._shutter)
+        if row.size == 0: raise ValueError('[%s] No Frame for stereo camera "%s" found with ID %d' % (self._sequence, self._shutter, id))
+        return StereoTUM.values.StereoImage(self._sequence, row[0], self._shutter)
 
 
 class DuoStereoCamera:
@@ -67,14 +67,14 @@ class DuoStereoCamera:
     tuple with both :any:`StereoImage` s in order::
 
         # You can use a "classic" for loop ... 
-        for stereo_1, stereo_2 in dataset.cameras()     # both is the default
+        for stereo_1, stereo_2 in sequence.cameras()     # both is the default
             print(stereo_1.shutter)
             print(stereo_2.shutter)
 
     """
-    def __init__(self, dataset):
-        self._rolling = StereoCamera(dataset, 'rolling')
-        self._global  = StereoCamera(dataset, 'global')
+    def __init__(self, sequence):
+        self._rolling = StereoCamera(sequence, 'rolling')
+        self._global  = StereoCamera(sequence, 'global')
 
     def __iter__(self):
         self._rolling.__iter__()

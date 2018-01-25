@@ -8,21 +8,21 @@ import StereoTUM.devices
 import StereoTUM.values
 
 
-class Dataset(object):
-    r"""The base class representing one dataset record.
+class Sequence(object):
+    r"""The base class representing one dataset sequence.
     
-    In order for performent operations the dataset loads and checks lots of the data in its :any:`__init__` thus avoiding
+    In order for performent operations the sequence loads and checks lots of the data in its :any:`__init__` thus avoiding
     expensive checks in for loops or list comprehensions. In addition it holds the reference to list-like objects, such 
-    as :any:`cameras` or :any:`imu <StereoTUM.Dataset.imu>`. You can iterate over each of these (depending
+    as :any:`cameras` or :any:`imu <StereoTUM.Sequence.imu>`. You can iterate over each of these (depending
     on application) to get the corresponding :any:`Value` s in order.
     
     A typical application might look like::
     
-        # Load a dataset
-        dataset = Dataset('path/to/folder/0001')
+        # Load a dataset's sequence
+        sequence = Sequence('path/to/folder/01')
         
         # Iterate over all imu values and find corresponding images
-        for observation in dataset.imu:
+        for observation in sequence.imu:
             
             print(observation.acceleration)
             print(observation.angular_velocity)
@@ -69,10 +69,10 @@ class Dataset(object):
 
     def __init__(self, path, stereosync=True):
         r""" 
-        :param str path: the path to *one* record of the dataset, such as ``~/StereoTUM/0001``
+        :param str path: the path to one sequence of the dataset, such as ``~/StereoTUM/0001``
         :param bool stereosync: possiblity to set the :any:`stereosync` option in constructor
         :raises: ValueError: if anything goes wrong 
-        Load the dataset into memory (except images) and do basic data consistency checks.
+        Load the sequence into memory (except images) and do basic data consistency checks.
         
         1. It is checked that in path there exists a ``data``, ``frames`` and ``params`` folder
         2. It is checked that there exists the files ``data/frames.csv``, ``data/imu.csv`` and ``data/ground_truth.csv``
@@ -88,17 +88,17 @@ class Dataset(object):
         self._sync = stereosync
 
         # Consistency Check
-        Dataset._check_folder_exists(p.join(path, 'data'))
-        Dataset._check_folder_exists(p.join(path, 'frames'))
-        Dataset._check_folder_exists(p.join(path, 'params'))
+        Sequence._check_folder_exists(p.join(path, 'data'))
+        Sequence._check_folder_exists(p.join(path, 'frames'))
+        Sequence._check_folder_exists(p.join(path, 'params'))
 
         f = p.join(path, 'data', 'frames.csv')
         i = p.join(path, 'data', 'imu.csv')
         g = p.join(path, 'data', 'ground_truth.csv')
 
-        Dataset._check_file_exists(f)
-        Dataset._check_file_exists(i)
-        Dataset._check_file_exists(g)
+        Sequence._check_file_exists(f)
+        Sequence._check_file_exists(i)
+        Sequence._check_file_exists(g)
 
         self._frames       = np.genfromtxt(f, delimiter='\t', skip_header=1)#, dtype=(float, int, float, str))
         self._imu          = np.genfromtxt(i, delimiter='\t', skip_header=1)
@@ -109,16 +109,16 @@ class Dataset(object):
         self._raw = Raw(self._frames, self._imu, self._ground_truth)
         self._time = {}
         timefile = p.join(path, 'params', 'time.yaml')
-        Dataset._check_file_exists(timefile)
+        Sequence._check_file_exists(timefile)
         with open(timefile) as stream:
             self._time = yaml.load(stream)['time']
-            Dataset._check_contains_key(timefile, self._time, 'start')
-            Dataset._check_contains_key(timefile, self._time, 'end')
-            Dataset._check_contains_key(timefile, self._time, 'duration')
+            Sequence._check_contains_key(timefile, self._time, 'start')
+            Sequence._check_contains_key(timefile, self._time, 'end')
+            Sequence._check_contains_key(timefile, self._time, 'duration')
 
         self._cams = {}
         paramfile = p.join(path, 'params', 'params.yaml')
-        Dataset._check_file_exists(paramfile)
+        Sequence._check_file_exists(paramfile)
         with open(paramfile) as stream:
             self._refs = yaml.load(stream)
 
@@ -128,7 +128,7 @@ class Dataset(object):
             if ref == 'world': continue  # world param must only be present, not more
 
             # Every other reference must have at least a transform parameter
-            Dataset._check_contains_key(paramfile, self._refs[ref], 'transform')
+            Sequence._check_contains_key(paramfile, self._refs[ref], 'transform')
 
             if 'shutter' not in self._refs[ref]: continue
 
@@ -139,9 +139,9 @@ class Dataset(object):
             folder   = p.join(path,   'params', cam)
             gamma    = p.join(folder, 'gamma.txt')
             vignette = p.join(folder, 'vignette.png')
-            Dataset._check_folder_exists(folder)
-            Dataset._check_file_exists(gamma)
-            Dataset._check_file_exists(vignette)
+            Sequence._check_folder_exists(folder)
+            Sequence._check_file_exists(gamma)
+            Sequence._check_file_exists(vignette)
             self._gammas[cam] = np.genfromtxt(gamma, delimiter=' ')
 
         self._cameras = StereoTUM.devices.DuoStereoCamera(self)
@@ -182,10 +182,10 @@ class Dataset(object):
         cams occurred to drop the same frame, this will be skipped in the iterations. The dropped :any:`Image` is set
         to None::
         
-            dataset.stereosync = False
+            sequence.stereosync = False
             
             left_drops, right_drops = [], []
-            for stereo in dataset.cameras('global'):
+            for stereo in sequence.cameras('global'):
                 if stereo.L is None: left_drops.append(stereo.ID)
                 if stereo.R is None: right_drops.append(stereo.ID)
                 
@@ -210,12 +210,12 @@ class Dataset(object):
         Note that often you want to directly iterate over those references, which you can do like::
         
             # Iterate over both rolling and global images
-            for g, r in dataset.cameras(shutter='both'):
+            for g, r in sequence.cameras(shutter='both'):
                 print(g.L.ID)
                 print(r.R.stamp)
         
         
-        .. seealso:: :any:`StereoTUM.Dataset.stereosync`
+        .. seealso:: :any:`StereoTUM.Sequence.stereosync`
        
         """
         if shutter == 'both':    return self._cameras
@@ -230,33 +230,33 @@ class Dataset(object):
         :return: Generator property, yielding one :any:`Imu` after the other
         
         This property is a python generator, which you can use to iterate over all available
-        :any:`Imu` s in this dataset. Note that generators do not support indexing. 
+        :any:`Imu` s in this sequence. Note that generators do not support indexing. 
         
         Note that often you want to directly iterate over the Imu like so::
             
             # Iterate over all imu values
-            for observation in dataset.imu:
+            for observation in sequence.imu:
                 print(observation.acceleration)
                 
             # When you want e.g. the first imu value use:
-            first_imu = next(dataset.imu)
+            first_imu = next(sequence.imu)
             
             # When you absolutely need indexing convert the generator to a in memory list first
-            imus = list(dataset.imu)
+            imus = list(sequence.imu)
             print(imus[17].stamp)
             
             # Use the usual python "functional" shenanigans
-            imus_up_to_10s = filter(lambda imu: imu.stamp <= 10, dataset.imu)
-            imus_up_to_10s = [ imu for imu in dataset.imu if imu.stamp <= 10 ]
+            imus_up_to_10s = filter(lambda imu: imu.stamp <= 10, sequence.imu)
+            imus_up_to_10s = [ imu for imu in sequence.imu if imu.stamp <= 10 ]
             
-            acc_in_g = map(lambda imu: imu.acceleration * 9.805, dataset.imu)
-            acc_in_g = [ imu.acc * 9.805 for imu in dataset.imu ]
+            acc_in_g = map(lambda imu: imu.acceleration * 9.805, sequence.imu)
+            acc_in_g = [ imu.acc * 9.805 for imu in sequence.imu ]
             
             # Note that generators don't implement __len__()
-            # to get the amount of imu values in this dataset either use
-            N = len(list(dataset.imu))               # or:
-            N = sum([ 1 for value in dataset.imu ])  # which is the same as:
-            N = dataset.raw.imu.shape[0]
+            # to get the amount of imu values in this sequence either use
+            N = len(list(sequence.imu))               # or:
+            N = sum([ 1 for value in sequence.imu ])  # which is the same as:
+            N = sequence.raw.imu.shape[0]
         
         """
         for row in self.raw.imu:
@@ -268,30 +268,30 @@ class Dataset(object):
         :return: Generator property, yielding one :any:`GroundTruth` value after the other
 
         This property is a python generator, which you can use to iterate over all available
-        :any:`GroundTruth` s in this dataset. Note that generators do not support indexing. 
+        :any:`GroundTruth` s in this sequence. Note that generators do not support indexing. 
 
         Note that often you want to directly iterate over the Mocap like so::
 
            # Iterate over all ground truth values
-           for gt in dataset.mocap:
+           for gt in sequence.mocap:
                print(gt.position)
 
            # When you want e.g. the first ground truth value use:
-           first_gt = next(dataset.mocap)
+           first_gt = next(sequence.mocap)
 
            # When you absolutely need indexing convert the generator to a in memory list first
-           gts = list(dataset.mocap)
+           gts = list(sequence.mocap)
            print(gts[17].stamp)
 
            # Use the usual python "functional" shenanigans
-           gts_from_10s = filter(lambda gt: gt.stamp >= 10, dataset.mocap)
-           gts_from_10s = [ gt for gt in dataset.mocap if gt.stamp >= 10 ]
+           gts_from_10s = filter(lambda gt: gt.stamp >= 10, sequence.mocap)
+           gts_from_10s = [ gt for gt in sequence.mocap if gt.stamp >= 10 ]
 
            # Note that generators don't implement __len__()
-           # to get the amount of imu values in this dataset either use
-           N = len(list(dataset.mocap))               # or:
-           N = sum([ 1 for value in dataset.mocap ])  # which is the same as:
-           N = dataset.raw.groundtruth.shape[0]
+           # to get the amount of imu values in this sequence either use
+           N = len(list(sequence.mocap))               # or:
+           N = sum([ 1 for value in sequence.mocap ])  # which is the same as:
+           N = sequence.raw.groundtruth.shape[0]
 
         """
         for row in self.raw.groundtruth:
@@ -300,13 +300,13 @@ class Dataset(object):
     @property
     def times(self):
         r"""
-        A list of all time stamps in the dataset.
+        A list of all time stamps in this sequence.
         
         .. math:: \mathbf{t} = \mathbf{t}_{frames} \cup \mathbf{t}_{imu} \cup \mathbf{t}_{groundtruth}
         
         Note that this list is sorted, so you can easily iterate over it like so::
         
-            for time in dataset.times:
+            for time in sequence.times:
                 print(time)
         
         
@@ -331,7 +331,7 @@ class Dataset(object):
     def duration(self):
         r""" 
         The duration of the record in seconds as float, so basically:
-        ``dataset.end - dataset.start``
+        ``sequence.end - sequence.start``
         
         """
         return self._time['duration']
@@ -351,7 +351,7 @@ class Dataset(object):
         The minimal & maximal exposure used for all cameras. Note that these values are the *limits*
         not the extrema of the record, so most of the time, these will not be reached, but if, clamped accordingly.::
         
-            limits = dataset.exposure_limits
+            limits = sequence.exposure_limits
             print("Limits are %s .. %s ms" % limits.min, limits.max)
             
         
@@ -442,7 +442,7 @@ class Dataset(object):
 
     def _find_data_for(self, s):
         value = StereoTUM.values.Value(self, s, 'world')  # world as dummy for the time stamp
-        return Dataset._Data(
+        return Sequence._Data(
             stamp=s,
             global_=StereoTUM.values.StereoImage.extrapolate(value, 'global', method='exact'),
             rolling=StereoTUM.values.StereoImage.extrapolate(value, 'rolling', method='exact'),
@@ -476,44 +476,44 @@ class Dataset(object):
         
         Looks up all corresponding :any:`Value` s it can find for a given time stamp::
         
-            dataset = Dataset(...)
+            sequence = Sequence(...)
             
             # The single lookup with one float as index
-            for time in dataset.times:
-                data = dataset[time]
+            for time in sequence.times:
+                data = sequence[time]
                 if data.global_     is not None: print(data.global_.ID)
                 if data.rolling     is not None: print(data.rolling.ID)
                 if data.imu         is not None: print(data.imu.acceleration)
                 if data.groundtruth is not None: print(data.groundtruth.pose)
         
             # ... or the sliced version specifying all data between 5s .. 45s
-            for data in dataset[5:45]:
+            for data in sequence[5:45]:
                print(data)
                 
             # ... or all up to 10s
-            for beginning in dataset[:10]
+            for beginning in sequence[:10]
                 print(data)
                 
             # ... or all from 30s till end
-            for finish in dataset[30:]
+            for finish in sequence[30:]
                 print(data)
                 
             # Custom steps, however, are not supported:
             try:
-                x = dataset[::-1]
+                x = sequence[::-1]
             except ValueError:
                 print("Doesn't make sense...")
         
                 
             
-        Note, though, that this is not the most performant thing to iterate over the dataset,
+        Note, though, that this is not the most performant thing to iterate over the sequence,
         since the lookup has to be done on every iteration. Consider iterating over :any:`cameras`, :any:`imu` or 
         :any:`mocap` instead.
         """
         if isinstance(stamp, slice):
             if stamp.step is not None:
-                raise ValueError('Slicing a dataset with a step value like %s:%s:%s is not supported'
-                                 % (stamp.start, stamp.stop, stamp.step))
+                raise ValueError('[%s] Slicing a sequence with a step value like %s:%s:%s is not supported'
+                                 % (self, stamp.start, stamp.stop, stamp.step))
             return self._find_data_between(stamp.start, stamp.stop)
         else:
             return self._find_data_for(stamp)

@@ -18,7 +18,7 @@ Classes
      :toctree:
 
      ~StereoTUM.Interpolation
-     ~StereoTUM.dataset.Dataset
+     ~StereoTUM.dataset.Sequence
 
      ~StereoTUM.devices.StereoCamera
      ~StereoTUM.devices.DuoStereoCamera

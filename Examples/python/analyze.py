@@ -6,18 +6,17 @@ import os.path as p
 import sys
 import yaml
 sys.path.append('/usr/stud/gollt/StereoTUM/')
-from StereoTUM.dataset import Dataset
+from StereoTUM.sequence import Sequence
 from argparse import ArgumentParser
 
 
 def analyze_frames(path, shutter, speed=1.):
 
     # Create a dataset
-    dataset = Dataset(path)
-
+    sequence = Sequence(path)
 
     # Iterate over all stereo images for the given shutter method
-    for stereo in dataset.cameras(shutter):
+    for stereo in sequence.cameras(shutter):
 
         # Create a combined stereo image
         display = np.concatenate((stereo.L.load(), stereo.R.load()), axis=1)
@@ -56,7 +55,7 @@ def analyse_frame_drops(path, include_log=False):
     When you use ``include_log`` a tuple will be returned, with the array as first part
     and a string as formatted table as second part.
     """
-    sequence = Dataset(args.sequence, stereosync=False)
+    sequence = Sequence(args.sequence, stereosync=False)
     shutters = dict(map(lambda (k,v): (k, v[0].upper()), sequence.shutter_types.items()))
 
     symbol = lambda (x): '%05d' % x if x > 0 else '-----'
@@ -81,7 +80,7 @@ def analyse_frame_drops(path, include_log=False):
     else:
         msg = ""
         msg += '=====================================================================\n'
-        msg += '| StereoTUM Dataset Sequence: %s |\n' % limit(args.sequence, 37)
+        msg += '| StereoTUM Sequence Sequence: %s |\n' % limit(args.sequence, 37)
         msg += '+===================================================================+\n'
         msg += '|   Frames (%s triggered), dropped frames:                       |\n' % symbol(frames.shape[0]-1)
         msg += '+----------------+----------------+----------------+----------------+\n'
@@ -121,8 +120,8 @@ def analyze_imu(path):
     names = ['X Y Z'.split(), 'pitch roll yaw'.split()]
 
     # Create a dataset
-    dataset = Dataset(path)
-    for imu in dataset.imu:
+    sequence = Sequence(path)
+    for imu in sequence.imu:
         X   = np.vstack((X,   3*[imu.stamp]))
         ACC = np.vstack((ACC, imu.acceleration))
         GYR = np.vstack((GYR, imu.angular_velocity))

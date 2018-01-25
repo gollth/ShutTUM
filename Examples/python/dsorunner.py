@@ -7,7 +7,7 @@ import numpy as np
 import os.path as p
 
 sys.path.append('/usr/stud/gollt/StereoTUM/')
-from StereoTUM.dataset import Dataset
+from StereoTUM.sequence import Sequence
 from argparse import ArgumentParser
 from subprocess import STDOUT, check_call, CalledProcessError
 
@@ -25,7 +25,7 @@ def play(sequence_path, shutter, side, debug=False, options=[], dso_prefix=''):
 
 	:return: a 2D numpy array (shape Nx8 with N=number of images) with the columns [Time X Y Z W X Y Z]
 	"""
-	sequence = Dataset(sequence_path)
+	sequence = Sequence(sequence_path)
 
 	temp = p.join(sequence_path, '.temp')
 	if p.exists(temp): shutil.rmtree(temp)

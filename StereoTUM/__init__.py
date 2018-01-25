@@ -28,7 +28,7 @@ class Interpolation:
 
         # Then use it like so
         t = 1.5  # [s] Time stamp at which to interpolate
-        x = dataset.imu[0].interpolate(dataset, t, accelaration_interpolation=some_crazy_interpolation)
+        x = sequence.imu[0].interpolate(sequence, t, accelaration_interpolation=some_crazy_interpolation)
 
         # Now x is interpolated between the imu values closest to 1.5s with the crazy function
         

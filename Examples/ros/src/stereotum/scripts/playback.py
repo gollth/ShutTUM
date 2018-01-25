@@ -15,14 +15,14 @@ from geometry_msgs.msg import Vector3
 from sensor_msgs.msg   import Image, Imu, CameraInfo
 from cv_bridge         import CvBridge, CvBridgeError
 sys.path.append('/usr/stud/gollt/StereoTUM/')
-from StereoTUM.dataset import Dataset
+from StereoTUM.sequence import Sequence
 
 # Intialize
 ros.init_node('playback')
 ros.set_param('/use_sim_time', True)
 bridge    = CvBridge()
 sequence    = ros.get_param('~sequence')
-dataset   = Dataset(sequence)
+dataset   = Sequence(sequence)
 loop      = ros.get_param('~loop', False) 
 start     = ros.get_param('~start', None)
 end       = ros.get_param('~end',   None)

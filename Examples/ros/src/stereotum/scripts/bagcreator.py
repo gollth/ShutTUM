@@ -14,20 +14,20 @@ from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg   import Image, Imu, CameraInfo
 from cv_bridge         import CvBridge, CvBridgeError
 sys.path.append('/usr/stud/gollt/StereoTUM/Python')
-from StereoTUM.dataset import Dataset
+from StereoTUM.sequence import Sequence
 
 # Intialize
 ros.init_node('bagcreator')
 ros.set_param('/use_sim_time', True)
 bridge    = CvBridge()
-sequence    = ros.get_param('~sequence')
-dataset   = Dataset()
-dataset.stereosync = True
+sequence_name    = ros.get_param('~sequence')
+sequence   = Sequence(sequence_name)
+sequence.stereosync = True
 loop      = ros.get_param('~loop', False) 
 start     = ros.get_param('~start', None)
 end       = ros.get_param('~end',   None)
 
-msg = 'Playback started [%s]' % sequence
+msg = 'Playback started [%s]' % sequence_name
 if loop:  msg += ' [LOOP]'
 if start: msg += ' [START: %ss]' % start
 if end:   msg += ' [END: %ss]' % end
@@ -71,11 +71,11 @@ def publishimage(pub, value):
 	pub.exp.publish(Float32(data=value.exposure))
 
 
-res = dataset.resolution
+res = sequence.resolution
 laststamp = 0
 
 while not ros.is_shutdown():
-	for data in dataset[start:end]:
+	for data in sequence[start:end]:
 		if ros.is_shutdown(): break
 
 		# Times

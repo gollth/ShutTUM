@@ -1,5 +1,5 @@
 =======
-Dataset
+Sequence
 =======
 All classes broadly associated with the dataset creation and manipulation
 
@@ -11,26 +11,26 @@ All classes broadly associated with the dataset creation and manipulation
    ~StereoTUM.Interpolation.linear
    ~StereoTUM.Interpolation.slerp
 
-:any:`Dataset`: Summary
+:any:`Sequence`: Summary
 
 .. autosummary::
 
-    ~StereoTUM.dataset.Dataset.__init__
-    ~StereoTUM.dataset.Dataset.__getitem__
-    ~StereoTUM.dataset.Dataset.cameras
-    ~StereoTUM.dataset.Dataset.duration
-    ~StereoTUM.dataset.Dataset.end
-    ~StereoTUM.dataset.Dataset.exposure_limits
-    ~StereoTUM.dataset.Dataset.gamma
-    ~StereoTUM.dataset.Dataset.imu
-    ~StereoTUM.dataset.Dataset.mocap
-    ~StereoTUM.dataset.Dataset.raw
-    ~StereoTUM.dataset.Dataset.resolution
-    ~StereoTUM.dataset.Dataset.rolling_shutter_speed
-    ~StereoTUM.dataset.Dataset.stereosync
-    ~StereoTUM.dataset.Dataset.start
-    ~StereoTUM.dataset.Dataset.times
-    ~StereoTUM.dataset.Dataset.vignette
+    ~StereoTUM.dataset.Sequence.__init__
+    ~StereoTUM.dataset.Sequence.__getitem__
+    ~StereoTUM.dataset.Sequence.cameras
+    ~StereoTUM.dataset.Sequence.duration
+    ~StereoTUM.dataset.Sequence.end
+    ~StereoTUM.dataset.Sequence.exposure_limits
+    ~StereoTUM.dataset.Sequence.gamma
+    ~StereoTUM.dataset.Sequence.imu
+    ~StereoTUM.dataset.Sequence.mocap
+    ~StereoTUM.dataset.Sequence.raw
+    ~StereoTUM.dataset.Sequence.resolution
+    ~StereoTUM.dataset.Sequence.rolling_shutter_speed
+    ~StereoTUM.dataset.Sequence.stereosync
+    ~StereoTUM.dataset.Sequence.start
+    ~StereoTUM.dataset.Sequence.times
+    ~StereoTUM.dataset.Sequence.vignette
 
 
 
@@ -38,9 +38,9 @@ All classes broadly associated with the dataset creation and manipulation
    :members:
 
 
-.. autoclass:: StereoTUM.dataset.Dataset
+.. autoclass:: StereoTUM.dataset.Sequence
     :members:
     :undoc-members:
 
-.. automethod:: StereoTUM.dataset.Dataset.__init__
-.. automethod:: StereoTUM.dataset.Dataset.__getitem__
+.. automethod:: StereoTUM.dataset.Sequence.__init__
+.. automethod:: StereoTUM.dataset.Sequence.__getitem__

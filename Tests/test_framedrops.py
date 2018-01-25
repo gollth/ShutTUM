@@ -1,7 +1,7 @@
 import unittest
 import os.path as p
 
-from StereoTUM.dataset import  Dataset
+from StereoTUM.sequence import  Sequence
 from StereoTUM.values import Imu, GroundTruth
 
 
@@ -10,31 +10,31 @@ class TestFrameDrops (unittest.TestCase):
     def setUp(self):
         d = p.dirname(p.realpath(__file__))
         self.path = p.join(d, 'framedrop')
-        self.dataset = Dataset(self.path)
+        self.sequence = Sequence(self.path)
 
     def test_index_matches_ids(self):
-        self.dataset.stereosync = False
+        self.sequence.stereosync = False
         global_ids = [1, 4]
-        cam = self.dataset.cameras('rolling')
+        cam = self.sequence.cameras('rolling')
         for id in global_ids:
             self.assertEqual(id, cam[id].ID)
 
         rolling_ids = [2, 3, 4]
-        cam = self.dataset.cameras('global')
+        cam = self.sequence.cameras('global')
         for id in rolling_ids:
             self.assertEqual(id, cam[id].ID)
 
     def test_sync_cameras_skip_single_frame_drops(self):
         global_ids = [2]
-        cam = self.dataset.cameras('global')
+        cam = self.sequence.cameras('global')
         self.assertEqual(len(global_ids), len(cam))
         for id, stereo in zip(global_ids, cam):
             self.assertEqual(id, stereo.ID)
 
     def test_unsynced_cameras_will_not_drop_if_only_one_is_missing(self):
-        self.dataset.stereosync = False
+        self.sequence.stereosync = False
         expectation = [(2,2), (None,3), (4,None)]
-        cam = self.dataset.cameras('global')
+        cam = self.sequence.cameras('global')
         self.assertEqual(len(expectation), len(cam))
         for expect, stereo in zip(expectation, cam):
             if expect[0] is None and stereo.L is not None:
@@ -53,21 +53,21 @@ class TestFrameDrops (unittest.TestCase):
                 self.assertEqual(expect[1], stereo.R.ID)
 
     def test_imu_extrapolation_skips_frame_drop_sync(self):
-        frame1 = self.dataset.cameras('rolling')[1]
+        frame1 = self.sequence.cameras('rolling')[1]
         imu    = Imu.extrapolate(frame1)
 
-        expected = self.dataset.cameras('rolling')[4]
+        expected = self.sequence.cameras('rolling')[4]
         actual   = imu.stereo('rolling', extrapolation='next')
 
         self.assertEqual(expected.stamp, actual.stamp)
         self.assertEqual(expected.ID,    actual.ID)
 
     def test_imu_extrapolation_skips_frame_drop_unsync(self):
-        self.dataset.stereosync = False
+        self.sequence.stereosync = False
 
-        frame2 = self.dataset.cameras('global')[2]
+        frame2 = self.sequence.cameras('global')[2]
         imu    = Imu.extrapolate(frame2)
-        expected = self.dataset.cameras('global')[3]
+        expected = self.sequence.cameras('global')[3]
         actual   = imu.stereo('global', extrapolation='next')
 
         self.assertEqual(expected.stamp, actual.stamp)
@@ -75,21 +75,21 @@ class TestFrameDrops (unittest.TestCase):
         self.assertIsNone(actual.L)
 
     def test_groundtruth_extrapolation_skips_frame_drop_sync(self):
-        frame1 = self.dataset.cameras('rolling')[1]
+        frame1 = self.sequence.cameras('rolling')[1]
         gt     = GroundTruth.extrapolate(frame1, method='next')
 
-        expected = self.dataset.cameras('rolling')[4]
+        expected = self.sequence.cameras('rolling')[4]
         actual   = gt.stereo('rolling', extrapolation='next')
 
         self.assertEqual(expected.stamp, actual.stamp)
         self.assertEqual(expected.ID,    actual.ID)
 
     def test_groundtruth_extrapolation_skips_frame_drop_unsync(self):
-        self.dataset.stereosync = False
+        self.sequence.stereosync = False
 
-        frame2 = self.dataset.cameras('global')[3]
+        frame2 = self.sequence.cameras('global')[3]
         gt     = GroundTruth.extrapolate(frame2, method='next')
-        expected = self.dataset.cameras('global')[4]
+        expected = self.sequence.cameras('global')[4]
         actual   = gt.stereo('global', extrapolation='next')
 
         self.assertEqual(expected.stamp, actual.stamp)

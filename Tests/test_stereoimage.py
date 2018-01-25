@@ -2,17 +2,18 @@ import unittest
 import math
 import numpy     as np
 import os.path   as p
-from StereoTUM.dataset import Dataset
+from StereoTUM.sequence import Sequence
 from StereoTUM.values import StereoImage, GroundTruth
 from collections import Iterable
+
 
 class TestStereoImage (unittest.TestCase):
     def setUp(self):
         d = p.dirname(p.realpath(__file__))
         self.path = p.join(d, 'valid')
-        self.dataset = Dataset(self.path)
-        self.data = self.dataset.raw.frames[0, :]
-        self.stereo = StereoImage(self.dataset, self.data , 'rolling')
+        self.sequence = Sequence(self.path)
+        self.data = self.sequence.raw.frames[0, :]
+        self.stereo = StereoImage(self.sequence, self.data, 'rolling')
 
     def test_stereoimage_created_correctly(self):
         self.assertEqual(self.stereo.L.reference, 'cam1')
@@ -26,12 +27,12 @@ class TestStereoImage (unittest.TestCase):
 
     def test_dt_is_correct(self):
         for shutter in ['global', 'rolling']:
-            img1 = StereoImage(self.dataset, self.dataset.raw.frames[0, :], shutter)
-            img2 = StereoImage(self.dataset, self.dataset.raw.frames[1, :], shutter)
+            img1 = StereoImage(self.sequence, self.sequence.raw.frames[0, :], shutter)
+            img2 = StereoImage(self.sequence, self.sequence.raw.frames[1, :], shutter)
             self.assertEqual(img2.dt(), img2.stamp - img1.stamp)
 
     def test_timestamp_matches_frame_id(self):
-        for image in self.dataset.cameras('rolling'):
+        for image in self.sequence.cameras('rolling'):
             if image.ID == self.stereo.ID:
                 self.assertEqual(self.stereo.stamp, image.stamp)
                 return
@@ -40,7 +41,7 @@ class TestStereoImage (unittest.TestCase):
 
     def test_distortion_models(self):
         for shutter in ['global', 'rolling']:
-            stereo = StereoImage(self.dataset, self.dataset.raw.frames[0, :], shutter)
+            stereo = StereoImage(self.sequence, self.sequence.raw.frames[0, :], shutter)
             omega_l = stereo.L.distortion(model='fov')
             omega_r = stereo.R.distortion(model='fov')
             self.assertIsInstance(omega_l, float)
@@ -62,7 +63,7 @@ class TestStereoImage (unittest.TestCase):
 
     def test_exposure_is_equal_in_both_images(self):
         self.assertEqual(self.stereo.L.exposure, self.stereo.R.exposure)
-        limits = self.dataset.exposure_limits
+        limits = self.sequence.exposure_limits
         self.assertGreaterEqual(self.stereo.L.exposure, limits.min)
         self.assertLessEqual   (self.stereo.L.exposure, limits.max)
 
@@ -83,7 +84,7 @@ class TestStereoImage (unittest.TestCase):
 
     def test_ground_truth_match_is_correctly_interpolated(self):
         gti = np.genfromtxt(p.join(self.path,'data', 'ground_truth_interpolated.csv'), skip_header=1)
-        for image in self.dataset.cameras('rolling'):
+        for image in self.sequence.cameras('rolling'):
             expected = gti[gti[:, 0] == image.stamp, :]
             gt = image.L.groundtruth(max_stamp_delta=20e-3)
             if expected.size == 0:
@@ -91,7 +92,7 @@ class TestStereoImage (unittest.TestCase):
                 continue
 
             actual = gt >> 'cam1'
-            expected = GroundTruth(self.dataset, expected[0]) >> 'cam1'
+            expected = GroundTruth(self.sequence, expected[0]) >> 'cam1'
             self.assertTrue(np.allclose(actual, expected))
 
     def test_ground_truth_is_correct_for_both_images(self):
@@ -105,14 +106,14 @@ class TestStereoImage (unittest.TestCase):
         self.assertTrue(np.allclose(wl, wl2))
 
     def test_illuminance_is_float_normally(self):
-        img = self.dataset.cameras('rolling')[2]
+        img = self.sequence.cameras('rolling')[2]
         expected = self.data[3]
         actual = img.illuminance
         self.assertEqual(expected, actual)
         self.assertIsInstance(actual, float)
 
     def test_illuminance_is_nan_if_n_a(self):
-        img = self.dataset.cameras('rolling')[4]
+        img = self.sequence.cameras('rolling')[4]
         lx = img.illuminance
         self.assertTrue(math.isnan(lx), "N/A illuminance is not nan but %s" % lx);
 
