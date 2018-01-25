@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+
+	<arg name="sequence" />
+	<arg name="shutter" />
+	<arg name="start" default="" />
+	<arg name="end"   default="" />
+	<arg name="ORB_SLAM_INSTALL_PREFIX" default="/usr/stud/gollt/ORB_SLAM2" />
+
+
+	<rosparam file="$(arg sequence)/params/params.yaml" />
+
+	<param name="robot_description" textfile="$(find stereotum)/StereoTUM.urdf" />
+
+	<node name="playback" type="playback.py" pkg="stereotum" output="screen">
+		<param name="sequence" value="$(arg sequence)" />
+		<param name="start"  value="$(arg start)" />
+		<param name="end"    value="$(arg end)" />
+		<param name="loop" value="false" />
+		
+	</node>
+	
+	<node name="rectifier_l" pkg="image_proc" type="image_proc" ns="/cam/$(arg shutter)/L">
+		<remap from="/cam/$(arg shutter)/L/image_rect" to="/camera/left/image_raw" />
+	</node>
+	<node name="rectifier_r" pkg="image_proc" type="image_proc" ns="/cam/$(arg shutter)/R">
+		<remap from="/cam/$(arg shutter)/R/image_rect" to="/camera/right/image_raw" />
+
+	</node>
+
+
+	<node name="orb_slam" pkg="ORB_SLAM2" type="Stereo" args="$(arg ORB_SLAM_INSTALL_PREFIX)/Vocabulary/ORBvoc.txt $(arg ORB_SLAM_INSTALL_PREFIX)/Examples/Stereo/StereoTUM.yaml false" output="screen"/>
+
+	
+	
+</launch>
