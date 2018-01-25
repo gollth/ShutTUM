@@ -73,8 +73,8 @@ def publishimage(pub, value):
 	pub.img.publish(msg)
 	publishtf(value, 'cam1')
 	msg = CameraInfo(width=res.width, height=res.height, 
-					 distortion_model='fov', D=[value.distortion],
-					 P=value.P.flatten().tolist())
+					 distortion_model='fov', D=[value.distortion('fov')],
+					 K=value.K.flatten().tolist())
 	msg.header = createheader(value)
 	pub.cam.publish(msg)
 	pub.exp.publish(Float32(data=value.exposure))
