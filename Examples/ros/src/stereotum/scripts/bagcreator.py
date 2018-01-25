@@ -40,13 +40,13 @@ imu   = ros.Publisher('/imu', Imu, queue_size=10)
 CamPub= namedtuple('CamPub', 'img cam exp')
 
 def create_camera_publisher(prefix):
-	return (prefix, CamPub(img=ros.Publisher(prefix + '/image', Image, queue_size=1),
+	return (prefix, CamPub(img=ros.Publisher(prefix + '/image_raw', Image, queue_size=1),
 		          cam=ros.Publisher(prefix + '/camera_info', CameraInfo, queue_size=10),
 		          exp=ros.Publisher(prefix + '/exposure', Float32, queue_size=10)
 		   ))
 
 # Create four publishers, one for each camera
-cams = dict(map(create_camera_publisher, ['/cam/global/L', '/cam/global/R', '/cam/rolling/L', '/cam/rolling/R']))
+cams = dict(map(create_camera_publisher, ['/cam/global/left', '/cam/global/right', '/cam/rolling/left', '/cam/rolling/right']))
 
 def createheader(value): 
 	return Header(stamp=ros.Time.from_sec(value.stamp), frame_id=value.reference)
@@ -83,11 +83,11 @@ while not ros.is_shutdown():
 		
 		# Images
 		if data.global_ is not None:
-			if data.global_.L is not None: publishimage(cams['/cam/global/L'], data.global_.L)
-			if data.global_.R is not None: publishimage(cams['/cam/global/R'], data.global_.R)
+			if data.global_.L is not None: publishimage(cams['/cam/global/left'], data.global_.L)
+			if data.global_.R is not None: publishimage(cams['/cam/global/right'], data.global_.R)
 		if data.rolling is not None:
-			if data.rolling.L is not None: publishimage(cams['/cam/rolling/L'], data.rolling.L)
-			if data.rolling.R is not None: publishimage(cams['/cam/rolling/R'], data.rolling.R)
+			if data.rolling.L is not None: publishimage(cams['/cam/rolling/left'], data.rolling.L)
+			if data.rolling.R is not None: publishimage(cams['/cam/rolling/right'], data.rolling.R)
 
 		# IMU
 		if data.imu is not None:
