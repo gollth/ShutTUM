@@ -38,9 +38,9 @@ All types of values **StereoTUM** consists of
    ~StereoTUM.values.Image.ID
    ~StereoTUM.values.Image.illuminance
    ~StereoTUM.values.Image.imu
+   ~StereoTUM.values.Image.K
    ~StereoTUM.values.Image.load
    ~StereoTUM.values.Image.opposite
-   ~StereoTUM.values.Image.P
    ~StereoTUM.values.Image.path
    ~StereoTUM.values.Image.principle
    ~StereoTUM.values.Image.shutter

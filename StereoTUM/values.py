@@ -279,16 +279,16 @@ class Image(Value):
                               y=self._dataset._refs[self.reference]['intrinsics'][3])
 
     @property
-    def P(self):
+    def K(self):
         r"""
-        The projection or intrinsic camera matrix as 4x3 
+        The intrinsic camera matrix as 3x3 
         `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_
         """
         f = self.focal
         p = self.principle
-        return np.array(((f.x,   0, p.x, 0),
-                         (  0, f.y, p.y, 0),
-                         (  0,   0,   1, 0)))
+        return np.array(((f.x,   0, p.x),
+                         (  0, f.y, p.y),
+                         (  0,   0,   1)))
 
 
 class StereoImage(Value):
