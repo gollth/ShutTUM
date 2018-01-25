@@ -141,7 +141,8 @@ class Image(Value):
     """
 
     _Vector2 = namedtuple('Vector2', 'x y')
-    
+    _DistCoeffs = namedtuple('DistCoeffs', 'k1 k2 r1 r2')
+
     def __init__(self, stereo, shutter, left):
         self._left = left
         self._stereo = stereo
@@ -261,20 +262,32 @@ class Image(Value):
         """
         return cv2.imread(self.path, cv2.IMREAD_GRAYSCALE)
 
-    @property
-    def distortion(self):
-        r"""The FOV distortion parameter as ``float`` for the provided camera"""
-        return self._dataset._refs[self.reference]['distortion']
-    
+    def distortion(self, model):
+        r""" Get the distortion coefficients the camera which took this image
+        It looks up the parameters in ``params/params.yaml/<cam>/distortion/<model>``
+        :param model: One of ``fov`` or ``radtan``
+        :return: either a float :math:\omega for FOV model, or a named tuple with 
+        the four elements ``DistCooefs(k1, k2, r1, r2)`` for Rad Tan model.
+        """
+        if model == 'fov':
+            return self._dataset._refs[self.reference]['distortion'][model]
+
+        elif model == 'radtan':
+            coeffs = self._dataset._refs[self.reference]['distortion'][model]
+            return self._DistCoeffs(k1=coeffs[0], k2=coeffs[1], r1=coeffs[2], r2=coeffs[3])
+
+        else:
+            raise ValueError("[%s] Unknown distortion model: %s" % (self._dataset, model))
+
     @property
     def focal(self):
-        r""" The camera's focal length as named tuple ``(x, y)`` in pixels """
+        r""" The camera's focal length as named tuple ``Vector2(x, y)`` in pixels """
         return Image._Vector2(x=self._dataset._refs[self.reference]['intrinsics'][0],
                               y=self._dataset._refs[self.reference]['intrinsics'][1])
 
     @property
     def principle(self):
-        r""" The camera's principle point as named tuple ``(x, y)`` in pixels """
+        r""" The camera's principle point as named tuple ``Vector2(x, y)`` in pixels """
         return Image._Vector2(x=self._dataset._refs[self.reference]['intrinsics'][2],
                               y=self._dataset._refs[self.reference]['intrinsics'][3])
 

@@ -4,7 +4,7 @@ import numpy     as np
 import os.path   as p
 from StereoTUM.dataset import Dataset
 from StereoTUM.values import StereoImage, GroundTruth
-
+from collections import Iterable
 
 class TestStereoImage (unittest.TestCase):
     def setUp(self):
@@ -37,6 +37,22 @@ class TestStereoImage (unittest.TestCase):
                 return
 
         self.fail()
+
+    def test_distortion_models(self):
+        for shutter in ['global', 'rolling']:
+            stereo = StereoImage(self.dataset, self.dataset.raw.frames[0, :], shutter)
+            omega_l = stereo.L.distortion(model='fov')
+            omega_r = stereo.R.distortion(model='fov')
+            self.assertIsInstance(omega_l, float)
+            self.assertIsInstance(omega_r, float)
+
+            radtan_l = stereo.L.distortion(model='radtan')
+            radtan_r = stereo.R.distortion(model='radtan')
+            self.assertIsInstance(radtan_l, Iterable)
+            self.assertIsInstance(radtan_r, Iterable)
+
+            with self.assertRaises(ValueError) as ctx:
+                stereo.L.distortion(model='what???')
 
     def test_opposite_image_finds_L_when_asked_on_R(self):
         self.assertIs(self.stereo.L.opposite, self.stereo.R)
