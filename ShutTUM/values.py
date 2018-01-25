@@ -262,11 +262,14 @@ class Image(Value):
         return cv2.imread(self.path, cv2.IMREAD_GRAYSCALE)
 
     def distortion(self, model):
-        r""" Get the distortion coefficients the camera which took this image
-        It looks up the parameters in ``params/params.yaml/<cam>/distortion/<model>``
-        :param model: One of ``fov`` or ``radtan``
-        :return: either a float :math:\omega for FOV model, or a named tuple with 
+        r""" 
+        :param model: One of ``"fov"`` or ``"radtan"``
+        :return: either a float :math:`\omega` for FOV model, or a named tuple with 
         the four elements ``DistCooefs(k1, k2, r1, r2)`` for Rad Tan model.
+        
+        Get the distortion coefficients the camera which took this image
+        It looks up the parameters in ``params/params.yaml/<cam>/distortion/<model>``
+        
         """
         if model == 'fov':
             return self._sequence._refs[self.reference]['distortion'][model]
