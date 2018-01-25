@@ -5,7 +5,7 @@ cam0:
   distortion_model: fov
   intrinsics: [680.7351521518964, 681.3434442709168, 654.2813663973375, 518.9859071696467]
   resolution: [1280, 1024]
-  rostopic: /cam/global/L/image
+  rostopic: /cam/global/left/image_raw
 cam1:
   T_cn_cnm1:
   - [0.9999742736479438, -0.0033013978764068405, 0.006368109164565337, -0.0999617280562253]
@@ -18,7 +18,7 @@ cam1:
   distortion_model: fov
   intrinsics: [683.5030383207096, 684.465584180249, 630.4903687076826, 517.5419678549986]
   resolution: [1280, 1024]
-  rostopic: /cam/global/R/image
+  rostopic: /cam/global/right/image_raw
 cam2:
   T_cn_cnm1:
   - [0.9999659143893593, 0.0018113700518159706, -0.0080553707543065, 0.09993875205841854]
@@ -31,7 +31,7 @@ cam2:
   distortion_model: fov
   intrinsics: [688.0754364916569, 689.0032036918133, 620.6408646353625, 518.3245046638706]
   resolution: [1280, 1024]
-  rostopic: /cam/rolling/L/image
+  rostopic: /cam/rolling/left/image_raw
 cam3:
   T_cn_cnm1:
   - [0.9999790730920792, -0.0006410587482835392, -0.006437578860529536, -0.10132764770321892]
@@ -44,4 +44,4 @@ cam3:
   distortion_model: fov
   intrinsics: [681.7575965394548, 682.8614723939833, 624.6721481158661, 498.03246676949]
   resolution: [1280, 1024]
-  rostopic: /cam/rolling/R/image
+  rostopic: /cam/rolling/right/image_raw

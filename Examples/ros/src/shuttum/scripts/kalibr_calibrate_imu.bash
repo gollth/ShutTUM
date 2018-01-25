@@ -4,4 +4,5 @@ rosrun kalibr kalibr_calibrate_imu_camera \
 	--target $2 \
 	--cams $3 \
 	--imu $4 \
-    --bag-from-to $5 $6
+	--bag-from-to $5 $6 \
+	--time-calibration
