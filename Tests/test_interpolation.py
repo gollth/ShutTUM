@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from StereoTUM import Interpolation
+from ShutTUM import Interpolation
 
 
 class TestInterpolation(unittest.TestCase):

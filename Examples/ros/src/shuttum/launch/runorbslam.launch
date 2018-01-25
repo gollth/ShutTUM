@@ -10,9 +10,9 @@
 
 	<rosparam file="$(arg sequence)/params/params.yaml" />
 
-	<param name="robot_description" textfile="$(find stereotum)/StereoTUM.urdf" />
+	<param name="robot_description" textfile="$(find shuttum)/ShutTUM.urdf" />
 
-	<node name="playback" type="playback.py" pkg="stereotum" output="screen">
+	<node name="playback" type="playback.py" pkg="shuttum" output="screen">
 		<param name="sequence" value="$(arg sequence)" />
 		<param name="start"  value="$(arg start)" />
 		<param name="end"    value="$(arg end)" />
@@ -29,7 +29,7 @@
 	</node>
 
 
-	<node name="orb_slam" pkg="ORB_SLAM2" type="Stereo" args="$(arg ORB_SLAM_INSTALL_PREFIX)/Vocabulary/ORBvoc.txt $(arg ORB_SLAM_INSTALL_PREFIX)/Examples/Stereo/StereoTUM.yaml false" output="screen"/>
+	<node name="orb_slam" pkg="ORB_SLAM2" type="Stereo" args="$(arg ORB_SLAM_INSTALL_PREFIX)/Vocabulary/ORBvoc.txt $(arg ORB_SLAM_INSTALL_PREFIX)/Examples/Stereo/ShutTUM.yaml false" output="screen"/>
 
 	
 	

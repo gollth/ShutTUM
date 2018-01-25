@@ -2,7 +2,7 @@ import unittest
 import yaml
 import numpy     as np
 import os.path   as p
-from StereoTUM.sequence import Sequence
+from ShutTUM.sequence import Sequence
 from collections import Iterable
 
 

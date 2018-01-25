@@ -3,7 +3,7 @@
 	<link name="cam1">
 		<visual>
 			<geometry>
-				<mesh filename="package://stereotum/StereoTUM.dae" />
+				<mesh filename="package://shuttum/ShutTUM.dae" />
 			</geometry>
 		</visual>
 	</link>

@@ -1,14 +1,14 @@
 ======
 Values
 ======
-All types of values **StereoTUM** consists of
+All types of values **ShutTUM** consists of
 
 :any:`Value`: Summary
 
 .. autosummary::
 
-   ~StereoTUM.values.Value.reference
-   ~StereoTUM.values.Value.stamp
+   ~ShutTUM.values.Value.reference
+   ~ShutTUM.values.Value.stamp
 
 
 
@@ -16,14 +16,14 @@ All types of values **StereoTUM** consists of
 
 .. autosummary::
 
-   ~StereoTUM.values.GroundTruth.extrapolate
-   ~StereoTUM.values.GroundTruth.interpolate
-   ~StereoTUM.values.GroundTruth.pose
-   ~StereoTUM.values.GroundTruth.position
-   ~StereoTUM.values.GroundTruth.quaternion
-   ~StereoTUM.values.GroundTruth.rotation
-   ~StereoTUM.values.GroundTruth.stereo
-   ~StereoTUM.values.GroundTruth.translation
+   ~ShutTUM.values.GroundTruth.extrapolate
+   ~ShutTUM.values.GroundTruth.interpolate
+   ~ShutTUM.values.GroundTruth.pose
+   ~ShutTUM.values.GroundTruth.position
+   ~ShutTUM.values.GroundTruth.quaternion
+   ~ShutTUM.values.GroundTruth.rotation
+   ~ShutTUM.values.GroundTruth.stereo
+   ~ShutTUM.values.GroundTruth.translation
 
 
 
@@ -31,20 +31,20 @@ All types of values **StereoTUM** consists of
 
 .. autosummary::
 
-   ~StereoTUM.values.Image.distortion
-   ~StereoTUM.values.Image.exposure
-   ~StereoTUM.values.Image.focal
-   ~StereoTUM.values.Image.groundtruth
-   ~StereoTUM.values.Image.ID
-   ~StereoTUM.values.Image.illuminance
-   ~StereoTUM.values.Image.imu
-   ~StereoTUM.values.Image.K
-   ~StereoTUM.values.Image.load
-   ~StereoTUM.values.Image.opposite
-   ~StereoTUM.values.Image.path
-   ~StereoTUM.values.Image.principle
-   ~StereoTUM.values.Image.shutter
-   ~StereoTUM.values.Image.resolution
+   ~ShutTUM.values.Image.distortion
+   ~ShutTUM.values.Image.exposure
+   ~ShutTUM.values.Image.focal
+   ~ShutTUM.values.Image.groundtruth
+   ~ShutTUM.values.Image.ID
+   ~ShutTUM.values.Image.illuminance
+   ~ShutTUM.values.Image.imu
+   ~ShutTUM.values.Image.K
+   ~ShutTUM.values.Image.load
+   ~ShutTUM.values.Image.opposite
+   ~ShutTUM.values.Image.path
+   ~ShutTUM.values.Image.principle
+   ~ShutTUM.values.Image.shutter
+   ~ShutTUM.values.Image.resolution
 
 
 
@@ -52,49 +52,49 @@ All types of values **StereoTUM** consists of
 
 .. autosummary::
 
-   ~StereoTUM.values.StereoImage.exposure
-   ~StereoTUM.values.StereoImage.extrapolate
-   ~StereoTUM.values.StereoImage.ID
-   ~StereoTUM.values.StereoImage.illuminance
-   ~StereoTUM.values.StereoImage.imu
-   ~StereoTUM.values.StereoImage.L
-   ~StereoTUM.values.StereoImage.R
-   ~StereoTUM.values.StereoImage.resolution
+   ~ShutTUM.values.StereoImage.exposure
+   ~ShutTUM.values.StereoImage.extrapolate
+   ~ShutTUM.values.StereoImage.ID
+   ~ShutTUM.values.StereoImage.illuminance
+   ~ShutTUM.values.StereoImage.imu
+   ~ShutTUM.values.StereoImage.L
+   ~ShutTUM.values.StereoImage.R
+   ~ShutTUM.values.StereoImage.resolution
 
 
 :any:`Imu`: Summary
 
 .. autosummary::
 
-   ~StereoTUM.values.Imu.acceleration
-   ~StereoTUM.values.Imu.angular_velocity
-   ~StereoTUM.values.Imu.extrapolate
-   ~StereoTUM.values.Imu.groundtruth
-   ~StereoTUM.values.Imu.interpolate
-   ~StereoTUM.values.Imu.stereo
+   ~ShutTUM.values.Imu.acceleration
+   ~ShutTUM.values.Imu.angular_velocity
+   ~ShutTUM.values.Imu.extrapolate
+   ~ShutTUM.values.Imu.groundtruth
+   ~ShutTUM.values.Imu.interpolate
+   ~ShutTUM.values.Imu.stereo
 
 
 
-.. autoclass:: StereoTUM.values.Value
+.. autoclass:: ShutTUM.values.Value
    :members:
    :undoc-members:
 
-.. autoclass:: StereoTUM.values.GroundTruth
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autoclass:: StereoTUM.values.Image
+.. autoclass:: ShutTUM.values.GroundTruth
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: StereoTUM.values.StereoImage
+.. autoclass:: ShutTUM.values.Image
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: StereoTUM.values.Imu
+.. autoclass:: ShutTUM.values.StereoImage
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: ShutTUM.values.Imu
    :members:
    :undoc-members:
    :show-inheritance:

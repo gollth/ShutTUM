@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>stereotum</name>
+  <name>shuttum</name>
   <version>0.1.0</version>
-  <description>A utility API to easily interact with the StereoTUM dataset</description>
+  <description>A utility API to easily interact with the ShutTUM dataset</description>
 
   <license>BSD</license>
 
@@ -10,7 +10,7 @@
   <maintainer email="thore.goll@tum.de">Thore Goll</maintainer>
   <author email="thore.goll@tum.de">Thore Goll</author>
 
-  <url type="repository">https://github.com/gollth/StereoTUM</url>
+  <url type="repository">https://github.com/gollth/ShutTUM</url>
   
 
   <buildtool_depend>catkin</buildtool_depend>

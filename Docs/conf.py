@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# StereoTUM documentation build configuration file, created by
+# ShutTUM documentation build configuration file, created by
 # sphinx-quickstart on Fri Sep 15 16:25:17 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -56,7 +56,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'StereoTUM'
+project = 'ShutTUM'
 copyright = '2017, Thore Goll'
 author = 'Thore Goll'
 
@@ -125,7 +125,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'StereoTUMdoc'
+htmlhelp_basename = 'ShutTUMdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -152,7 +152,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'StereoTUM.tex', 'StereoTUM Documentation',
+    (master_doc, 'ShutTUM.tex', 'ShutTUM Documentation',
      'Thore Goll', 'manual'),
 ]
 
@@ -162,7 +162,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'stereotum', 'StereoTUM Documentation',
+    (master_doc, 'shuttum', 'ShutTUM Documentation',
      [author], 1)
 ]
 
@@ -173,8 +173,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'StereoTUM', 'StereoTUM Documentation',
-     author, 'StereoTUM', 'One line description of project.',
+    (master_doc, 'ShutTUM', 'ShutTUM Documentation',
+     author, 'ShutTUM', 'One line description of project.',
      'Miscellaneous'),
 ]
 

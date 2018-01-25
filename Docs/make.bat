@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=build
-set SPHINXPROJ=StereoTUM
+set SPHINXPROJ=ShutTUM
 
 if "%1" == "" goto help
 

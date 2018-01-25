@@ -1,7 +1,7 @@
 """
-.. module:: StereoTUM
+.. module:: ShutTUM
    :platform: Unix, Windows
-   :synopsis: A utility API to easily interact with the StereoTUM dataset
+   :synopsis: A utility API to easily interact with the ShutTUM dataset
 
 .. moduleauthor:: Thore Goll <thore.goll@tum.de>
 
@@ -15,11 +15,11 @@ class Interpolation:
 
     .. image:: images/interpolation.svg       
 
-    **StereoTUM**'s data is recorded at different frequencies. Images are timestamped at around 25 Hz, Imu measurements  
+    **ShutTUM**'s data is recorded at different frequencies. Images are timestamped at around 25 Hz, Imu measurements  
     at around 160 Hz (exactly multiples per image), while Ground Truth data is clocked between 100 .. 120 Hz. To 
     get relateable measurements, you must sometimes interpolate between two values.
 
-    StereoTUM supports currently three interpolation methods, namely :any:`linear`, :any:`cubic` 
+    ShutTUM supports currently three interpolation methods, namely :any:`linear`, :any:`cubic` 
     and :any:`slerp`. However it is possible to define your own function and hand it over to interpolating 
     methods, such as  :any:`GroundTruth.interpolate` or :any:`Imu.interpolate`::
 

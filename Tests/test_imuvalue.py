@@ -1,8 +1,8 @@
 import unittest
 import os.path as p
 import numpy as np
-from StereoTUM.sequence import Sequence
-from StereoTUM.values import Imu, GroundTruth
+from ShutTUM.sequence import Sequence
+from ShutTUM.values import Imu, GroundTruth
 
 
 class TestImuValue (unittest.TestCase):

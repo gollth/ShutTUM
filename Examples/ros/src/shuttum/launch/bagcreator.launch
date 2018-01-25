@@ -10,7 +10,7 @@
 	<arg name="start" default="" />
 	<arg name="end"   default="" />
 
-	<node name="player" type="playback.py" pkg="stereotum" output="screen">
+	<node name="player" type="playback.py" pkg="shuttum" output="screen">
 		<param name="sequence" value="$(arg sequence)" />
 		<param name="speed" value="$(arg speed)" />
 		<param name="start"  value="$(arg start)" />
@@ -18,26 +18,26 @@
 	</node>
 
 
-	<node name="decimator_global_L" type="decimator.py" pkg="stereotum" if="$(arg decimating)">
+	<node name="decimator_global_L" type="decimator.py" pkg="shuttum" if="$(arg decimating)">
 		<param name="topic" value="/cam/global/left/image_raw" />
 		<param name="decimation" value="$(arg decimation)" />
 	</node>
-	<node name="decimator_global_R" type="decimator.py" pkg="stereotum" if="$(arg decimating)">
+	<node name="decimator_global_R" type="decimator.py" pkg="shuttum" if="$(arg decimating)">
 		<param name="topic" value="/cam/global/right/image_raw" />
 		<param name="decimation" value="$(arg decimation)" />
 	</node>
 
-	<node name="decimator_rolling_L" type="decimator.py" pkg="stereotum" if="$(arg decimating)">
+	<node name="decimator_rolling_L" type="decimator.py" pkg="shuttum" if="$(arg decimating)">
 		<param name="topic" value="/cam/rolling/left/image_raw" />
 		<param name="decimation" value="$(arg decimation)" />
 	</node>
-	<node name="decimator_rolling_R" type="decimator.py" pkg="stereotum" if="$(arg decimating)">
+	<node name="decimator_rolling_R" type="decimator.py" pkg="shuttum" if="$(arg decimating)">
 		<param name="topic" value="/cam/rolling/right/image_raw" />
 		<param name="decimation" value="$(arg decimation)" />
 	</node>
 
 
-	<node pkg="rviz"   type="rviz"   name="rviz" if="$(arg rviz)" args="-d $(find stereotum)/playback.rviz"/>
+	<node pkg="rviz"   type="rviz"   name="rviz" if="$(arg rviz)" args="-d $(find shuttum)/playback.rviz"/>
 	
 	<node pkg="rosbag" type="record" name="recorder" output="screen" args="record --all --output-name=$(arg bag) --buffsize=0"/>
 

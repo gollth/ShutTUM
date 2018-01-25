@@ -1,8 +1,8 @@
 import unittest
 import os.path   as p
 import numpy     as np
-from StereoTUM.sequence import Sequence
-from StereoTUM.values import Value
+from ShutTUM.sequence import Sequence
+from ShutTUM.values import Value
 
 
 class TestValue(unittest.TestCase):

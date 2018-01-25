@@ -2,8 +2,8 @@ import unittest
 import math
 import numpy     as np
 import os.path   as p
-from StereoTUM.sequence import Sequence
-from StereoTUM.values import StereoImage, GroundTruth
+from ShutTUM.sequence import Sequence
+from ShutTUM.values import StereoImage, GroundTruth
 from collections import Iterable
 
 

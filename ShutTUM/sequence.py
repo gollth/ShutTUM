@@ -4,8 +4,8 @@ import os.path as p
 import numpy   as np
 
 from collections import namedtuple
-import StereoTUM.devices
-import StereoTUM.values
+import ShutTUM.devices
+import ShutTUM.values
 
 
 class Sequence(object):
@@ -13,7 +13,7 @@ class Sequence(object):
     
     In order for performent operations the sequence loads and checks lots of the data in its :any:`__init__` thus avoiding
     expensive checks in for loops or list comprehensions. In addition it holds the reference to list-like objects, such 
-    as :any:`cameras` or :any:`imu <StereoTUM.Sequence.imu>`. You can iterate over each of these (depending
+    as :any:`cameras` or :any:`imu <ShutTUM.Sequence.imu>`. You can iterate over each of these (depending
     on application) to get the corresponding :any:`Value` s in order.
     
     A typical application might look like::
@@ -69,7 +69,7 @@ class Sequence(object):
 
     def __init__(self, path, stereosync=True):
         r""" 
-        :param str path: the path to one sequence of the dataset, such as ``~/StereoTUM/0001``
+        :param str path: the path to one sequence of the dataset, such as ``~/ShutTUM/0001``
         :param bool stereosync: possiblity to set the :any:`stereosync` option in constructor
         :raises: ValueError: if anything goes wrong 
         Load the sequence into memory (except images) and do basic data consistency checks.
@@ -144,7 +144,7 @@ class Sequence(object):
             Sequence._check_file_exists(vignette)
             self._gammas[cam] = np.genfromtxt(gamma, delimiter=' ')
 
-        self._cameras = StereoTUM.devices.DuoStereoCamera(self)
+        self._cameras = ShutTUM.devices.DuoStereoCamera(self)
 
     def __str__(self):
         return "%s (%s)" % (type(self).__name__, p.basename(p.normpath(self._path)))
@@ -215,7 +215,7 @@ class Sequence(object):
                 print(r.R.stamp)
         
         
-        .. seealso:: :any:`StereoTUM.Sequence.stereosync`
+        .. seealso:: :any:`ShutTUM.Sequence.stereosync`
        
         """
         if shutter == 'both':    return self._cameras
@@ -260,7 +260,7 @@ class Sequence(object):
         
         """
         for row in self.raw.imu:
-            yield StereoTUM.values.Imu(self, row)
+            yield ShutTUM.values.Imu(self, row)
 
     @property
     def mocap(self):
@@ -295,7 +295,7 @@ class Sequence(object):
 
         """
         for row in self.raw.groundtruth:
-            yield StereoTUM.values.GroundTruth(self, row)
+            yield ShutTUM.values.GroundTruth(self, row)
 
     @property
     def times(self):
@@ -441,13 +441,13 @@ class Sequence(object):
         raise ValueError('%s Cannot lookup cam name for shutter "%s" on side "%s"' % (self, shutter, side))
 
     def _find_data_for(self, s):
-        value = StereoTUM.values.Value(self, s, 'world')  # world as dummy for the time stamp
+        value = ShutTUM.values.Value(self, s, 'world')  # world as dummy for the time stamp
         return Sequence._Data(
             stamp=s,
-            global_=StereoTUM.values.StereoImage.extrapolate(value, 'global', method='exact'),
-            rolling=StereoTUM.values.StereoImage.extrapolate(value, 'rolling', method='exact'),
-            imu=StereoTUM.values.Imu.extrapolate(value, method='exact'),
-            groundtruth=StereoTUM.values.GroundTruth.extrapolate(value, method='exact')
+            global_=ShutTUM.values.StereoImage.extrapolate(value, 'global', method='exact'),
+            rolling=ShutTUM.values.StereoImage.extrapolate(value, 'rolling', method='exact'),
+            imu=ShutTUM.values.Imu.extrapolate(value, method='exact'),
+            groundtruth=ShutTUM.values.GroundTruth.extrapolate(value, method='exact')
         )
 
     def _find_data_between(self, start, stop):

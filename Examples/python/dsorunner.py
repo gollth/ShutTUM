@@ -6,16 +6,16 @@ import shutil
 import numpy as np
 import os.path as p
 
-sys.path.append('/usr/stud/gollt/StereoTUM/')
-from StereoTUM.sequence import Sequence
+sys.path.append('/usr/stud/gollt/ShutTUM/')
+from ShutTUM.sequence import Sequence
 from argparse import ArgumentParser
 from subprocess import STDOUT, check_call, CalledProcessError
 
 
 def play(sequence_path, shutter, side, debug=False, options=[], dso_prefix=''):
-	r""" Let's DSO run for a specific camera on a sequence from the StereoTUM dataset
+	r""" Let's DSO run for a specific camera on a sequence from the ShutTUM dataset
 
-	:param sequence_path: (str) the path to the StereoTUM sequence
+	:param sequence_path: (str) the path to the ShutTUM sequence
 	:param shutter: {'global', 'rolling'} which shutter type of the sequence shall be used
 	:param side: {'L', 'R'} to work with the left or right camera
 	:param debug: (bool) prints the executing command & does not remove the .temp directory

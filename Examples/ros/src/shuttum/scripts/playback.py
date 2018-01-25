@@ -14,8 +14,8 @@ from rosgraph_msgs.msg import Clock
 from geometry_msgs.msg import Vector3
 from sensor_msgs.msg   import Image, Imu, CameraInfo
 from cv_bridge         import CvBridge, CvBridgeError
-sys.path.append('/usr/stud/gollt/StereoTUM/')
-from StereoTUM.sequence import Sequence
+sys.path.append('/usr/stud/gollt/ShutTUM/')
+from ShutTUM.sequence import Sequence
 
 # Intialize
 ros.init_node('playback')

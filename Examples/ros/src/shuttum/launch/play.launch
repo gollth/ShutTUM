@@ -9,15 +9,15 @@
 
 	<rosparam file="$(arg sequence)/params/params.yaml" />
 
-	<param name="robot_description" textfile="$(find stereotum)/StereoTUM.urdf" />
+	<param name="robot_description" textfile="$(find shuttum)/StereoTUM.urdf" />
 
-	<node name="playback" type="playback.py" pkg="stereotum" output="screen">
+	<node name="playback" type="playback.py" pkg="shuttum" output="screen">
 		<param name="sequence" value="$(arg sequence)" />
 		<param name="loop"   value="$(arg loop)" />
 		<param name="start"  value="$(arg start)" />
 		<param name="end"    value="$(arg end)" />
 	</node>
 
-	<node pkg="rviz"   type="rviz"   name="rviz" if="$(arg rviz)" args="-d $(find stereotum)/playback.rviz"/>
+	<node pkg="rviz"   type="rviz"   name="rviz" if="$(arg rviz)" args="-d $(find shuttum)/playback.rviz"/>
 	
 </launch>

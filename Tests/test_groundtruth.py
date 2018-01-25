@@ -1,9 +1,9 @@
 import unittest
 import os.path as p
 import numpy as np
-from StereoTUM import Interpolation
-from StereoTUM.sequence import Sequence
-from StereoTUM.values import GroundTruth
+from ShutTUM import Interpolation
+from ShutTUM.sequence import Sequence
+from ShutTUM.values import GroundTruth
 
 
 class TestGroundTruth(unittest.TestCase):

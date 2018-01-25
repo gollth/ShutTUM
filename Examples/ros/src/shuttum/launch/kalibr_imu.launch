@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+	
+	<arg name="bag" />
+	<arg name="lens" /> <!-- either "standard" or "fisheye" -->
+	<arg name="target"   default="$(find shuttum)/params/aprilA0.yaml" />
+	<arg name="imu"      default="$(find shuttum)/params/imu.yaml" />
+	<arg name="start"    default="0" />
+	<arg name="end"      default="1000" />
+
+	<node name="kalibr_calibrator" type="kalibr_calibrate_imu.bash" pkg="shuttum" args="$(arg bag) $(arg target) $(find shuttum)/params/camchain-$(arg lens).yaml $(arg imu) $(arg start) $(arg end)" output="screen" />
+
+</launch>

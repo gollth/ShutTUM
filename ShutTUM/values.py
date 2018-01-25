@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os.path as p
 import transforms3d as tf
-import StereoTUM
+import ShutTUM
 from collections import namedtuple
 
 
@@ -14,10 +14,10 @@ class Value(object):
      
     .. image:: images/frames.png 
      
-    All these values have some common properties in the StereoTUM:
+    All these values have some common properties in the ShutTUM:
     
-    1) They are single, time-discrete values (see :any:`stamp <StereoTUM.Value.stamp>`)
-    2) They are related to a certain reference frame (see :any:`reference <StereoTUM.Value.reference>`)
+    1) They are single, time-discrete values (see :any:`stamp <ShutTUM.Value.stamp>`)
+    2) They are related to a certain reference frame (see :any:`reference <ShutTUM.Value.reference>`)
     3) They all have a transformation from its reference frame towards that of ``"cam1"``
     
     
@@ -25,7 +25,7 @@ class Value(object):
     Therefore the leftshift ``<<`` and rightshift ``>>`` operator has been overloaded. Both accept as their right parameter either:
     
     * a string indicating the desired reference to or from which to transform (e.g. ``"cam1"``, ``"cam2"``, ``"world"``, ``"imu"`` ...)
-    * or another value, whose :any:`reference <StereoTUM.Value.reference>` property is used to determine the transform
+    * or another value, whose :any:`reference <ShutTUM.Value.reference>` property is used to determine the transform
     
     The direction of the "shift" means "How is the transformation from reference x to y?"::
     
@@ -88,7 +88,7 @@ class Value(object):
     @property
     def _transform(self):
         r"""
-        The transformation from ``"cam1"`` to this value`s :any:`reference <StereoTUM.Value.reference>` as 4x4 
+        The transformation from ``"cam1"`` to this value`s :any:`reference <ShutTUM.Value.reference>` as 4x4 
         `ndarray <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html>`_ homogeneous matrix 
         """
         return np.array(self._sequence._refs[self._reference]['transform'])
@@ -106,7 +106,7 @@ class Value(object):
         elif isinstance(parent, Value):
             tparent = parent._transform
         else:
-            raise TypeError("[%s] Cannot only lookup transforms for type string or StereoTUM.values.Value" % self._sequence)
+            raise TypeError("[%s] Cannot only lookup transforms for type string or ShutTUM.values.Value" % self._sequence)
 
         tchild = self._transform
         return np.dot(np.linalg.inv(tparent), tchild)
@@ -119,7 +119,7 @@ class Value(object):
         elif isinstance(child, Value):
             tchild = child._transform
         else:
-            raise TypeError("[%s] Cannot only lookup transforms for type string or StereoTUM.values.Value" % self._sequence)
+            raise TypeError("[%s] Cannot only lookup transforms for type string or ShutTUM.values.Value" % self._sequence)
 
         tparent = self._transform
         return np.dot(np.linalg.inv(tparent), tchild)
@@ -135,7 +135,7 @@ class Image(Value):
 
     The cameras record data at approximately **20 FPS**, but sometimes their might exist frame drops. 
 
-    You can query a lot of information from an image such as its :any:`shutter <StereoTUM.Image.shutter>`, :any:`exposure <StereoTUM.Image.exposure>` time and :any:`ID <StereoTUM.Image.ID>`.
+    You can query a lot of information from an image such as its :any:`shutter <ShutTUM.Image.shutter>`, :any:`exposure <ShutTUM.Image.exposure>` time and :any:`ID <ShutTUM.Image.ID>`.
     Since it is a :any:`Value` all transform shenanigans apply.
     """
 
@@ -183,7 +183,7 @@ class Image(Value):
         r""" 
         Returns the resolution of the cameras as a named tuple ``Resolution(width, height)``
         
-        .. seealso:: :any:`Sequence.resolution <StereoTUM.Sequence.resolution>`
+        .. seealso:: :any:`Sequence.resolution <ShutTUM.Sequence.resolution>`
         """
         return self._sequence.resolution
 
@@ -213,7 +213,7 @@ class Image(Value):
         r"""
         The image's illuminance in lux.
         
-        .. seealso:: :any:`StereoImage.illuminance <StereoTUM.StereoImage.illuminance>`
+        .. seealso:: :any:`StereoImage.illuminance <ShutTUM.StereoImage.illuminance>`
         """
         return self._stereo.illuminance
 
@@ -221,7 +221,7 @@ class Image(Value):
     def path(self):
         r"""
         The path to the JPEG file of this image, relative to the the construction parameter of 
-        :any:`Sequence(...) <StereoTUM.Sequence.__init__>`.
+        :any:`Sequence(...) <ShutTUM.Sequence.__init__>`.
         """
         return p.join(self._stereo._sequence._path, 'frames', self.reference, '%05d.jpeg' % self.ID)
 
@@ -232,8 +232,8 @@ class Image(Value):
         return self._stereo.imu
 
     def groundtruth(self, max_stamp_delta=.5,
-                    position_interpolation=StereoTUM.Interpolation.linear,
-                    orientation_interpolation=StereoTUM.Interpolation.slerp):
+                    position_interpolation=ShutTUM.Interpolation.linear,
+                    orientation_interpolation=ShutTUM.Interpolation.slerp):
         r"""
         Find the matching :any:`GroundTruth` value for this image. Since the motion capture system and the cameras
         are not synced, we need to interpolate between ground truths by image's time stamp.
@@ -245,7 +245,7 @@ class Image(Value):
         :param orientation_interpolation: a predefined or custom interpolation function to interpolate quaternions
         :return: the matching interpolated ground truth or None, if any of its values was NaN
 
-        .. seealso:: :any:`StereoTUM.GroundTruth.interpolate`
+        .. seealso:: :any:`ShutTUM.GroundTruth.interpolate`
         """
         return GroundTruth.interpolate(self._sequence, self.stamp, max_stamp_delta, position_interpolation, orientation_interpolation)
 
@@ -339,7 +339,7 @@ class StereoImage(Value):
 
         :return: The matching stereo image or None if no was found
         
-        .. seealso:: :any:`Sequence.cameras <StereoTUM.Sequence.cameras>`
+        .. seealso:: :any:`Sequence.cameras <ShutTUM.Sequence.cameras>`
         
         """
         if method == 'closest':
@@ -424,7 +424,7 @@ class StereoImage(Value):
         r""" 
         Returns the resolution of the cameras as a named tuple ``Resolution(width, height)``
         
-        .. seealso:: :any:`Sequence.resolution <StereoTUM.Sequence.resolution>`
+        .. seealso:: :any:`Sequence.resolution <ShutTUM.Sequence.resolution>`
         
         """
         return self._sequence.resolution
@@ -438,7 +438,7 @@ class StereoImage(Value):
     def exposure(self):
         r"""
         The exposure time as float in milli seconds, that this image was illuminated. This is constant for 
-        :any:`L <StereoTUM.StereoImage.L>` and :any:`R <StereoTUM.StereoImage.R>`
+        :any:`L <ShutTUM.StereoImage.L>` and :any:`R <ShutTUM.StereoImage.R>`
         """
         return self._data[2]
 
@@ -448,7 +448,7 @@ class StereoImage(Value):
         The estimated illuminance measured by the `TSL2561 Lux-sensor <https://cdn-shop.adafruit.com/datasheets/TSL2561.pdf>`_. 
         
         This float is measured in lx but is only an approximation. This value is constant for both 
-        :any:`L <StereoTUM.StereoImage.L>` and :any:`R <StereoTUM.StereoImage.R>`. Based on this value, the estimated 
+        :any:`L <ShutTUM.StereoImage.L>` and :any:`R <ShutTUM.StereoImage.R>`. Based on this value, the estimated 
         :any:`exposure` time can be computed with the following hand fitted formula:
 
         .. image:: images/autoexposure.svg
@@ -534,8 +534,8 @@ class Imu(Value):
                          % (value._sequence, method))
 
     @staticmethod
-    def interpolate(sequence, stamp, acceleration_interpolation=StereoTUM.Interpolation.linear,
-                    angvelo_interpolation=StereoTUM.Interpolation.linear):
+    def interpolate(sequence, stamp, acceleration_interpolation=ShutTUM.Interpolation.linear,
+                    angvelo_interpolation=ShutTUM.Interpolation.linear):
         r"""
         This function enables you to find the interpolated :any:`Imu` values of a record given a certain timestamp.
 
@@ -607,14 +607,14 @@ class Imu(Value):
             * ``"exact"``: the image where ``value.stamp == image.stamp`` holds is chosen, None otherwise
         :return: The matching stereo image or None if no was found
 
-        .. seealso:: :any:`StereoTUM.StereoImage.extrapolate`
+        .. seealso:: :any:`ShutTUM.StereoImage.extrapolate`
         
         """
         return StereoImage.extrapolate(self, shutter, method=extrapolation)
 
     def groundtruth(self, max_stamp_delta=.5,
-                    position_interpolation=StereoTUM.Interpolation.linear,
-                    orientation_interpolation=StereoTUM.Interpolation.slerp):
+                    position_interpolation=ShutTUM.Interpolation.linear,
+                    orientation_interpolation=ShutTUM.Interpolation.slerp):
         r"""
         Find the matching :any:`GroundTruth` value for this :any:`Imu` value. Since the motion capture system and the 
         IMU sensor are not synced, we need to interpolate between ground truths by time stamp of this :any:`Imu` value.
@@ -626,7 +626,7 @@ class Imu(Value):
         :param orientation_interpolation: a predefined or custom interpolation function to interpolate quaternions
         :return: the matching interpolated ground truth
 
-        .. seealso:: :any:`StereoTUM.GroundTruth.interpolate`
+        .. seealso:: :any:`ShutTUM.GroundTruth.interpolate`
         
         """
         return GroundTruth.interpolate(self._sequence, self.stamp, max_stamp_delta,
@@ -642,8 +642,8 @@ class GroundTruth(Value):
 
     @staticmethod
     def interpolate(sequence, stamp, max_stamp_delta=.5,
-                    position_interpolation=StereoTUM.Interpolation.linear,
-                    orientation_interpolation=StereoTUM.Interpolation.slerp):
+                    position_interpolation=ShutTUM.Interpolation.linear,
+                    orientation_interpolation=ShutTUM.Interpolation.slerp):
         r"""
         This function enables you to find the interpolated ground truth of a record given a certain timestamp.
 
@@ -755,7 +755,7 @@ class GroundTruth(Value):
                             (one of ``"closest"``, ``"next"``, ``"prev"``, ``"exact"``)
         :return: The matching stereo image or None if no was found
 
-        .. seealso:: :any:`StereoTUM.StereoImage.extrapolate`
+        .. seealso:: :any:`ShutTUM.StereoImage.extrapolate`
         
         """
         return StereoImage.extrapolate(self, shutter, method=extrapolation)

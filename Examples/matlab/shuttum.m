@@ -1,6 +1,6 @@
-function dataset = stereotum(path)
-%STEREOTUM Loads a record from the StereoTUM dataset from path
-%   record = stereotum('path/to/record')
+function dataset = shuttum(path)
+%SHUTTUM Loads a record from the ShutTUM dataset from path
+%   record = shuttum('path/to/record')
 %   loads the record into a Struct with the fields 'frames', 'imu', and
 %   'groundtruth', which correspond to their respective .csv files in the
 %   record. 

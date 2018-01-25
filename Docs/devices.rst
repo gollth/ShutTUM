@@ -3,8 +3,8 @@ Devices
 =======
 All classes associated with iteration over values measured by sensors
 
-.. autoclass:: StereoTUM.devices.StereoCamera
+.. autoclass:: ShutTUM.devices.StereoCamera
     :members:
-.. autoclass:: StereoTUM.devices.DuoStereoCamera
+.. autoclass:: ShutTUM.devices.DuoStereoCamera
     :members:
 

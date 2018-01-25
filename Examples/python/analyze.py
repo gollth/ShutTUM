@@ -5,8 +5,8 @@ import numpy as np
 import os.path as p
 import sys
 import yaml
-sys.path.append('/usr/stud/gollt/StereoTUM/')
-from StereoTUM.sequence import Sequence
+sys.path.append('/usr/stud/gollt/ShutTUM/')
+from ShutTUM.sequence import Sequence
 from argparse import ArgumentParser
 
 
@@ -35,7 +35,7 @@ def analyze_frames(path, shutter, speed=1.):
 
         # Resize the display to fit the screen
         display = cv2.resize(display, (0,0), fx=.5, fy=.5)
-        cv2.imshow('StereoTUM', display)
+        cv2.imshow('ShutTUM', display)
 
         # Do the spinning
         if speed == 0: cv2.waitKey(0)
@@ -80,7 +80,7 @@ def analyse_frame_drops(path, include_log=False):
     else:
         msg = ""
         msg += '=====================================================================\n'
-        msg += '| StereoTUM Sequence Sequence: %s |\n' % limit(args.sequence, 37)
+        msg += '| ShutTUM Sequence Sequence: %s |\n' % limit(args.sequence, 37)
         msg += '+===================================================================+\n'
         msg += '|   Frames (%s triggered), dropped frames:                       |\n' % symbol(frames.shape[0]-1)
         msg += '+----------------+----------------+----------------+----------------+\n'
@@ -247,7 +247,7 @@ def interpolate_poses(times, gt_poses):
 
 def create_ground_truth(path, start=0, end=0, 
                         bagfile='.logs/*.bag',
-                        topic='/StereoTUM/estimated_transform',
+                        topic='/ShutTUM/estimated_transform',
                         file=''):
 
     from rosbag import Bag
@@ -358,8 +358,8 @@ if __name__ == '__main__':
                             help='Optional time offset to ignore samples in the bag at the start [s]. Ignored is everything before t+start. Defaults to 0')
     extracter.add_argument('--end', type=float, default=0,
                             help='Optional time offset to ignore samples in the bag at the end [s]. Ignored is everything after t+end. Defaults to 0')
-    extracter.add_argument('--topic', default='/StereoTUM/estimated_transform',
-                            help='The topic name in the bag file, for which to listen to ground truth poses (must publish TransformStamped) [/StereoTUM/estimated_transform]')
+    extracter.add_argument('--topic', default='/ShutTUM/estimated_transform',
+                            help='The topic name in the bag file, for which to listen to ground truth poses (must publish TransformStamped) [/ShutTUM/estimated_transform]')
    
 
     args = parser.parse_args()  

@@ -1,8 +1,8 @@
 import unittest
 import os.path as p
 
-from StereoTUM.sequence import  Sequence
-from StereoTUM.values import Imu, GroundTruth
+from ShutTUM.sequence import  Sequence
+from ShutTUM.values import Imu, GroundTruth
 
 
 class TestFrameDrops (unittest.TestCase):

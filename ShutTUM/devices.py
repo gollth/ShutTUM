@@ -1,4 +1,4 @@
-import StereoTUM.values
+import ShutTUM.values
 
 
 class StereoCamera(object):
@@ -23,7 +23,7 @@ class StereoCamera(object):
     def __init__(self, sequence, shutter):
         r"""
         Creates a new StereoCamera as iterable container for images. Usually you will not invoke this constructor
-        directly but rather get a reference via :any:`cameras <StereoTUM.Sequence.cameras>`
+        directly but rather get a reference via :any:`cameras <ShutTUM.Sequence.cameras>`
         
         :param Sequence sequence: The reference to the sequence 
         :param str shutter: the name of the shutter this camera uses (usually "rolling" or "global")
@@ -57,7 +57,7 @@ class StereoCamera(object):
     def __getitem__(self, id):
         row = self._data[self._data[:,1] == id, :]
         if row.size == 0: raise ValueError('[%s] No Frame for stereo camera "%s" found with ID %d' % (self._sequence, self._shutter, id))
-        return StereoTUM.values.StereoImage(self._sequence, row[0], self._shutter)
+        return ShutTUM.values.StereoImage(self._sequence, row[0], self._shutter)
 
 
 class DuoStereoCamera:

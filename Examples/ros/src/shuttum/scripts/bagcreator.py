@@ -13,8 +13,8 @@ from std_msgs.msg      import Header, Float32
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg   import Image, Imu, CameraInfo
 from cv_bridge         import CvBridge, CvBridgeError
-sys.path.append('/usr/stud/gollt/StereoTUM/Python')
-from StereoTUM.sequence import Sequence
+sys.path.append('/usr/stud/gollt/ShutTUM/Python')
+from ShutTUM.sequence import Sequence
 
 # Intialize
 ros.init_node('bagcreator')

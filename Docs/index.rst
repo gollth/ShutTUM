@@ -1,7 +1,7 @@
 =======================
-StereoTUM documentation
+ShutTUM documentation
 =======================
-A utility API to easily interact with the StereoTUM dataset by `Thore Goll <thore.goll@tum.de>`_
+A utility API to easily interact with the ShutTUM dataset by `Thore Goll <thore.goll@tum.de>`_
 
 .. toctree::
     :maxdepth: 2
@@ -17,14 +17,14 @@ Classes
 .. autosummary::
      :toctree:
 
-     ~StereoTUM.Interpolation
-     ~StereoTUM.dataset.Sequence
+     ~ShutTUM.Interpolation
+     ~ShutTUM.sequence.Sequence
 
-     ~StereoTUM.devices.StereoCamera
-     ~StereoTUM.devices.DuoStereoCamera
+     ~ShutTUM.devices.StereoCamera
+     ~ShutTUM.devices.DuoStereoCamera
 
-     ~StereoTUM.values.Value
-     ~StereoTUM.values.GroundTruth
-     ~StereoTUM.values.Image
-     ~StereoTUM.values.StereoImage
-     ~StereoTUM.values.Imu
+     ~ShutTUM.values.Value
+     ~ShutTUM.values.GroundTruth
+     ~ShutTUM.values.Image
+     ~ShutTUM.values.StereoImage
+     ~ShutTUM.values.Imu
