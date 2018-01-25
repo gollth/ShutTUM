@@ -67,7 +67,7 @@ class Sequence(object):
         if key not in dictionary:
             raise ValueError("Could not find %s in %s, record folder seems not to be valid!" % (key, file))
 
-    def __init__(self, path, stereosync=True):
+    def __init__(self, path, stereosync=True, calibration=True):
         r""" 
         :param str path: the path to one sequence of the dataset, such as ``~/ShutTUM/0001``
         :param bool stereosync: possiblity to set the :any:`stereosync` option in constructor
@@ -121,6 +121,12 @@ class Sequence(object):
         Sequence._check_file_exists(paramfile)
         with open(paramfile) as stream:
             self._refs = yaml.load(stream)
+            if calibration:
+                self._refs['cam1']['shutter']['type'] = 'global'
+                self._refs['cam2']['shutter']['type'] = 'global'
+                self._refs['cam3']['shutter']['type'] = 'rolling'
+                self._refs['cam4']['shutter']['type'] = 'rolling'
+                # TODO add doc string for this
 
         self._gammas = {}
         self._cams = {}

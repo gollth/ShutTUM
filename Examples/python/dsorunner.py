@@ -6,7 +6,7 @@ import shutil
 import numpy as np
 import os.path as p
 
-sys.path.append('/usr/stud/gollt/ShutTUM/')
+sys.path.append('/usr/stud/gollt/ShutTUM/api')
 from ShutTUM.sequence import Sequence
 from argparse import ArgumentParser
 from subprocess import STDOUT, check_call, CalledProcessError

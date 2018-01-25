@@ -6,6 +6,7 @@
 	<arg name="rviz"  default="true" />
 	<arg name="start" default="" />
 	<arg name="end"   default="" />
+	<arg name="is_calib_seq" default="false" />
 
 	<rosparam file="$(arg sequence)/params/params.yaml" />
 
@@ -16,6 +17,7 @@
 		<param name="loop"   value="$(arg loop)" />
 		<param name="start"  value="$(arg start)" />
 		<param name="end"    value="$(arg end)" />
+		<param name="calibration" value="$(arg is_calib_seq)" />
 	</node>
 
 	<node pkg="rviz"   type="rviz"   name="rviz" if="$(arg rviz)" args="-d $(find shuttum)/playback.rviz"/>

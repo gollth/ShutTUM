@@ -7,14 +7,18 @@
 	<arg name="decimation" default="10" /> 		<!-- By which factor shall the image messages be decimated for geometric calibration? -->
 	<arg name="decimating" default="false" />
 	<arg name="speed"      default="1" /> 		<!-- How fast shall the player playback the messages? -->
+	
+	<arg name="is_calib_seq" default="false" />
 	<arg name="start" default="" />
 	<arg name="end"   default="" />
+
 
 	<node name="player" type="playback.py" pkg="shuttum" output="screen">
 		<param name="sequence" value="$(arg sequence)" />
 		<param name="speed" value="$(arg speed)" />
 		<param name="start"  value="$(arg start)" />
 		<param name="end"    value="$(arg end)" />
+		<param name="calibration" value="$(arg is_calib_seq)" />
 	</node>
 
 

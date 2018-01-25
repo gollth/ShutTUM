@@ -13,7 +13,7 @@ from std_msgs.msg      import Header, Float32
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg   import Image, Imu, CameraInfo
 from cv_bridge         import CvBridge, CvBridgeError
-sys.path.append('/usr/stud/gollt/ShutTUM/Python')
+sys.path.append('/usr/stud/gollt/ShutTUM/api')
 from ShutTUM.sequence import Sequence
 
 # Intialize
@@ -21,11 +21,14 @@ ros.init_node('bagcreator')
 ros.set_param('/use_sim_time', True)
 bridge    = CvBridge()
 sequence_name    = ros.get_param('~sequence')
-sequence   = Sequence(sequence_name)
-sequence.stereosync = True
 loop      = ros.get_param('~loop', False) 
 start     = ros.get_param('~start', None)
 end       = ros.get_param('~end',   None)
+is_calib  = ros.get_param('~calibration', False)
+
+sequence   = Sequence(sequence_name, calibration=is_calib)
+sequence.stereosync = True
+
 
 msg = 'Playback started [%s]' % sequence_name
 if loop:  msg += ' [LOOP]'
