@@ -2,8 +2,9 @@
 <launch>
 	
 	<arg name="bag" />
+	<arg name="model" default="fov" />
 	<arg name="target" default="$(find stereotum)/params/aprilA0.yaml" />
 
-	<node name="kalibr_calibrator" type="kalibr_calibrate_cameras.bash" pkg="stereotum" args="$(arg bag) $(arg target)" output="screen" />
+	<node name="kalibr_calibrator" type="kalibr_calibrate_cameras.bash" pkg="stereotum" args="$(arg bag) $(arg target) $(arg model)" output="screen" />
 
 </launch>
