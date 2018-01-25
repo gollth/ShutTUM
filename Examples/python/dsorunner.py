@@ -137,15 +137,17 @@ if __name__ == '__main__':
 	shutter  = [args.shutter] if args.shutter != 'both' else ['global', 'rolling']
 	
 	for rep in range(args.repeats):
+		repstr = ''
+		if args.repeats > 1: repstr = '-%02d' % (rep+1)
+					
 		for lr in side:
 			for gr in shutter:
-				repstr = ''
-				if args.repeats > 1: repstr = '-%02d' % (rep+1)
-				result = p.join(args.result, 'dso-%s-%s%s.csv' % (gr, lr, repstr))
 				
 				if args.part == 'one':
 					print('[DSO runner] Starting sequence %s for shutter "%s", cam %s (repetition %d)' % (args.sequence, gr, lr, rep+1))
-				
+					no = p.basename(p.normpath(args.sequence))
+					result = p.join(args.result, 'dso-%s-%s-%s%s.csv' % (no, gr, lr, repstr))
+					
 					odometry = play(args.sequence, gr, lr, debug=args.debug, options=args.options, dso_prefix=args.dsoprefix)
 					if odometry is None:
 						print("[DSO runner] no results.txt has generated, skipping this run =(")
@@ -162,7 +164,8 @@ if __name__ == '__main__':
 						sequence = p.join(args.path, item)
 						if not p.isdir(sequence): continue
 						print('[DSO runner] Starting sequence %s for shutter "%s", cam %s (repetition %d)' % (sequence, gr, lr, rep+1))
-				
+						result = p.join(args.result, 'dso-%s-%s-%s%s.csv' % (item, gr, lr, repstr))
+					
 						odometry = play(sequence, gr, lr, debug=args.debug, options=args.options, dso_prefix=args.dsoprefix)
 						if odometry is None:
 							print("[DSO runner] no results.txt has generated, skipping this run =(")
