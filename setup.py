@@ -1,19 +1,18 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='ShutTUM',
-    version='0.1',
+    version='1.0',
     author='Thore Goll',
     author_email='thore.goll@tum.de',
     description='A utility API to easily interact with the ShutTUM dataset',
-    #long_description=read('README.md')
     url='https://github.com/gollth/ShutTUM',
     packages=['ShutTUM'],
+    long_description=open('README.md').read(),
     install_requires=[
-        'cv2',
-        'numpy'
-        'transforms3d',
-        'yaml',
-        'zipfile'
+        'opencv-python>=3.2.0',
+        'numpy>=1.12',
+        'transforms3d>=0.3.1',
+        'PyYAML>=3.12'
     ]
 )
