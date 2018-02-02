@@ -6,7 +6,7 @@ A utility API to easily interact with the ShutTUM dataset by `Thore Goll <thore.
 .. toctree::
     :maxdepth: 2
 
-    dataset
+    sequence
     devices
     values
 
