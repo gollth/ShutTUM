@@ -10,7 +10,7 @@
 
 	<rosparam file="$(arg sequence)/params/params.yaml" />
 
-	<param name="robot_description" textfile="$(find shuttum)/StereoTUM.urdf" />
+	<param name="robot_description" textfile="$(find shuttum)/ShutTUM.urdf" />
 
 	<node name="playback" type="playback.py" pkg="shuttum" output="screen">
 		<param name="sequence" value="$(arg sequence)" />
