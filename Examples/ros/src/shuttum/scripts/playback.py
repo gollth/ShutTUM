@@ -24,8 +24,9 @@ loop      = ros.get_param('~loop', False)
 start     = ros.get_param('~start', None)
 end       = ros.get_param('~end',   None)
 speed     = ros.get_param('~speed', 1)
+img_topic = ros.get_param("~image_topic", "image_raw")
 is_calib  = ros.get_param('~calibration', False)
-
+distmodel = ros.get_param('~distortion_model', 'fov')
 
 bridge    = CvBridge()
 sequence    = ros.get_param('~sequence')
@@ -49,7 +50,7 @@ imu   = ros.Publisher('/imu', Imu, queue_size=10)
 CamPub= namedtuple('CamPub', 'img cam exp')
 
 def create_camera_publisher(prefix):
-	return (prefix, CamPub(img=ros.Publisher(prefix + '/image_raw', Image, queue_size=1),
+	return (prefix, CamPub(img=ros.Publisher(prefix + '/' + img_topic, Image, queue_size=1),
 				  cam=ros.Publisher(prefix + '/camera_info', CameraInfo, queue_size=10),
 				  exp=ros.Publisher(prefix + '/exposure', Float32, queue_size=10)
 		   ))
@@ -72,9 +73,24 @@ def publishimage(pub, value):
 	msg.header = createheader(value)
 	pub.img.publish(msg)
 	publishtf(value, 'cam1')
+	tf = value >> "cam1"
+	K  = value.K
+	R  = tf[0:3,0:3]
+	P  = K.dot(tf[0:3,:]) 				 
+	name = distmodel
+	dist = value.distortion(distmodel)
+	if name == 'radtan': 
+		name = 'plumb_bob'
+		dist = list(dist)
+		dist.append(0)   # use k3 = 0
+	elif name == 'fov':
+		dist = [dist]
+
 	msg = CameraInfo(width=res.width, height=res.height, 
-					 distortion_model='fov', D=[value.distortion('fov')],
-					 K=value.K.flatten().tolist())
+					 distortion_model=name, D=dist,
+					 K=K.flatten().tolist(),
+					 R=R.flatten().tolist(), 
+					 P=P.flatten().tolist())
 	msg.header = createheader(value)
 	pub.cam.publish(msg)
 	pub.exp.publish(Float32(data=value.exposure))
