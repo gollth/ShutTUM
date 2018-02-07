@@ -245,9 +245,9 @@ def interpolate_poses(times, gt_poses):
     return new_gt_poses
 
 
-def create_ground_truth(path, start=0, end=0, 
+def create_ground_truth(path, time_offset=0, 
                         bagfile='.logs/*.bag',
-                        topic='/ShutTUM/estimated_transform',
+                        topic='/StereoTUM/estimated_transform',
                         file=''):
 
     from rosbag import Bag
@@ -268,7 +268,7 @@ def create_ground_truth(path, start=0, end=0,
         time = yaml.load(stream)
         seq_stamps = (time['time']['start'], time['time']['end'])
 
-    print('Using start and end offsets: %fs %fs' % (start, end))
+    print('Using time offset: %fs' % time_offset)
 
     a = p.join(path, bagfile)
     b = findfiles(a)
@@ -283,13 +283,13 @@ def create_ground_truth(path, start=0, end=0,
         
         if bagtopic != topic: continue
         
-        now = t.to_sec()
-        if now < seq_stamps[0] + start: continue      # before recording started
-        if first is None: first = now - start
-        if now > seq_stamps[1] + end:   continue      # after recording finished
-        
+        now = t.to_sec() + time_offset
+        if now < seq_stamps[0]: continue      # before recording started
+        if first is None: first = now
+        if now > seq_stamps[1]: continue      # after recording finished
+                
         stamp = now - first
-        
+
         # Check if any message with the same timestamp has already been added...
         if any (item.get('time', None) == stamp for item in msgs): continue
         
@@ -354,11 +354,9 @@ if __name__ == '__main__':
     extracter = gt_command.add_parser('extract', help="(Re)create a csv file from a Bag file")
     extracter.add_argument('--bag', default='.logs/*.bag',
                             help='A path to a custom bag file, relative to this sequence. Defaults to .logs/*.bag')
-    extracter.add_argument('--start', type=float, default=0,
-                            help='Optional time offset to ignore samples in the bag at the start [s]. Ignored is everything before t+start. Defaults to 0')
-    extracter.add_argument('--end', type=float, default=0,
-                            help='Optional time offset to ignore samples in the bag at the end [s]. Ignored is everything after t+end. Defaults to 0')
-    extracter.add_argument('--topic', default='/ShutTUM/estimated_transform',
+    extracter.add_argument('--time-offset', type=float, default=0,
+                            help='CSV time stamps = BAG time stamps + time-offset [s]')
+    extracter.add_argument('--topic', default='/StereoTUM/estimated_transform',
                             help='The topic name in the bag file, for which to listen to ground truth poses (must publish TransformStamped) [/ShutTUM/estimated_transform]')
    
 
@@ -450,6 +448,5 @@ if __name__ == '__main__':
 
         if args.command == 'extract':
 
-             
-            create_ground_truth(args.sequence, start=args.start, end=args.end, topic=args.topic, bagfile=args.bag)
+            create_ground_truth(args.sequence, time_offset=args.time_offset, topic=args.topic, bagfile=args.bag)
 
