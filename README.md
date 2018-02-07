@@ -1,4 +1,4 @@
-# ShutTUM
+![ShutTUM](https://raw.githubusercontent.com/gollth/ShutTUM/master/Docs/images/logo.png)
 
 A photometrically calibrated multi-shutter stereo dataset for benchmarking visual odometry algorithms.
 
