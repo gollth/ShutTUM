@@ -15,8 +15,8 @@ class Interpolation:
 
     .. image:: images/interpolation.svg       
 
-    **ShutTUM**'s data is recorded at different frequencies. Images are timestamped at around 25 Hz, Imu measurements  
-    at around 160 Hz (exactly multiples per image), while Ground Truth data is clocked between 100 .. 120 Hz. To 
+    **ShutTUM**'s data is recorded at different frequencies. Images are timestamped at around 20 Hz, Imu measurements  
+    at 160 Hz (exactly multiples per image), while Ground Truth data is clocked at 120 Hz. To 
     get relateable measurements, you must sometimes interpolate between two values.
 
     ShutTUM supports currently three interpolation methods, namely :any:`linear`, :any:`cubic` 

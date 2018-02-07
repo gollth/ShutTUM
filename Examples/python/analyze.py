@@ -3,9 +3,8 @@ import os
 import math
 import numpy as np
 import os.path as p
-import sys
 import yaml
-sys.path.append('/usr/stud/gollt/ShutTUM/api')
+
 from ShutTUM.sequence import Sequence
 from argparse import ArgumentParser
 

@@ -71,6 +71,8 @@ class Sequence(object):
         r""" 
         :param str path: the path to one sequence of the dataset, such as ``~/ShutTUM/0001``
         :param bool stereosync: possiblity to set the :any:`stereosync` option in constructor
+        :param bool calibration: is this a calibration sequence? If yes, ``cam1`` and ``cam2`` are used as ``global`` 
+        while ``cam3`` and ``cam4`` are set under the ``rolling`` namespace 
         :raises: ValueError: if anything goes wrong 
         Load the sequence into memory (except images) and do basic data consistency checks.
         
