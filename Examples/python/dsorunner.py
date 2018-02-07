@@ -44,7 +44,7 @@ def play(sequence_path, shutter, side, debug=False, options=[], dso_prefix=''):
 			firstframe.focal.y / sequence.resolution.height,
 			firstframe.principle.x / sequence.resolution.width,
 			firstframe.principle.y / sequence.resolution.height,
-			firstframe.distortion
+			firstframe.distortion('fov')
 		))
 		
 		file.write(os.linesep)
