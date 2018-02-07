@@ -1,6 +1,5 @@
-=======================
-ShutTUM documentation
-=======================
+.. image:: images/logo.png
+
 A utility API to easily interact with the ShutTUM dataset by `Thore Goll <thore.goll@tum.de>`_
 
 .. toctree::
