@@ -67,7 +67,7 @@ class Sequence(object):
         if key not in dictionary:
             raise ValueError("Could not find %s in %s, record folder seems not to be valid!" % (key, file))
 
-    def __init__(self, path, stereosync=True, calibration=True):
+    def __init__(self, path, stereosync=True, calibration=False):
         r""" 
         :param str path: the path to one sequence of the dataset, such as ``~/ShutTUM/0001``
         :param bool stereosync: possiblity to set the :any:`stereosync` option in constructor
