@@ -4,7 +4,8 @@ A photometrically calibrated multi-shutter stereo dataset for benchmarking visua
 
 * 40 Sequences ≥ 10 km of trajectories
 * 2x stereo cameras 20 FPS using both global and rolling shutter
-* Extrinsic, intrinsic and photometric calibration* IMU with accelerometer and gyroscope
+* Extrinsic, intrinsic and photometric calibration
+* IMU with accelerometer and gyroscope
 * Hardware synchronized cameras and IMU
 * greyscale 1.3 MP images (JPEG)
 * Full 6D ground truth by motion capture system provided at start and end of every sequence
@@ -15,7 +16,7 @@ Clone this repo and install it via the python setup file.
 ```
 git clone https://github.com/gollth/ShutTUM.git
 cd ShutTUM
-python setup.py install
+python setup.py install [--user]
 python
 >>> import ShutTUM
 >>> help(ShutTUM)
@@ -23,6 +24,8 @@ python
 
 ## Examples
 ### Python
+A simple example shows the following script. It will load a sequence and show all global images in an OpenCV window
+
 ```python
 import cv2
 from ShutTUM.sequence import Sequence
@@ -32,10 +35,10 @@ sequence = Sequence('path/to/folder/01')
 
 # Iterate over all images captured by the global shutter cameras
 for stereo in sequence.cameras('global'):
-	if stereo.L is None: continue
+    if stereo.L is None: continue
     if stereo.R is None: continue
     
-	print(stereo.ID)
+    print(stereo.ID)
     img = stereo.L.load()
     cv2.imshow('Left Image', img)
     cv2.waitKey(int(stereo.dt() * 1000))
@@ -48,7 +51,7 @@ See full python documentation [here](https://gollth.github.io/ShutTUM/)
 python ShutTUM/Examples/python/analyze.py --help
 ```
 
-Use this script to analyze a sequence. It comes with a lot of options (see help). For some aspects ROS is needed.
+Use this script to analyze a sequence. It comes with a lot of options (see help). For some aspects ROS (such as ```groundtruth```) is needed.
 You can:
 * visualize frames
 * print/plot frame drops
@@ -115,7 +118,7 @@ This launches the [Camera-IMU-Calibration](https://github.com/ethz-asl/kalibr/wi
 * ```target``` (path ```$(find shuttum)/params/aprilA0.yaml" />```): custom [Grid configureation](https://github.com/ethz-asl/kalibr/wiki/calibration-targets)
 
 ### Matlab
-The matlab interface is very minimalistic
+The matlab interface is very minimalistic and just puts the files in ```data/``` into arrays.
 ```
 >> addpath /path/to/ShutTUM/Examples/matlab
 >> help(shuttum)
@@ -125,9 +128,9 @@ sequence =
 
   struct with fields:
 
-         frames: [1963×4 double]
-            imu: [8019×7 double]
-    groundtruth: [6545×8 double]
+         frames: [5335×4 double]
+            imu: [48031×7 double]
+    groundtruth: [6812×8 double]
 ```
 
 
