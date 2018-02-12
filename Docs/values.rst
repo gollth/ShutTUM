@@ -18,12 +18,8 @@ All types of values **ShutTUM** consists of
 
    ~ShutTUM.values.GroundTruth.extrapolate
    ~ShutTUM.values.GroundTruth.interpolate
-   ~ShutTUM.values.GroundTruth.pose
-   ~ShutTUM.values.GroundTruth.position
-   ~ShutTUM.values.GroundTruth.quaternion
-   ~ShutTUM.values.GroundTruth.rotation
+   ~ShutTUM.values.GroundTruth.marker
    ~ShutTUM.values.GroundTruth.stereo
-   ~ShutTUM.values.GroundTruth.translation
 
 
 

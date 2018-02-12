@@ -263,13 +263,12 @@ class Image(Value):
 
     def distortion(self, model):
         r""" 
-        :param model: One of ``"fov"`` or ``"radtan"``
-        :return: either a float :math:`\omega` for FOV model, or a named tuple with 
-        the four elements ``DistCooefs(k1, k2, r1, r2)`` for Rad Tan model.
-        
         Get the distortion coefficients the camera which took this image
         It looks up the parameters in ``params/params.yaml/<cam>/distortion/<model>``
         
+        :param model: One of ``"fov"`` or ``"radtan"``
+        :return: either a float :math:`\omega` for FOV model, or a named tuple with 
+        the four elements ``DistCooefs(k1, k2, r1, r2)`` for Rad Tan model.
         """
         if model == 'fov':
             return self._sequence._refs[self.reference]['distortion'][model]
@@ -688,7 +687,7 @@ class GroundTruth(Value):
         r"""
         Find a matching ground truth for a certain :any:`Value` based on a extrapolation method
 
-        :param value: The value for which to find a matching imuvalue
+        :param value: The value for which to find a matching ground truth value
         :param method: An optional extrapolation method to determine the rules for a "match":
 
             * ``"closest"``: the image with the least difference to value.stamp is chosen
@@ -696,7 +695,7 @@ class GroundTruth(Value):
             * ``"prev"``: the image with the next smaller time stamp than value.stamp is chosen
             * ``"exact"``: the image where value.stamp == image.stamp holds is chosen, None otherwise
 
-        :return: The matching stereo image or None if no was found
+        :return: The matching ground truth or None if no was found
         """
         if method == 'closest':
             f = value._sequence.raw.groundtruth
