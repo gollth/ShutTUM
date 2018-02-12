@@ -507,7 +507,7 @@ class Imu(Value):
             * ``"prev"``: the image with the next smaller time stamp than value.stamp is chosen
             * ``"exact"``: the image where value.stamp == image.stamp holds is chosen, None otherwise
 
-        :return: The matching stereo image or None if no was found
+        :return: The matching IMU value or None if no was found
         """
         if method == 'closest':
             f = value._sequence.raw.imu
@@ -545,7 +545,7 @@ class Imu(Value):
         :param float stamp: the time at which to interpolate (in seconds, with decimal places) 
         :param acceleration_interpolation: A predefined or custom interpolation function
         :param angvelo_interpolation: A predefined or custom interpolation function
-        :return: A :any:`Imu`
+        :return: An :any:`Imu` value
 
         .. seealso:: :any:`Interpolation`
         """
