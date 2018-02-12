@@ -2,6 +2,9 @@
 
 A utility API to easily interact with the ShutTUM dataset by `Thore Goll <thore.goll@tum.de>`_
 
+-------
+Modules
+-------
 .. toctree::
     :maxdepth: 2
 
@@ -9,10 +12,14 @@ A utility API to easily interact with the ShutTUM dataset by `Thore Goll <thore.
     devices
     values
 
-=======
-Classes
-=======
+---------
+Structure
+---------
+.. image:: images/api.svg
 
+-------
+Classes
+-------
 .. autosummary::
      :toctree:
 
