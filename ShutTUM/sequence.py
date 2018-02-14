@@ -258,7 +258,7 @@ class Sequence(object):
             imus_up_to_10s = [ imu for imu in sequence.imu if imu.stamp <= 10 ]
             
             acc_in_g = map(lambda imu: imu.acceleration * 9.805, sequence.imu)
-            acc_in_g = [ imu.acc * 9.805 for imu in sequence.imu ]
+            acc_in_g = [ imu.acceleration * 9.805 for imu in sequence.imu ]
             
             # Note that generators don't implement __len__()
             # to get the amount of imu values in this sequence either use
@@ -282,7 +282,7 @@ class Sequence(object):
 
            # Iterate over all ground truth values
            for gt in sequence.mocap:
-               print(gt.position)
+               c1_T_w = gt >> 'cam1'   # pose of cam1 in world frame
 
            # When you want e.g. the first ground truth value use:
            first_gt = next(sequence.mocap)
@@ -360,7 +360,7 @@ class Sequence(object):
         not the extrema of the record, so most of the time, these will not be reached, but if, clamped accordingly.::
         
             limits = sequence.exposure_limits
-            print("Limits are %s .. %s ms" % limits.min, limits.max)
+            print("Limits are %s .. %s ms" % (limits.min, limits.max))
             
         
         """
@@ -413,7 +413,7 @@ class Sequence(object):
         r"""
         Which shutter method uses each camera.
         
-        Returns one of the two following dictionaries:
+        Returns one of the two following dictionaries::
         
             # For sequences with odd ID
             {
@@ -492,18 +492,18 @@ class Sequence(object):
                 if data.global_     is not None: print(data.global_.ID)
                 if data.rolling     is not None: print(data.rolling.ID)
                 if data.imu         is not None: print(data.imu.acceleration)
-                if data.groundtruth is not None: print(data.groundtruth.pose)
+                if data.groundtruth is not None: print(data.groundtruth.marker)
         
             # ... or the sliced version specifying all data between 5s .. 45s
             for data in sequence[5:45]:
                print(data)
                 
             # ... or all up to 10s
-            for beginning in sequence[:10]
+            for data in sequence[:10]:
                 print(data)
                 
             # ... or all from 30s till end
-            for finish in sequence[30:]
+            for data in sequence[30:]:
                 print(data)
                 
             # Custom steps, however, are not supported:

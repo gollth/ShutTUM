@@ -21,7 +21,10 @@ All types of values **ShutTUM** consists of
    ~ShutTUM.values.GroundTruth.marker
    ~ShutTUM.values.GroundTruth.stereo
 
+:any:`Marker`: Summary
 
+.. autosummary::
+   ~ShutTUM.values.Marker.__init__
 
 :any:`Image`: Summary
 
@@ -56,6 +59,7 @@ All types of values **ShutTUM** consists of
    ~ShutTUM.values.StereoImage.L
    ~ShutTUM.values.StereoImage.R
    ~ShutTUM.values.StereoImage.resolution
+   ~ShutTUM.values.StereoImage.shutter
 
 
 :any:`Imu`: Summary
@@ -76,6 +80,11 @@ All types of values **ShutTUM** consists of
    :undoc-members:
 
 .. autoclass:: ShutTUM.values.GroundTruth
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: ShutTUM.values.Marker
    :members:
    :undoc-members:
    :show-inheritance:

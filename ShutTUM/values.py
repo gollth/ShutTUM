@@ -31,7 +31,7 @@ class Value(object):
     
         # assume we have an image and a ground truth value
         image = next(iter(sequence.cameras('global')))   # first frame
-        gt    = next(sequence.groundtruth)               # first ground truth
+        gt    = next(sequence.mocap)                     # first ground truth
         
         # Since both Image and GroundTruth derive from Value, they have a reference ...
         print("Image %s is associated with reference %s" % (image, image.reference))
@@ -39,7 +39,7 @@ class Value(object):
          
         # Since we know both transforms to "cam1", we can compute the transformation between the two
         P_img_wrld = image << gt     # pose of the image relative to the world 
-        P_img_wrld = gt << image     # same as line above
+        P_img_wrld = gt >> image     # same as line above
         P_img_wrld = gt >> "cam1"    # you can also specify the reference (on the right) as string directly
         # P_img_wrld = "cam1" << gt  # This fails, since the shift operators cannot be overloaded for strings in the first place
     
@@ -313,14 +313,14 @@ class StereoImage(Value):
     Note that for internal reasons a stereo image derives from :any:`Value`. However, you should
     not use the transform functions (``<<`` and ``>>``) with this, since a stereo image contains two 
     reference frames, one for each camera::
-
-        stereo = sequence.cameras('rolling')[0]
+        id = 1
+        stereo = sequence.cameras('rolling')[id]
 
         # The following is ambiguous
         notok = stereo << "imu"   # which camera of the two do you mean?
 
         # Better would be
-        ok = stereo.L << "imu"
+        ok = stereo.L << "imu"    # (which is the same as above)
 
 
     """
@@ -373,6 +373,7 @@ class StereoImage(Value):
     def __init__(self, sequence, data, shutter):
         self._data = data
         self._sequence = sequence
+        self._shutter = shutter
         L, R = None, None
         frames = sequence.raw.frames
         id = self._data[1]
@@ -435,6 +436,11 @@ class StereoImage(Value):
     def ID(self):
         r"""The frame ID as int of this image. This number, prepended to 5 digits is also the name of the JPEG file"""
         return int(self._data[1])
+
+    @property
+    def shutter(self):
+        r""" The shutter method with which this stereo image was captured as string, either ``"rolling"`` or ``"global"`` """
+        return self._shutter
 
     @property
     def exposure(self):

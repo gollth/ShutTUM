@@ -8,7 +8,7 @@ class StereoCamera(object):
     :any:`StereoImage` in order::
         
         # You can use a "classic" for loop ... 
-        for stereo in sequence.cameras('global')
+        for stereo in sequence.cameras('global'):
             print(stereo.stamp)
         
         # Or filter/map functions ...
@@ -67,7 +67,7 @@ class DuoStereoCamera:
     tuple with both :any:`StereoImage` s in order::
 
         # You can use a "classic" for loop ... 
-        for stereo_1, stereo_2 in sequence.cameras()     # both is the default
+        for stereo_1, stereo_2 in sequence.cameras():     # both is the default
             print(stereo_1.shutter)
             print(stereo_2.shutter)
 
