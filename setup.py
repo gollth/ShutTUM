@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ShutTUM',
-    version='0.9',
+    version='1.0',
     author='Thore Goll',
     author_email='thoregoll@googlemail.de',
     description='A utility API to easily interact with the ShutTUM dataset',
