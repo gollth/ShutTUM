@@ -14,16 +14,9 @@ A photometrically calibrated multi-shutter stereo dataset for benchmarking visua
 
 
 ## Installation
-Clone this repo and install it via the python setup file.
 ```
-git clone https://github.com/gollth/ShutTUM.git
-cd ShutTUM
-python setup.py install [--user]
-python
->>> import ShutTUM
->>> help(ShutTUM)
+pip install ShutTUM
 ```
-
 ## Examples
 ### Python
 A simple example shows the following script. It will load a sequence and show all global images in an OpenCV window
@@ -74,7 +67,10 @@ switch to see the converted files.
 ### ROS
 Source the ShutTUM as a catkin workspace
 ```
-source ShutTUM/Examples/ros/devel/setup.bash
+git clone https://github.com/gollth/ShutTUM.git
+cp -r ShutTUM/Examples/ros/src/shuttum ~/catkin_ws/src
+source ~/catkin_ws/devel/setup.bash
+roscd shuttum
 ```
 
 #### Visualize a sequence in RViZ:
