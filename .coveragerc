@@ -9,4 +9,5 @@ ignore_errors = True
 [run]
 source = ShutTUM
 omit =
-    tests/*
+    Tests/*
+    setup.py
