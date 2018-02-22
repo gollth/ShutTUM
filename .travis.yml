@@ -1,7 +1,14 @@
 language: python
 python:
-  - "2.7"
-  - "3.6"
+- '2.7'
+- '3.6'
 install:
-  - python setup.py install
+- python setup.py install
 script: nosetests
+deploy:
+  provider: pypi
+  on:
+    tags: true
+  user: gollth
+  password:
+    secure: aD/OAZwuBEsNEIRxy4ELh3gB7U+TAPiq5trRc9y4OJ76pqR2LlMmPwDnFqCU8d/vf9IYWLJTNr2JeXDEURYvQX/EEAh//MT5op79uxwBZSxCyboaUhDCcnDS9MLKVb5fK3SfBF7MWc4lLqnrKJdGtj6ryJQcbqVS2pVGHfMMAqDtvOU/7CjtaAGjFg/QOjMz41eHVkChw+OaxScPbg4GLAW3DJ7tURktNxOTNy8wHJYkNtTWhZ1P8fLGMGBtujDOGD/NePVG/EO2aex0yRFuvFFl8paFZkNwkHpFngytgPY4doNQLyBjsL50Cx2sgoefvYTzFUN19NSqWlIl67bwyRtTgLipu+IYG1q0Rwxj/9ubIaDwfERzOWb4FwxPsO8ShKblVfXENmtwtvvnqv+ul+OyWb1xnV5RiE3N939iM283Fk/wFNZ7nz6nJ2a61ArN6OriAoSsRaQFuwFoV4Kxh35ByyCEJ6bMkh7dlkYUYcpPgnUR1hvhEkeUsodS4yzP173j3AnaiJpw2PD5Bo/tJ7ZIz6kzMKZPutA+uxifgx2+fTC7WNoZEhOt+Glzg7k+pSg0kms4wf07aPox+3sgPGQ9Aq5RGNxEI7e+2/XaxjZ0l0MoZZcDVrgSo1KXW30lKK4364XSD1259IAqsbj2r6+L1t/8bu4/Vb4gP8nypLY=
