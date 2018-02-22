@@ -1,6 +1,6 @@
 ![ShutTUM](https://raw.githubusercontent.com/gollth/ShutTUM/master/Docs/images/logo.png)
 
-[![Build Status](https://travis-ci.org/gollth/ShutTUM.svg?branch=master)](https://travis-ci.org/gollth/ShutTUM)
+[![Build Status](https://travis-ci.org/gollth/ShutTUM.svg?branch=master)](https://travis-ci.org/gollth/ShutTUM) [![PyPI version](https://badge.fury.io/py/ShutTUM.svg)](https://badge.fury.io/py/ShutTUM)
 
 A photometrically calibrated multi-shutter stereo dataset for benchmarking visual odometry algorithms.
 
