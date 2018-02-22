@@ -6,7 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /TF1
-        - /RobotModel1
+        - /Rolling Right1
       Splitter Ratio: 0.5
     Tree Height: 395
   - Class: rviz/Selection
@@ -64,6 +64,8 @@ Visualization Manager:
           Value: true
         imu:
           Value: true
+        marker:
+          Value: true
         world:
           Value: true
       Marker Scale: 0.3
@@ -81,6 +83,8 @@ Visualization Manager:
             {}
           imu:
             {}
+          marker:
+            {}
           world:
             {}
       Update Interval: 0
@@ -88,7 +92,7 @@ Visualization Manager:
     - Class: rviz/Camera
       Enabled: true
       Image Rendering: background and overlay
-      Image Topic: /cam/global/L/image
+      Image Topic: /cam/global/left/image_raw
       Name: Global Left
       Overlay Alpha: 0.5
       Queue Size: 2
@@ -103,12 +107,12 @@ Visualization Manager:
         Rolling Left: true
         Rolling Right: true
         TF: true
-        Value: true
+        Value: false
       Zoom Factor: 1
     - Class: rviz/Camera
       Enabled: true
       Image Rendering: background and overlay
-      Image Topic: /cam/global/R/image
+      Image Topic: /cam/global/right/image_raw
       Name: Global Right
       Overlay Alpha: 0.5
       Queue Size: 2
@@ -123,12 +127,12 @@ Visualization Manager:
         Rolling Left: true
         Rolling Right: true
         TF: true
-        Value: true
+        Value: false
       Zoom Factor: 1
     - Class: rviz/Camera
       Enabled: true
       Image Rendering: background and overlay
-      Image Topic: /cam/rolling/L/image
+      Image Topic: /cam/rolling/left/image_raw
       Name: Rolling Left
       Overlay Alpha: 0.5
       Queue Size: 2
@@ -143,12 +147,12 @@ Visualization Manager:
         RobotModel: true
         Rolling Right: true
         TF: true
-        Value: true
+        Value: false
       Zoom Factor: 1
     - Class: rviz/Camera
       Enabled: true
       Image Rendering: background and overlay
-      Image Topic: /cam/rolling/R/image
+      Image Topic: /cam/rolling/right/image_raw
       Name: Rolling Right
       Overlay Alpha: 0.5
       Queue Size: 2
@@ -163,7 +167,7 @@ Visualization Manager:
         RobotModel: true
         Rolling Left: true
         TF: true
-        Value: true
+        Value: false
       Zoom Factor: 1
     - Alpha: 1
       Class: rviz_plugin_tutorials/Imu
@@ -219,7 +223,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.68194
+      Distance: 6.33105
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
