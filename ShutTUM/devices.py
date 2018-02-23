@@ -67,9 +67,9 @@ class DuoStereoCamera:
     tuple with both :any:`StereoImage` s in order::
 
         # You can use a "classic" for loop ... 
-        for stereo_1, stereo_2 in sequence.cameras():     # both is the default
-            print(stereo_1.shutter)
-            print(stereo_2.shutter)
+        for stereo_global, stereo_rolling in sequence.cameras():     # both is the default
+            print(stereo_global.shutter)
+            print(stereo_rolling.shutter)
 
     """
     def __init__(self, sequence):
