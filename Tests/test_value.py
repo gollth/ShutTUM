@@ -27,6 +27,8 @@ class TestValue(unittest.TestCase):
         value = Value(self.sequence, 14.145, 'cam1')
         with self.assertRaises(ValueError):
             value >> 'some unknown frame'
+        with self.assertRaises(ValueError):
+            value << 'some unknown frame'
 
     def test_tf_lookup_with_int_type_raises_type_error(self):
         value = Value(self.sequence, 0, 'cam1')

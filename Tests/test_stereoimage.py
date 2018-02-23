@@ -3,7 +3,7 @@ import math
 import numpy     as np
 import os.path   as p
 from ShutTUM.sequence import Sequence
-from ShutTUM.values import StereoImage, GroundTruth
+from ShutTUM.values import StereoImage, GroundTruth, Image
 from collections import Iterable
 
 
@@ -24,6 +24,13 @@ class TestStereoImage (unittest.TestCase):
         self.assertEqual(self.stereo.stamp, self.data[0])
         self.assertEqual(self.stereo.stamp, self.stereo.L.stamp)
         self.assertEqual(self.stereo.stamp, self.stereo.R.stamp)
+
+        with self.assertRaises(ValueError):
+            StereoImage(self.sequence, self.data, 'some unknown shutter')
+
+    def test_image_equality(self):
+        other = Image(self.stereo, self.stereo.shutter, left=True)
+        self.assertTrue(self.stereo.L == other)
 
     def test_dt_is_correct(self):
         for shutter in ['global', 'rolling']:
@@ -77,6 +84,27 @@ class TestStereoImage (unittest.TestCase):
         image = self.stereo.L.load()
         self.assertIsInstance(image, np.ndarray)
         self.assertTupleEqual(image.shape, (1024, 1280))
+
+    def test_image_K_returns_3x3_array(self):
+        K = self.stereo.L.K
+        self.assertIsInstance(K, np.ndarray)
+        self.assertTupleEqual(K.shape, (3,3))
+
+    def test_image_focal_is_two_tuple(self):
+        focal = self.stereo.L.focal
+        self.assertTrue(len(focal), 2)
+
+    def test_image_principle_is_two_tuple(self):
+        principle = self.stereo.L.principle
+        self.assertTrue(len(principle), 2)
+
+    def test_image_resolution_is_two_tuple(self):
+        res = self.stereo.resolution
+        self.assertTrue(len(res), 2)
+
+    def test_stereoimage_castable_as_str(self):
+        s = str(self.stereo)
+        self.assertIsInstance(s, str)
 
     def test_correct_match_between_image_and_imu(self):
         self.assertEqual(self.stereo.imu.stamp, self.stereo.stamp)

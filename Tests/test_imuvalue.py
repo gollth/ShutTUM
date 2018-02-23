@@ -49,6 +49,13 @@ class TestImuValue (unittest.TestCase):
             if abs(image.stamp - time) < delta:
                 self.fail("Found an image %s, which is closer to %s than %s" % (image, imu, stereo))
 
+    def test_imu_next_extrapolation(self):
+        time = 0.01
+        imu = Imu(self.sequence, [time, 0, 0, -1, 0, 0, 0])
+        expected = Imu(self.sequence, self.sequence.raw.imu[1,:])
+        actual = Imu.extrapolate(imu, 'next')
+        self.assertEqual(expected.stamp, actual.stamp)
+
     def test_stereo_next_extrapolation(self):
         time = 0.16
         imu = Imu(self.sequence, [time, 0, 0, -1, 0, 0, 0])
