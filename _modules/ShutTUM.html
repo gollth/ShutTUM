@@ -1,0 +1,236 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ShutTUM &#8212; ShutTUM 1.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ShutTUM</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: ShutTUM</span>
+<span class="sd">   :platform: Unix, Windows</span>
+<span class="sd">   :synopsis: A utility API to easily interact with the ShutTUM dataset</span>
+
+<span class="sd">.. moduleauthor:: Thore Goll &lt;thore.goll@tum.de&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span>   <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="Interpolation"><a class="viewcode-back" href="../sequence.html#ShutTUM.Interpolation">[docs]</a><span class="k">class</span> <span class="nc">Interpolation</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Interpolation lets you calculate intermediate values between two boarders, based on a given formula.</span>
+
+<span class="sd">    .. image:: images/interpolation.svg       </span>
+
+<span class="sd">    **ShutTUM**&#39;s data is recorded at different frequencies. Images are timestamped at around 20 Hz, Imu measurements  </span>
+<span class="sd">    at 160 Hz (exactly multiples per image), while Ground Truth data is clocked at 120 Hz. To </span>
+<span class="sd">    get relateable measurements, you must sometimes interpolate between two values.</span>
+
+<span class="sd">    ShutTUM supports currently three interpolation methods, namely :any:`linear`, :any:`cubic` </span>
+<span class="sd">    and :any:`slerp`. However it is possible to define your own function and hand it over to interpolating </span>
+<span class="sd">    methods, such as  :any:`GroundTruth.interpolate` or :any:`Imu.interpolate`::</span>
+
+<span class="sd">        def some_crazy_interpolation(a,b,t, a0, b0):</span>
+<span class="sd">            return a + b - 17*t**2</span>
+
+<span class="sd">        # Then use it like so</span>
+<span class="sd">        t = 1.5  # [s] Time stamp at which to interpolate</span>
+<span class="sd">        x = sequence.imu[0].interpolate(sequence, t, accelaration_interpolation=some_crazy_interpolation)</span>
+
+<span class="sd">        # Now x is interpolated between the imu values closest to 1.5s with the crazy function</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Interpolation.linear"><a class="viewcode-back" href="../sequence.html#ShutTUM.Interpolation.linear">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">linear</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param a: (float/`ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_) the lower bound from which to interpolate</span>
+<span class="sd">        :param b: (float/`ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_) the upper bound to which to interpolate </span>
+<span class="sd">        :param t: (float) the value between 0 .. 1 of the interpolation</span>
+<span class="sd">        :param _: further args are ignored but required in the function definition (see :any:`cubic`)</span>
+<span class="sd">        :rtype: float/`ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_</span>
+
+<span class="sd">        Interpolate linearly between two points</span>
+
+<span class="sd">        .. image:: images/interpolation-linear.svg</span>
+
+<span class="sd">        .. math:: x(t) = \left (1 - t \right ) \cdot a + t \cdot b</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            # Find the average between two 3D vectors</span>
+<span class="sd">            v1 = np.array([0,0,1])</span>
+<span class="sd">            v2 = np.array([5,0,0])</span>
+<span class="sd">            v  = Interpolation.linear(v1, v2, .5)   # np.array([2.5,0,0.5])</span>
+
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">a</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="n">b</span>
+
+<div class="viewcode-block" id="Interpolation.cubic"><a class="viewcode-back" href="../sequence.html#ShutTUM.Interpolation.cubic">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">cubic</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">a0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">b0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param a: (float/`ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_) the lower bound from which to interpolate</span>
+<span class="sd">        :param b: (float/`ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_) the upper bound to which to interpolate</span>
+<span class="sd">        :param t: (float) t: the value between 0 .. 1 of the interpolation</span>
+<span class="sd">        :param a0: (float/`ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_) the value before a, from which the tangent in a is calculated. If None, a0 = a</span>
+<span class="sd">        :param b0: float/`ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_) the value after b, from which the tangent in b is calculated. If None, b0 = b</span>
+<span class="sd">        :rtype: float/`ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_</span>
+
+<span class="sd">        Interpolate cubically between two points. Note that a, b, a0 and a0 must all have the same shape.</span>
+
+<span class="sd">        .. image:: images/interpolation-cubic.svg</span>
+
+<span class="sd">        .. math:: </span>
+<span class="sd">            x(t) = a + \frac{1}{2} t \cdot \left ( b - a_0 + t \cdot \left (2 a_0 - 5 a + 4 b - b_0 + t \cdot \left (3 \cdot \left (a - b \right ) + b_0 - a_0 \right ) \right ) \right ) </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">a0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">a0</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="k">if</span> <span class="n">b0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">b0</span> <span class="o">=</span> <span class="n">b</span></div>
+        <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a0</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">a0</span> <span class="o">-</span> <span class="mf">5.0</span> <span class="o">*</span> <span class="n">a</span> <span class="o">+</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">b</span> <span class="o">-</span> <span class="n">b0</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">+</span> <span class="n">b0</span> <span class="o">-</span> <span class="n">a0</span><span class="p">)))</span>
+
+<div class="viewcode-block" id="Interpolation.slerp"><a class="viewcode-back" href="../sequence.html#ShutTUM.Interpolation.slerp">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">slerp</span><span class="p">(</span><span class="n">quat0</span><span class="p">,</span> <span class="n">quat1</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param quat0: (`ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_) the lower rotational bound from which to interpolate (4x1 vector). Will be normalized</span>
+<span class="sd">        :param quat1: (`ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_) the upper rotational bound to which to interpolate (4x1 vector). Will be normalized</span>
+<span class="sd">        :param t: (`float`) the value between 0 .. 1 of the interpolation</span>
+<span class="sd">        :param _: further args are ignored but required in the function definition (see :any:`cubic`)</span>
+<span class="sd">        :rtype: `ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_</span>
+
+<span class="sd">        Interpolate spherically between two quaternions. This method is mostly used to interpolate rotations.</span>
+<span class="sd">        Directly copied from `Transformation.py &lt;http://www.lfd.uci.edu/~gohlke/code/transformations.py.html&gt;`_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">q0</span> <span class="o">=</span> <span class="n">Interpolation</span><span class="o">.</span><span class="n">_unit_vector</span><span class="p">(</span><span class="n">quat0</span><span class="p">[:</span><span class="mi">4</span><span class="p">])</span>
+        <span class="n">q1</span> <span class="o">=</span> <span class="n">Interpolation</span><span class="o">.</span><span class="n">_unit_vector</span><span class="p">(</span><span class="n">quat1</span><span class="p">[:</span><span class="mi">4</span><span class="p">])</span>
+        <span class="n">_EPS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="o">*</span> <span class="mf">4.0</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">q0</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">q1</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">q0</span><span class="p">,</span> <span class="n">q1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">_EPS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">q0</span>
+        <span class="k">if</span> <span class="n">d</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="c1"># invert rotation</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="n">d</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">negative</span><span class="p">(</span><span class="n">q1</span><span class="p">,</span> <span class="n">q1</span><span class="p">)</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">_EPS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">q0</span>
+        <span class="n">isin</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+        <span class="n">q0</span> <span class="o">*=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">((</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">angle</span><span class="p">)</span> <span class="o">*</span> <span class="n">isin</span>
+        <span class="n">q1</span> <span class="o">*=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span> <span class="n">angle</span><span class="p">)</span> <span class="o">*</span> <span class="n">isin</span>
+        <span class="n">q0</span> <span class="o">+=</span> <span class="n">q1</span></div>
+        <span class="k">return</span> <span class="n">q0</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_unit_vector</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Directly copied from `Transformation.py &lt;http://www.lfd.uci.edu/~gohlke/code/transformations.py.html&gt;`_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">/=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">out</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">out</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span> <span class="o">*</span> <span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="p">))</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">/=</span> <span class="n">length</span>
+        <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span></div>
+            <span class="k">return</span> <span class="n">data</span>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">ShutTUM</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../sequence.html">Sequence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../devices.html">Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../values.html">Values</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../downloads.html">Downloads</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Thore Goll.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,144 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Structure &#8212; ShutTUM 1.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/style.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Sequence" href="sequence.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <img alt="_images/logo.png" src="_images/logo.png" />
+<p>A utility API to easily interact with the ShutTUM dataset by <a class="reference external" href="mailto:thore&#46;goll&#37;&#52;&#48;tum&#46;de">Thore Goll</a>.</p>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="structure">
+<h1>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h1>
+<img alt="_images/api.svg" src="_images/api.svg" /></div>
+<div class="section" id="classes">
+<h1>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="sequence.html#ShutTUM.Interpolation" title="ShutTUM.Interpolation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Interpolation</span></code></a></td>
+<td>Interpolation lets you calculate intermediate values between two boarders, based on a given formula.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="sequence.html#ShutTUM.sequence.Sequence" title="ShutTUM.sequence.Sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Sequence</span></code></a>(path[,&nbsp;stereosync,&nbsp;calibration])</td>
+<td>The base class representing one dataset sequence.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="devices.html#ShutTUM.devices.StereoCamera" title="ShutTUM.devices.StereoCamera"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StereoCamera</span></code></a>(sequence,&nbsp;shutter)</td>
+<td>A stereo camera consists of a left and a right camera facing both in the same direction.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="devices.html#ShutTUM.devices.DuoStereoCamera" title="ShutTUM.devices.DuoStereoCamera"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DuoStereoCamera</span></code></a>(sequence)</td>
+<td>A duo stereo camera consists of a two <a class="reference internal" href="devices.html#ShutTUM.devices.StereoCamera" title="ShutTUM.devices.StereoCamera"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StereoCamera</span></code></a> s each with a left and a right one.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="values.html#ShutTUM.values.Value" title="ShutTUM.values.Value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Value</span></code></a>(sequence,&nbsp;stamp,&nbsp;reference)</td>
+<td>A Value represents every measurement of a sensor taken in a specific time instance.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="values.html#ShutTUM.values.GroundTruth" title="ShutTUM.values.GroundTruth"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GroundTruth</span></code></a>(sequence,&nbsp;data)</td>
+<td>A ground truth is a <a class="reference internal" href="values.html#ShutTUM.values.Value" title="ShutTUM.values.Value"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Value</span></code></a> with the reference <code class="docutils literal notranslate"><span class="pre">&quot;world&quot;</span></code>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="values.html#ShutTUM.values.Image" title="ShutTUM.values.Image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Image</span></code></a>(stereo,&nbsp;shutter,&nbsp;left)</td>
+<td>An image is a <a class="reference internal" href="values.html#ShutTUM.values.Value" title="ShutTUM.values.Value"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Value</span></code></a> with its reference set to one of <code class="docutils literal notranslate"><span class="pre">&quot;cam1&quot;</span></code> …</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="values.html#ShutTUM.values.StereoImage" title="ShutTUM.values.StereoImage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StereoImage</span></code></a>(sequence,&nbsp;data,&nbsp;shutter)</td>
+<td>A stereo image contains of two individual <a class="reference internal" href="values.html#ShutTUM.values.Image" title="ShutTUM.values.Image"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Image</span></code></a> s, a left and a right one.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="values.html#ShutTUM.values.Imu" title="ShutTUM.values.Imu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Imu</span></code></a>(sequence,&nbsp;data)</td>
+<td>An imu value represents the measurement of IMU sensor at a specific time.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">ShutTUM</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sequence.html">Sequence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devices.html">Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="values.html">Values</a></li>
+<li class="toctree-l1"><a class="reference internal" href="downloads.html">Downloads</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="sequence.html" title="next chapter">Sequence</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Thore Goll.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

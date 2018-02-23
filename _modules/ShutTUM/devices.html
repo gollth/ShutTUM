@@ -1,0 +1,195 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ShutTUM.devices &#8212; ShutTUM 1.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/style.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ShutTUM.devices</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">ShutTUM.values</span>
+
+
+<div class="viewcode-block" id="StereoCamera"><a class="viewcode-back" href="../../devices.html#ShutTUM.devices.StereoCamera">[docs]</a><span class="k">class</span> <span class="nc">StereoCamera</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A stereo camera consists of a left and a right camera facing both in the same direction. Both cameras have the same</span>
+<span class="sd">    shutter method, so either rolling or global. If you iterate over a stereo camera you go through all the </span>
+<span class="sd">    :any:`StereoImage` in order::</span>
+<span class="sd">        </span>
+<span class="sd">        # You can use a &quot;classic&quot; for loop ... </span>
+<span class="sd">        for stereo in sequence.cameras(&#39;global&#39;):</span>
+<span class="sd">            print(stereo.stamp)</span>
+<span class="sd">        </span>
+<span class="sd">        # Or filter/map functions ...</span>
+<span class="sd">        stereo = filter(lambda item: item.ID == 2, sequence.cameras(&#39;rolling&#39;))</span>
+<span class="sd">        print(list(stereo))</span>
+<span class="sd">        </span>
+<span class="sd">        # Or even list &amp; dict comprehensions</span>
+<span class="sd">        stereo = [ image.stamp for image in sequence.cameras(&#39;rolling&#39;) if image.ID == 2]</span>
+<span class="sd">        print(stereo)</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">shutter</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a new StereoCamera as iterable container for images. Usually you will not invoke this constructor</span>
+<span class="sd">        directly but rather get a reference via :any:`cameras &lt;ShutTUM.Sequence.cameras&gt;`</span>
+<span class="sd">        </span>
+<span class="sd">        :param Sequence sequence: The reference to the sequence </span>
+<span class="sd">        :param str shutter: the name of the shutter this camera uses (usually &quot;rolling&quot; or &quot;global&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span> <span class="o">=</span> <span class="n">sequence</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shutter</span> <span class="o">=</span> <span class="n">shutter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">frames</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>   <span class="c1"># take the first ID (column 1) in the first row (0th)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="c1"># take the last ID (column 1) in the last row</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c1"># python2 support</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__next__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">ID</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">return</span> <span class="n">img</span>
+
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># need to reset so list(...) works again</span>
+                <span class="k">raise</span> <span class="ne">StopIteration</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="mi">1</span> <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="nb">id</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">] No Frame for stereo camera &quot;</span><span class="si">%s</span><span class="s1">&quot; found with ID </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shutter</span><span class="p">,</span> <span class="nb">id</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">ShutTUM</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">StereoImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shutter</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DuoStereoCamera"><a class="viewcode-back" href="../../devices.html#ShutTUM.devices.DuoStereoCamera">[docs]</a><span class="k">class</span> <span class="nc">DuoStereoCamera</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A duo stereo camera consists of a two :any:`StereoCamera` s each with a left and a right one. Both stereo cameras</span>
+<span class="sd">    use usually (but not necessarily) different shutter methods. If you iterate over a duo stereo camera you go get a </span>
+<span class="sd">    tuple with both :any:`StereoImage` s in order::</span>
+
+<span class="sd">        # You can use a &quot;classic&quot; for loop ... </span>
+<span class="sd">        for stereo_global, stereo_rolling in sequence.cameras():     # both is the default</span>
+<span class="sd">            print(stereo_global.shutter)</span>
+<span class="sd">            print(stereo_rolling.shutter)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rolling</span> <span class="o">=</span> <span class="n">StereoCamera</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="s1">&#39;rolling&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_global</span>  <span class="o">=</span> <span class="n">StereoCamera</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="s1">&#39;global&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rolling</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_global</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c1"># python2 support</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__next__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_global</span><span class="o">.</span><span class="fm">__next__</span><span class="p">()</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rolling</span><span class="o">.</span><span class="fm">__next__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">g</span><span class="p">,</span> <span class="n">r</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_global</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rolling</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_global</span><span class="p">[</span><span class="n">item</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rolling</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">ShutTUM</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../sequence.html">Sequence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../devices.html">Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../values.html">Values</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../downloads.html">Downloads</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  <li><a href="../ShutTUM.html">ShutTUM</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Thore Goll.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

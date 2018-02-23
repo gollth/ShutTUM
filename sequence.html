@@ -1,0 +1,806 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Sequence &#8212; ShutTUM 1.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/style.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Devices" href="devices.html" />
+    <link rel="prev" title="Structure" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="sequence">
+<h1>Sequence<a class="headerlink" href="#sequence" title="Permalink to this headline">¶</a></h1>
+<p>All classes broadly associated with the dataset creation and manipulation</p>
+<p><a class="reference internal" href="#ShutTUM.Interpolation" title="ShutTUM.Interpolation"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Interpolation</span></code></a>: Summary</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ShutTUM.Interpolation.cubic" title="ShutTUM.Interpolation.cubic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cubic</span></code></a>(b,&nbsp;t[,&nbsp;a0,&nbsp;b0])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">param a:</th><td class="field-body">(float/<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) the lower bound from which to interpolate</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ShutTUM.Interpolation.linear" title="ShutTUM.Interpolation.linear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">linear</span></code></a>(b,&nbsp;t,&nbsp;*_)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">param a:</th><td class="field-body">(float/<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) the lower bound from which to interpolate</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ShutTUM.Interpolation.slerp" title="ShutTUM.Interpolation.slerp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slerp</span></code></a>(quat1,&nbsp;t,&nbsp;*_)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">param quat0:</th><td class="field-body">(<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) the lower rotational bound from which to interpolate (4x1 vector). Will be normalized</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<p><a class="reference internal" href="#ShutTUM.sequence.Sequence" title="ShutTUM.sequence.Sequence"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>: Summary</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.__init__" title="ShutTUM.sequence.Sequence.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(path[,&nbsp;stereosync,&nbsp;calibration])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">param str path:</th><td class="field-body">the path to one sequence of the dataset, such as <code class="docutils literal notranslate"><span class="pre">~/ShutTUM/0001</span></code></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.__getitem__" title="ShutTUM.sequence.Sequence.__getitem__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__getitem__</span></code></a>(stamp)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">param float/slice stamp:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">either the time at which to look up the values or a slice object (e.g. start:stop)</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.cameras" title="ShutTUM.sequence.Sequence.cameras"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cameras</span></code></a>([shutter])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">param str shutter:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">{both/global/rolling} the type of shutter you are interested in.</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.duration" title="ShutTUM.sequence.Sequence.duration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">duration</span></code></a></td>
+<td>The duration of the record in seconds as float, so basically:</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.end" title="ShutTUM.sequence.Sequence.end"><code class="xref py py-obj docutils literal notranslate"><span class="pre">end</span></code></a></td>
+<td>The end time of the record as Unix Timestamp in seconds with decimal places</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.exposure_limits" title="ShutTUM.sequence.Sequence.exposure_limits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exposure_limits</span></code></a></td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">return:</th><td class="field-body">a Namped Tuple <code class="docutils literal notranslate"><span class="pre">Limits(min,</span> <span class="pre">max)</span></code> indicating the minimum</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.gamma" title="ShutTUM.sequence.Sequence.gamma"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gamma</span></code></a>(cam,&nbsp;input)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">param str cam:</th><td class="field-body">the name of the camera (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;cam1&quot;</span></code>)</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.imu" title="ShutTUM.sequence.Sequence.imu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">imu</span></code></a></td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">return:</th><td class="field-body">Generator property, yielding one <a class="reference internal" href="values.html#ShutTUM.values.Imu" title="ShutTUM.values.Imu"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Imu</span></code></a> after the other</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.mocap" title="ShutTUM.sequence.Sequence.mocap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mocap</span></code></a></td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">return:</th><td class="field-body">Generator property, yielding one <a class="reference internal" href="values.html#ShutTUM.values.GroundTruth" title="ShutTUM.values.GroundTruth"><code class="xref any py py-class docutils literal notranslate"><span class="pre">GroundTruth</span></code></a> value after the other</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.raw" title="ShutTUM.sequence.Sequence.raw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">raw</span></code></a></td>
+<td>The raw values in matrix form.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.resolution" title="ShutTUM.sequence.Sequence.resolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolution</span></code></a></td>
+<td>Returns the resolution of the cameras as a named tuple <code class="docutils literal notranslate"><span class="pre">Resolution</span> <span class="pre">(width,</span> <span class="pre">height)</span></code></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.rolling_shutter_speed" title="ShutTUM.sequence.Sequence.rolling_shutter_speed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rolling_shutter_speed</span></code></a></td>
+<td>How fast did the two rolling shutter cameras shuttered.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.stereosync" title="ShutTUM.sequence.Sequence.stereosync"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stereosync</span></code></a></td>
+<td>Enables/Disables frame synchronization between cameras.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.start" title="ShutTUM.sequence.Sequence.start"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start</span></code></a></td>
+<td>The start time of the record as Unix Timestamp in seconds with decimal places</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.times" title="ShutTUM.sequence.Sequence.times"><code class="xref py py-obj docutils literal notranslate"><span class="pre">times</span></code></a></td>
+<td>A list of all time stamps in this sequence.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ShutTUM.sequence.Sequence.vignette" title="ShutTUM.sequence.Sequence.vignette"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vignette</span></code></a>(cam)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">param str cam:</th><td class="field-body">the name of the camera to lookup its vignette (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;cam1&quot;</span></code>)</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="ShutTUM.Interpolation">
+<em class="property">class </em><code class="descclassname">ShutTUM.</code><code class="descname">Interpolation</code><a class="reference internal" href="_modules/ShutTUM.html#Interpolation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ShutTUM.Interpolation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolation lets you calculate intermediate values between two boarders, based on a given formula.</p>
+<img alt="_images/interpolation.svg" src="_images/interpolation.svg" /><p><strong>ShutTUM</strong>’s data is recorded at different frequencies. Images are timestamped at around 20 Hz, Imu measurements  
+at 160 Hz (exactly multiples per image), while Ground Truth data is clocked at 120 Hz. To 
+get relateable measurements, you must sometimes interpolate between two values.</p>
+<p>ShutTUM supports currently three interpolation methods, namely <a class="reference internal" href="#ShutTUM.Interpolation.linear" title="ShutTUM.Interpolation.linear"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">linear</span></code></a>, <a class="reference internal" href="#ShutTUM.Interpolation.cubic" title="ShutTUM.Interpolation.cubic"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">cubic</span></code></a> 
+and <a class="reference internal" href="#ShutTUM.Interpolation.slerp" title="ShutTUM.Interpolation.slerp"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">slerp</span></code></a>. However it is possible to define your own function and hand it over to interpolating 
+methods, such as  <a class="reference internal" href="values.html#ShutTUM.values.GroundTruth.interpolate" title="ShutTUM.values.GroundTruth.interpolate"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">GroundTruth.interpolate</span></code></a> or <code class="xref any docutils literal notranslate"><span class="pre">Imu.interpolate</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">some_crazy_interpolation</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">t</span><span class="p">,</span> <span class="n">a0</span><span class="p">,</span> <span class="n">b0</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">-</span> <span class="mi">17</span><span class="o">*</span><span class="n">t</span><span class="o">**</span><span class="mi">2</span>
+
+<span class="c1"># Then use it like so</span>
+<span class="n">t</span> <span class="o">=</span> <span class="mf">1.5</span>  <span class="c1"># [s] Time stamp at which to interpolate</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">imu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">accelaration_interpolation</span><span class="o">=</span><span class="n">some_crazy_interpolation</span><span class="p">)</span>
+
+<span class="c1"># Now x is interpolated between the imu values closest to 1.5s with the crazy function</span>
+</pre></div>
+</div>
+<dl class="staticmethod">
+<dt id="ShutTUM.Interpolation.cubic">
+<em class="property">static </em><code class="descname">cubic</code><span class="sig-paren">(</span><em>b</em>, <em>t</em>, <em>a0=None</em>, <em>b0=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ShutTUM.html#Interpolation.cubic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ShutTUM.Interpolation.cubic" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a</strong> – <p>(float/<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) the lower bound from which to interpolate</p>
+</li>
+<li><strong>b</strong> – <p>(float/<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) the upper bound to which to interpolate</p>
+</li>
+<li><strong>t</strong> – (float) t: the value between 0 .. 1 of the interpolation</li>
+<li><strong>a0</strong> – <p>(float/<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) the value before a, from which the tangent in a is calculated. If None, a0 = a</p>
+</li>
+<li><strong>b0</strong> – <p>float/<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) the value after b, from which the tangent in b is calculated. If None, b0 = b</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><p>float/<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a></p>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Interpolate cubically between two points. Note that a, b, a0 and a0 must all have the same shape.</p>
+<img alt="_images/interpolation-cubic.svg" src="_images/interpolation-cubic.svg" /><div class="math notranslate">
+\[x(t) = a + \frac{1}{2} t \cdot \left ( b - a_0 + t \cdot \left (2 a_0 - 5 a + 4 b - b_0 + t \cdot \left (3 \cdot \left (a - b \right ) + b_0 - a_0 \right ) \right ) \right ) \]</div>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="ShutTUM.Interpolation.linear">
+<em class="property">static </em><code class="descname">linear</code><span class="sig-paren">(</span><em>b</em>, <em>t</em>, <em>*_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ShutTUM.html#Interpolation.linear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ShutTUM.Interpolation.linear" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a</strong> – <p>(float/<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) the lower bound from which to interpolate</p>
+</li>
+<li><strong>b</strong> – <p>(float/<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) the upper bound to which to interpolate</p>
+</li>
+<li><strong>t</strong> – (float) the value between 0 .. 1 of the interpolation</li>
+<li><strong>_</strong> – further args are ignored but required in the function definition (see <a class="reference internal" href="#ShutTUM.Interpolation.cubic" title="ShutTUM.Interpolation.cubic"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">cubic</span></code></a>)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><p>float/<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a></p>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Interpolate linearly between two points</p>
+<img alt="_images/interpolation-linear.svg" src="_images/interpolation-linear.svg" /><div class="math notranslate">
+\[x(t) = \left (1 - t \right ) \cdot a + t \cdot b\]</div>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Find the average between two 3D vectors</span>
+<span class="n">v1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">v2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">v</span>  <span class="o">=</span> <span class="n">Interpolation</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">)</span>   <span class="c1"># np.array([2.5,0,0.5])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="ShutTUM.Interpolation.slerp">
+<em class="property">static </em><code class="descname">slerp</code><span class="sig-paren">(</span><em>quat1</em>, <em>t</em>, <em>*_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ShutTUM.html#Interpolation.slerp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ShutTUM.Interpolation.slerp" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>quat0</strong> – <p>(<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) the lower rotational bound from which to interpolate (4x1 vector). Will be normalized</p>
+</li>
+<li><strong>quat1</strong> – <p>(<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) the upper rotational bound to which to interpolate (4x1 vector). Will be normalized</p>
+</li>
+<li><strong>t</strong> – (<cite>float</cite>) the value between 0 .. 1 of the interpolation</li>
+<li><strong>_</strong> – further args are ignored but required in the function definition (see <a class="reference internal" href="#ShutTUM.Interpolation.cubic" title="ShutTUM.Interpolation.cubic"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">cubic</span></code></a>)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a></p>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Interpolate spherically between two quaternions. This method is mostly used to interpolate rotations.
+Directly copied from <a class="reference external" href="http://www.lfd.uci.edu/~gohlke/code/transformations.py.html">Transformation.py</a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ShutTUM.sequence.Sequence">
+<em class="property">class </em><code class="descclassname">ShutTUM.sequence.</code><code class="descname">Sequence</code><span class="sig-paren">(</span><em>path</em>, <em>stereosync=True</em>, <em>calibration=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ShutTUM/sequence.html#Sequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ShutTUM.sequence.Sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>The base class representing one dataset sequence.</p>
+<p>In order for performent operations the sequence loads and checks lots of the data in its <a class="reference internal" href="#ShutTUM.sequence.Sequence.__init__" title="ShutTUM.sequence.Sequence.__init__"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">__init__</span></code></a> thus avoiding
+expensive checks in for loops or list comprehensions. In addition it holds the reference to list-like objects, such 
+as <a class="reference internal" href="#ShutTUM.sequence.Sequence.cameras" title="ShutTUM.sequence.Sequence.cameras"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">cameras</span></code></a> or <code class="xref any docutils literal notranslate"><span class="pre">imu</span></code>. You can iterate over each of these (depending
+on application) to get the corresponding <a class="reference internal" href="values.html#ShutTUM.values.Value" title="ShutTUM.values.Value"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Value</span></code></a> s in order.</p>
+<p>A typical application might look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a dataset&#39;s sequence</span>
+<span class="n">sequence</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span><span class="s1">&#39;path/to/folder/01&#39;</span><span class="p">)</span>
+
+<span class="c1"># Iterate over all imu values and find corresponding images</span>
+<span class="k">for</span> <span class="n">observation</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">imu</span><span class="p">:</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">acceleration</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">angular_velocity</span><span class="p">)</span>
+    
+    <span class="n">stereo</span> <span class="o">=</span> <span class="n">observation</span><span class="o">.</span><span class="n">stereo</span><span class="p">(</span><span class="n">shutter</span><span class="o">=</span><span class="s1">&#39;global&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stereo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">continue</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="n">stereo</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="ShutTUM.sequence.Sequence.cameras">
+<code class="descname">cameras</code><span class="sig-paren">(</span><em>shutter='both'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ShutTUM/sequence.html#Sequence.cameras"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ShutTUM.sequence.Sequence.cameras" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>shutter</strong> (<em>str</em>) – {both/global/rolling} the type of shutter you are interested in.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The reference of the cameras, which you can iterate either as <a class="reference internal" href="devices.html#ShutTUM.devices.StereoCamera" title="ShutTUM.devices.StereoCamera"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StereoCamera</span></code></a> (global/rolling)or <a class="reference internal" href="devices.html#ShutTUM.devices.DuoStereoCamera" title="ShutTUM.devices.DuoStereoCamera"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DuoStereoCamera</span></code></a> (both)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raise:</th><td class="field-body">ValueError: for anything other then both/global/rolling</td>
+</tr>
+</tbody>
+</table>
+<p>Get a reference to one or both of the two stereo cameras, to iterate over their images</p>
+<p>Note that often you want to directly iterate over those references, which you can do like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Iterate over both rolling and global images</span>
+<span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">cameras</span><span class="p">(</span><span class="n">shutter</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">R</span><span class="o">.</span><span class="n">stamp</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref any docutils literal notranslate"><span class="pre">ShutTUM.Sequence.stereosync</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.duration">
+<code class="descname">duration</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.duration" title="Permalink to this definition">¶</a></dt>
+<dd><p>The duration of the record in seconds as float, so basically:
+<code class="docutils literal notranslate"><span class="pre">sequence.end</span> <span class="pre">-</span> <span class="pre">sequence.start</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.end">
+<code class="descname">end</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.end" title="Permalink to this definition">¶</a></dt>
+<dd><p>The end time of the record as Unix Timestamp in seconds with decimal places</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.exposure_limits">
+<code class="descname">exposure_limits</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.exposure_limits" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a Namped Tuple <code class="docutils literal notranslate"><span class="pre">Limits(min,</span> <span class="pre">max)</span></code> indicating the minimum</td>
+</tr>
+</tbody>
+</table>
+<p>and maximum exposure time in milliseconds which occurred during this sequence</p>
+<p>The minimal &amp; maximal exposure used for all cameras. Note that these values are the <em>limits</em>
+not the extrema of the record, so most of the time, these will not be reached, but if, clamped accordingly.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">limits</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">exposure_limits</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Limits are </span><span class="si">%s</span><span class="s2"> .. </span><span class="si">%s</span><span class="s2"> ms&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">limits</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">limits</span><span class="o">.</span><span class="n">max</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="ShutTUM.sequence.Sequence.gamma">
+<code class="descname">gamma</code><span class="sig-paren">(</span><em>cam</em>, <em>input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ShutTUM/sequence.html#Sequence.gamma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ShutTUM.sequence.Sequence.gamma" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cam</strong> (<em>str</em>) – the name of the camera (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;cam1&quot;</span></code>)</li>
+<li><strong>input</strong> (<em>float</em>) – the position to lookup, i.e. X-axis on luminance plot. Between 0 .. 255, will be rounded to int</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">ValueError: for unknown camera names or inputs below 0 or above 255</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Lookup a gamma value from <code class="docutils literal notranslate"><span class="pre">params/&lt;cam&gt;/gamma.txt</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.imu">
+<code class="descname">imu</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.imu" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Generator property, yielding one <a class="reference internal" href="values.html#ShutTUM.values.Imu" title="ShutTUM.values.Imu"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Imu</span></code></a> after the other</td>
+</tr>
+</tbody>
+</table>
+<p>This property is a python generator, which you can use to iterate over all available
+<a class="reference internal" href="values.html#ShutTUM.values.Imu" title="ShutTUM.values.Imu"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Imu</span></code></a> s in this sequence. Note that generators do not support indexing.</p>
+<p>Note that often you want to directly iterate over the Imu like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Iterate over all imu values</span>
+<span class="k">for</span> <span class="n">observation</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">imu</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">acceleration</span><span class="p">)</span>
+    
+<span class="c1"># When you want e.g. the first imu value use:</span>
+<span class="n">first_imu</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">imu</span><span class="p">)</span>
+
+<span class="c1"># When you absolutely need indexing convert the generator to a in memory list first</span>
+<span class="n">imus</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">imu</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">imus</span><span class="p">[</span><span class="mi">17</span><span class="p">]</span><span class="o">.</span><span class="n">stamp</span><span class="p">)</span>
+
+<span class="c1"># Use the usual python &quot;functional&quot; shenanigans</span>
+<span class="n">imus_up_to_10s</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">imu</span><span class="p">:</span> <span class="n">imu</span><span class="o">.</span><span class="n">stamp</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">sequence</span><span class="o">.</span><span class="n">imu</span><span class="p">)</span>
+<span class="n">imus_up_to_10s</span> <span class="o">=</span> <span class="p">[</span> <span class="n">imu</span> <span class="k">for</span> <span class="n">imu</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">imu</span> <span class="k">if</span> <span class="n">imu</span><span class="o">.</span><span class="n">stamp</span> <span class="o">&lt;=</span> <span class="mi">10</span> <span class="p">]</span>
+
+<span class="n">acc_in_g</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">imu</span><span class="p">:</span> <span class="n">imu</span><span class="o">.</span><span class="n">acceleration</span> <span class="o">*</span> <span class="mf">9.805</span><span class="p">,</span> <span class="n">sequence</span><span class="o">.</span><span class="n">imu</span><span class="p">)</span>
+<span class="n">acc_in_g</span> <span class="o">=</span> <span class="p">[</span> <span class="n">imu</span><span class="o">.</span><span class="n">acceleration</span> <span class="o">*</span> <span class="mf">9.805</span> <span class="k">for</span> <span class="n">imu</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">imu</span> <span class="p">]</span>
+
+<span class="c1"># Note that generators don&#39;t implement __len__()</span>
+<span class="c1"># to get the amount of imu values in this sequence either use</span>
+<span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">imu</span><span class="p">))</span>               <span class="c1"># or:</span>
+<span class="n">N</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">imu</span> <span class="p">])</span>  <span class="c1"># which is the same as:</span>
+<span class="n">N</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">imu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="ShutTUM.sequence.Sequence.lookup_cam_name">
+<code class="descname">lookup_cam_name</code><span class="sig-paren">(</span><em>shutter</em>, <em>side</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ShutTUM/sequence.html#Sequence.lookup_cam_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ShutTUM.sequence.Sequence.lookup_cam_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the corresponding name of the camera for a given shutter and side</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>shutter</strong> – either one of {<code class="docutils literal notranslate"><span class="pre">&quot;global&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;rolling&quot;</span></code>}</li>
+<li><strong>side</strong> – either one of {<code class="docutils literal notranslate"><span class="pre">'L'</span></code>, <code class="docutils literal notranslate"><span class="pre">'R'</span></code> }</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">one of {<code class="docutils literal notranslate"><span class="pre">&quot;cam1&quot;</span></code> .. <code class="docutils literal notranslate"><span class="pre">&quot;cam4&quot;</span></code>} or raises ValueError on invalid parameters</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.mocap">
+<code class="descname">mocap</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.mocap" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Generator property, yielding one <a class="reference internal" href="values.html#ShutTUM.values.GroundTruth" title="ShutTUM.values.GroundTruth"><code class="xref any py py-class docutils literal notranslate"><span class="pre">GroundTruth</span></code></a> value after the other</td>
+</tr>
+</tbody>
+</table>
+<p>This property is a python generator, which you can use to iterate over all available
+<a class="reference internal" href="values.html#ShutTUM.values.GroundTruth" title="ShutTUM.values.GroundTruth"><code class="xref any py py-class docutils literal notranslate"><span class="pre">GroundTruth</span></code></a> s in this sequence. Note that generators do not support indexing.</p>
+<p>Note that often you want to directly iterate over the Mocap like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Iterate over all ground truth values</span>
+<span class="k">for</span> <span class="n">gt</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">mocap</span><span class="p">:</span>
+    <span class="n">c1_T_w</span> <span class="o">=</span> <span class="n">gt</span> <span class="o">&gt;&gt;</span> <span class="s1">&#39;cam1&#39;</span>   <span class="c1"># pose of cam1 in world frame</span>
+
+<span class="c1"># When you want e.g. the first ground truth value use:</span>
+<span class="n">first_gt</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">mocap</span><span class="p">)</span>
+
+<span class="c1"># When you absolutely need indexing convert the generator to a in memory list first</span>
+<span class="n">gts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">mocap</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">gts</span><span class="p">[</span><span class="mi">17</span><span class="p">]</span><span class="o">.</span><span class="n">stamp</span><span class="p">)</span>
+
+<span class="c1"># Use the usual python &quot;functional&quot; shenanigans</span>
+<span class="n">gts_from_10s</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">gt</span><span class="p">:</span> <span class="n">gt</span><span class="o">.</span><span class="n">stamp</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">sequence</span><span class="o">.</span><span class="n">mocap</span><span class="p">)</span>
+<span class="n">gts_from_10s</span> <span class="o">=</span> <span class="p">[</span> <span class="n">gt</span> <span class="k">for</span> <span class="n">gt</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">mocap</span> <span class="k">if</span> <span class="n">gt</span><span class="o">.</span><span class="n">stamp</span> <span class="o">&gt;=</span> <span class="mi">10</span> <span class="p">]</span>
+
+<span class="c1"># Note that generators don&#39;t implement __len__()</span>
+<span class="c1"># to get the amount of imu values in this sequence either use</span>
+<span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">mocap</span><span class="p">))</span>               <span class="c1"># or:</span>
+<span class="n">N</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">mocap</span> <span class="p">])</span>  <span class="c1"># which is the same as:</span>
+<span class="n">N</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">groundtruth</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.path">
+<code class="descname">path</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.path" title="Permalink to this definition">¶</a></dt>
+<dd><p>The path to this sequence. Environment variables get expanded automatically</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.raw">
+<code class="descname">raw</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>The raw values in matrix form. This property is a Named Tuple with the following fields:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">frames</span></code> (<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) corresponding to <code class="docutils literal notranslate"><span class="pre">data/frames.csv</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">imu</span></code> (<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) corresponding to <code class="docutils literal notranslate"><span class="pre">data/imu.csv</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">groundtruth</span></code> (<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a>) corresponding to <code class="docutils literal notranslate"><span class="pre">data/ground_truth.csv</span></code></li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.resolution">
+<code class="descname">resolution</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the resolution of the cameras as a named tuple <code class="docutils literal notranslate"><span class="pre">Resolution</span> <span class="pre">(width,</span> <span class="pre">height)</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.rolling_shutter_speed">
+<code class="descname">rolling_shutter_speed</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.rolling_shutter_speed" title="Permalink to this definition">¶</a></dt>
+<dd><p>How fast did the two rolling shutter cameras shuttered. Returns the time between the exposure of two consecutive 
+rows in milli seconds (approximate)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.shutter_types">
+<code class="descname">shutter_types</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.shutter_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Which shutter method uses each camera.</p>
+<p>Returns one of the two following dictionaries:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># For sequences with odd ID</span>
+<span class="p">{</span>
+    <span class="s1">&#39;cam1&#39;</span><span class="p">:</span> <span class="s1">&#39;global&#39;</span>
+    <span class="s1">&#39;cam2&#39;</span><span class="p">:</span> <span class="s1">&#39;global&#39;</span>
+    <span class="s1">&#39;cam3&#39;</span><span class="p">:</span> <span class="s1">&#39;rolling&#39;</span>
+    <span class="s1">&#39;cam4&#39;</span><span class="p">:</span> <span class="s1">&#39;rolling&#39;</span>
+<span class="p">}</span>
+
+<span class="c1"># For sequences with even ID</span>
+<span class="p">{</span>
+    <span class="s1">&#39;cam1&#39;</span><span class="p">:</span> <span class="s1">&#39;rolling&#39;</span>
+    <span class="s1">&#39;cam2&#39;</span><span class="p">:</span> <span class="s1">&#39;rolling&#39;</span>
+    <span class="s1">&#39;cam3&#39;</span><span class="p">:</span> <span class="s1">&#39;global&#39;</span>
+    <span class="s1">&#39;cam4&#39;</span><span class="p">:</span> <span class="s1">&#39;global&#39;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.start">
+<code class="descname">start</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>The start time of the record as Unix Timestamp in seconds with decimal places</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.stereosync">
+<code class="descname">stereosync</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.stereosync" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables/Disables frame synchronization between cameras. (default <code class="docutils literal notranslate"><span class="pre">True</span></code>)</p>
+<p>When working with stereo images you obviously need two images. Sometimes, however, one camera has recorded a 
+frame while its <a class="reference internal" href="values.html#ShutTUM.values.Image.opposite" title="ShutTUM.values.Image.opposite"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">opposite</span></code></a> has dropped a frame. With the <code class="docutils literal notranslate"><span class="pre">stereosync</span></code> option you can specify how to 
+handle these frame drops.</p>
+<img alt="_images/stereosync.svg" src="_images/stereosync.svg" /><p>With <code class="docutils literal notranslate"><span class="pre">stereosync</span></code> enabled, you iterate only over frames which have been captured by <em>both</em> cameras. With
+stereosync disabled, you iterate over all stereo images which have <em>at least one</em> camera captured an image. If both 
+cams occurred to drop the same frame, this will be skipped in the iterations. The dropped <a class="reference internal" href="values.html#ShutTUM.values.Image" title="ShutTUM.values.Image"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Image</span></code></a> is set
+to None:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sequence</span><span class="o">.</span><span class="n">stereosync</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="n">left_drops</span><span class="p">,</span> <span class="n">right_drops</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">stereo</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">cameras</span><span class="p">(</span><span class="s1">&#39;global&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">stereo</span><span class="o">.</span><span class="n">L</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">left_drops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stereo</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stereo</span><span class="o">.</span><span class="n">R</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">right_drops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stereo</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+    
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Left Camera dropped frames:  </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">left_drops</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Right Camera dropped frames: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">right_drops</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ShutTUM.sequence.Sequence.times">
+<code class="descname">times</code><a class="headerlink" href="#ShutTUM.sequence.Sequence.times" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of all time stamps in this sequence.</p>
+<div class="math notranslate">
+\[\mathbf{t} = \mathbf{t}_{frames} \cup \mathbf{t}_{imu} \cup \mathbf{t}_{groundtruth}\]</div>
+<p>Note that this list is sorted, so you can easily iterate over it like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">times</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="ShutTUM.sequence.Sequence.vignette">
+<code class="descname">vignette</code><span class="sig-paren">(</span><em>cam</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ShutTUM/sequence.html#Sequence.vignette"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ShutTUM.sequence.Sequence.vignette" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cam</strong> (<em>str</em>) – the name of the camera to lookup its vignette (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;cam1&quot;</span></code>)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the vignette image, read by <a class="reference external" href="http://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_image_display/py_image_display.html">cv2.imread()</a> with dimensions [1280x1024] as grayscale</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html">ndarray</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="ShutTUM.sequence.Sequence.__init__">
+<code class="descclassname">Sequence.</code><code class="descname">__init__</code><span class="sig-paren">(</span><em>path</em>, <em>stereosync=True</em>, <em>calibration=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ShutTUM/sequence.html#Sequence.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ShutTUM.sequence.Sequence.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>path</strong> (<em>str</em>) – the path to one sequence of the dataset, such as <code class="docutils literal notranslate"><span class="pre">~/ShutTUM/0001</span></code></li>
+<li><strong>stereosync</strong> (<em>bool</em>) – possiblity to set the <a class="reference internal" href="#ShutTUM.sequence.Sequence.stereosync" title="ShutTUM.sequence.Sequence.stereosync"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">stereosync</span></code></a> option in constructor</li>
+<li><strong>calibration</strong> (<em>bool</em>) – is this a calibration sequence? If yes, <code class="docutils literal notranslate"><span class="pre">cam1</span></code> and <code class="docutils literal notranslate"><span class="pre">cam2</span></code> are used as <code class="docutils literal notranslate"><span class="pre">global</span></code></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>while <code class="docutils literal notranslate"><span class="pre">cam3</span></code> and <code class="docutils literal notranslate"><span class="pre">cam4</span></code> are set under the <code class="docutils literal notranslate"><span class="pre">rolling</span></code> namespace 
+:raises: ValueError: if anything goes wrong 
+Load the sequence into memory (except images) and do basic data consistency checks.</p>
+<ol class="arabic simple">
+<li>It is checked that in path there exists a <code class="docutils literal notranslate"><span class="pre">data</span></code>, <code class="docutils literal notranslate"><span class="pre">frames</span></code> and <code class="docutils literal notranslate"><span class="pre">params</span></code> folder</li>
+<li>It is checked that there exists the files <code class="docutils literal notranslate"><span class="pre">data/frames.csv</span></code>, <code class="docutils literal notranslate"><span class="pre">data/imu.csv</span></code> and <code class="docutils literal notranslate"><span class="pre">data/ground_truth.csv</span></code></li>
+<li>The files from 2. are loaded into memory (see <a class="reference internal" href="#ShutTUM.sequence.Sequence.raw" title="ShutTUM.sequence.Sequence.raw"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">raw</span></code></a>)</li>
+<li>The <code class="docutils literal notranslate"><span class="pre">params/time.yaml</span></code> is loaded</li>
+<li>The <code class="docutils literal notranslate"><span class="pre">params/params.yaml</span></code> is loaded</li>
+</ol>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#ShutTUM.sequence.Sequence.stereosync" title="ShutTUM.sequence.Sequence.stereosync"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">stereosync</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="ShutTUM.sequence.Sequence.__getitem__">
+<code class="descclassname">Sequence.</code><code class="descname">__getitem__</code><span class="sig-paren">(</span><em>stamp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ShutTUM/sequence.html#Sequence.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ShutTUM.sequence.Sequence.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>stamp</strong> (<em>float/slice</em>) – either the time at which to look up the values or a slice object (e.g. start:stop) 
+defining a range of time stamps, between which to lookup the values. If the start 
+value of the slice is before <a class="reference internal" href="#ShutTUM.sequence.Sequence.start" title="ShutTUM.sequence.Sequence.start"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">start</span></code></a>, or the end value of the slice is after 
+<a class="reference internal" href="#ShutTUM.sequence.Sequence.end" title="ShutTUM.sequence.Sequence.end"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">end</span></code></a>, then the generator yield up to <a class="reference internal" href="#ShutTUM.sequence.Sequence.start" title="ShutTUM.sequence.Sequence.start"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">start</span></code></a> or <a class="reference internal" href="#ShutTUM.sequence.Sequence.end" title="ShutTUM.sequence.Sequence.end"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">end</span></code></a>, respectively.
+Note that times for the slice are both <em>inclusive</em> unlike normal python index slices.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>either a named tuple with the fields </dt>
+<dd><ul class="first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">stamp</span></code> (float)</li>
+<li><code class="docutils literal notranslate"><span class="pre">global_</span></code> (<a class="reference internal" href="values.html#ShutTUM.values.StereoImage" title="ShutTUM.values.StereoImage"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StereoImage</span></code></a>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">rolling</span></code> (<a class="reference internal" href="values.html#ShutTUM.values.StereoImage" title="ShutTUM.values.StereoImage"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StereoImage</span></code></a>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">imu</span></code> (<a class="reference internal" href="values.html#ShutTUM.values.Imu" title="ShutTUM.values.Imu"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Imu</span></code></a>) and</li>
+<li><code class="docutils literal notranslate"><span class="pre">groundtruth</span></code> (<a class="reference internal" href="values.html#ShutTUM.values.GroundTruth" title="ShutTUM.values.GroundTruth"><code class="xref any py py-class docutils literal notranslate"><span class="pre">GroundTruth</span></code></a>).</li>
+</ul>
+</dd>
+</dl>
+<p>or a generator yielding multiple (or none) of these. If any of the values of the above tuple does not 
+exist for the stamp, it becomes <code class="docutils literal notranslate"><span class="pre">None</span></code>. Note the spelling of <code class="docutils literal notranslate"><span class="pre">global_</span></code>, since <code class="docutils literal notranslate"><span class="pre">global</span></code> 
+is a reserved keyword in python.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Looks up all corresponding <a class="reference internal" href="values.html#ShutTUM.values.Value" title="ShutTUM.values.Value"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Value</span></code></a> s it can find for a given time stamp:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sequence</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># The single lookup with one float as index</span>
+<span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">times</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">sequence</span><span class="p">[</span><span class="n">time</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">global_</span>     <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">global_</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">rolling</span>     <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">rolling</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">imu</span>         <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">imu</span><span class="o">.</span><span class="n">acceleration</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">groundtruth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">groundtruth</span><span class="o">.</span><span class="n">marker</span><span class="p">)</span>
+
+<span class="c1"># ... or the sliced version specifying all data between 5s .. 45s</span>
+<span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">sequence</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">45</span><span class="p">]:</span>
+   <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+<span class="c1"># ... or all up to 10s</span>
+<span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">sequence</span><span class="p">[:</span><span class="mi">10</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+<span class="c1"># ... or all from 30s till end</span>
+<span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">sequence</span><span class="p">[</span><span class="mi">30</span><span class="p">:]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+<span class="c1"># Custom steps, however, are not supported:</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">sequence</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Doesn&#39;t make sense...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note, though, that this is not the most performant thing to iterate over the sequence,
+since the lookup has to be done on every iteration. Consider iterating over <a class="reference internal" href="#ShutTUM.sequence.Sequence.cameras" title="ShutTUM.sequence.Sequence.cameras"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">cameras</span></code></a>, <a class="reference internal" href="#ShutTUM.sequence.Sequence.imu" title="ShutTUM.sequence.Sequence.imu"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">imu</span></code></a> or 
+<a class="reference internal" href="#ShutTUM.sequence.Sequence.mocap" title="ShutTUM.sequence.Sequence.mocap"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">mocap</span></code></a> instead.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">ShutTUM</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Sequence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devices.html">Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="values.html">Values</a></li>
+<li class="toctree-l1"><a class="reference internal" href="downloads.html">Downloads</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Structure</a></li>
+      <li>Next: <a href="devices.html" title="next chapter">Devices</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Thore Goll.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/sequence.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

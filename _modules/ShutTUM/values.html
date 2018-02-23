@@ -1,0 +1,860 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ShutTUM.values &#8212; ShutTUM 1.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/style.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ShutTUM.values</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">p</span>
+<span class="kn">import</span> <span class="nn">transforms3d</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">ShutTUM</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+
+
+<div class="viewcode-block" id="Value"><a class="viewcode-back" href="../../values.html#ShutTUM.values.Value">[docs]</a><span class="k">class</span> <span class="nc">Value</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Value represents every measurement of a sensor taken in a specific time instance.</span>
+<span class="sd">    A camera might capture an :any:`Image`, an IMU will record :any:`Imu` or the motion capture system </span>
+<span class="sd">    :any:`GroundTruth`.</span>
+<span class="sd">     </span>
+<span class="sd">    .. image:: images/frames.png </span>
+<span class="sd">     </span>
+<span class="sd">    All these values have some common properties in the ShutTUM:</span>
+<span class="sd">    </span>
+<span class="sd">    1) They are single, time-discrete values (see :any:`stamp &lt;ShutTUM.Value.stamp&gt;`)</span>
+<span class="sd">    2) They are related to a certain reference frame (see :any:`reference &lt;ShutTUM.Value.reference&gt;`)</span>
+<span class="sd">    3) They all have a transformation from its reference frame towards that of ``&quot;cam1&quot;``</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Since every value has these three properties, you can achieve easily get the transformations between different  values. </span>
+<span class="sd">    Therefore the leftshift ``&lt;&lt;`` and rightshift ``&gt;&gt;`` operator has been overloaded. Both accept as their right parameter either:</span>
+<span class="sd">    </span>
+<span class="sd">    * a string indicating the desired reference to or from which to transform (e.g. ``&quot;cam1&quot;``, ``&quot;cam2&quot;``, ``&quot;world&quot;``, ``&quot;imu&quot;`` ...)</span>
+<span class="sd">    * or another value, whose :any:`reference &lt;ShutTUM.Value.reference&gt;` property is used to determine the transform</span>
+<span class="sd">    </span>
+<span class="sd">    The direction of the &quot;shift&quot; means &quot;How is the transformation from reference x to y?&quot;::</span>
+<span class="sd">    </span>
+<span class="sd">        # assume we have an image and a ground truth value</span>
+<span class="sd">        image = next(iter(sequence.cameras(&#39;global&#39;)))   # first frame</span>
+<span class="sd">        gt    = next(sequence.mocap)                     # first ground truth</span>
+<span class="sd">        </span>
+<span class="sd">        # Since both Image and GroundTruth derive from Value, they have a reference ...</span>
+<span class="sd">        print(&quot;Image %s is associated with reference %s&quot; % (image, image.reference))</span>
+<span class="sd">        print(&quot;Ground Truth %s is associated with reference %s&quot; % (gt, gt.reference)) </span>
+<span class="sd">         </span>
+<span class="sd">        # Since we know both transforms to &quot;cam1&quot;, we can compute the transformation between the two</span>
+<span class="sd">        P_img_wrld = image &lt;&lt; gt     # pose of the image relative to the world </span>
+<span class="sd">        P_img_wrld = gt &gt;&gt; image     # same as line above</span>
+<span class="sd">        P_img_wrld = gt &gt;&gt; &quot;cam1&quot;    # you can also specify the reference (on the right) as string directly</span>
+<span class="sd">        # P_img_wrld = &quot;cam1&quot; &lt;&lt; gt  # This fails, since the shift operators cannot be overloaded for strings in the first place</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">stamp</span><span class="p">,</span> <span class="n">reference</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span> <span class="o">=</span> <span class="n">sequence</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stamp</span> <span class="o">=</span> <span class="n">stamp</span>
+        <span class="k">if</span> <span class="n">reference</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sequence</span><span class="o">.</span><span class="n">_refs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] Cannot find the reference </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">reference</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reference</span> <span class="o">=</span> <span class="n">reference</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_previous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Value</span><span class="p">):</span> <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stamp</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_stamp</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">reference</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stamp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The timestamp in seconds with decimal places. This stamp describes the exact moment this</span>
+<span class="sd">        values has been recorded.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stamp</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">reference</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The name as ``str`` of the reference frame, this value is associated with. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reference</span>
+
+<div class="viewcode-block" id="Value.dt"><a class="viewcode-back" href="../../values.html#ShutTUM.values.Value.dt">[docs]</a>    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ifunknown</span><span class="o">=.</span><span class="mi">001</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The time delta elapsed since the last :any:`Value` of this type.</span>
+<span class="sd">        Note that this value varies depending on the concrete type of value. That means dt will be about 1/25 s</span>
+<span class="sd">        for an :any:`Image` while around 1/120 s for a :any:`GroundTruth`. If a previous value is not present</span>
+<span class="sd">        this will return time specified by ``ifunknown``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">previous</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_previous</span>       <span class="c1"># cache for performance</span>
+        <span class="k">if</span> <span class="n">previous</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span> <span class="n">ifunknown</span></div>
+        <span class="k">else</span><span class="p">:</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stamp</span> <span class="o">-</span> <span class="n">previous</span><span class="o">.</span><span class="n">stamp</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The transformation from ``&quot;cam1&quot;`` to this value`s :any:`reference &lt;ShutTUM.Value.reference&gt;` as 4x4 </span>
+<span class="sd">        `ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_ homogeneous matrix </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_refs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_reference</span><span class="p">][</span><span class="s1">&#39;transform&#39;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">/</span><span class="si">%.2f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stamp</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__lshift__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">parent</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_refs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] Cannot find the parent reference </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">parent</span><span class="p">))</span>
+
+            <span class="n">tparent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_refs</span><span class="p">[</span><span class="n">parent</span><span class="p">][</span><span class="s1">&#39;transform&#39;</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">Value</span><span class="p">):</span>
+            <span class="n">tparent</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">_transform</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] Cannot only lookup transforms for type string or ShutTUM.values.Value&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">)</span>
+
+        <span class="n">tchild</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">tparent</span><span class="p">),</span> <span class="n">tchild</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__rshift__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">child</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_refs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] Cannot find the parent reference </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">child</span><span class="p">))</span>
+            <span class="n">tchild</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_refs</span><span class="p">[</span><span class="n">child</span><span class="p">][</span><span class="s1">&#39;transform&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Value</span><span class="p">):</span>
+            <span class="n">tchild</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">_transform</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] Cannot only lookup transforms for type string or ShutTUM.values.Value&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">)</span>
+
+        <span class="n">tparent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">tparent</span><span class="p">),</span> <span class="n">tchild</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Image"><a class="viewcode-back" href="../../values.html#ShutTUM.values.Image">[docs]</a><span class="k">class</span> <span class="nc">Image</span><span class="p">(</span><span class="n">Value</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An image is a :any:`Value` with its reference set to one of ``&quot;cam1&quot;`` ... ``&quot;cam4&quot;``.</span>
+
+<span class="sd">    Each image is recorded by a :any:`StereoCamera`, which has a shutter type, so as its images. Note, though,</span>
+<span class="sd">    that each camera might differ its shutter methods between sequences, to achieve statistical independence. </span>
+<span class="sd">    That means, that you cannot rely on e.g. ``&quot;cam1&quot;`` always having ``&quot;global&quot;`` or ``&quot;rolling&quot;`` shutter, nor as the other cams.</span>
+
+<span class="sd">    The cameras record data at approximately **20 FPS**, but sometimes their might exist frame drops. </span>
+
+<span class="sd">    You can query a lot of information from an image such as its :any:`shutter &lt;ShutTUM.Image.shutter&gt;`, :any:`exposure &lt;ShutTUM.Image.exposure&gt;` time and :any:`ID &lt;ShutTUM.Image.ID&gt;`.</span>
+<span class="sd">    Since it is a :any:`Value` all transform shenanigans apply.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_Vector2</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Vector2&#39;</span><span class="p">,</span> <span class="s1">&#39;x y&#39;</span><span class="p">)</span>
+    <span class="n">_DistCoeffs</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;DistCoeffs&#39;</span><span class="p">,</span> <span class="s1">&#39;k1 k2 r1 r2&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stereo</span><span class="p">,</span> <span class="n">shutter</span><span class="p">,</span> <span class="n">left</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_left</span> <span class="o">=</span> <span class="n">left</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stereo</span> <span class="o">=</span> <span class="n">stereo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shutter</span> <span class="o">=</span> <span class="n">shutter</span>
+
+        <span class="k">if</span> <span class="n">shutter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;global&#39;</span><span class="p">,</span> <span class="s1">&#39;rolling&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">] Shutter type can only be &quot;global&quot; or &quot;rolling&quot;&#39;</span> <span class="o">%</span> <span class="n">stereo</span><span class="o">.</span><span class="n">_sequence</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">cam</span> <span class="ow">in</span> <span class="n">stereo</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_cams</span><span class="p">:</span>
+            <span class="c1"># Check if the shutter matches</span>
+            <span class="k">if</span> <span class="n">stereo</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_cams</span><span class="p">[</span><span class="n">cam</span><span class="p">][</span><span class="s1">&#39;shutter&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">shutter</span><span class="p">:</span> <span class="k">continue</span>
+
+            <span class="c1"># Check if the camera position (left/right) matches the camera name</span>
+            <span class="k">if</span> <span class="n">left</span> <span class="ow">and</span> <span class="n">cam</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;cam1&#39;</span><span class="p">,</span> <span class="s1">&#39;cam4&#39;</span><span class="p">]:</span> <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">left</span> <span class="ow">and</span> <span class="n">cam</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;cam2&#39;</span><span class="p">,</span> <span class="s1">&#39;cam3&#39;</span><span class="p">]:</span> <span class="k">continue</span>
+
+            <span class="c1"># Now we have found a camera matching the wanted shutter type and position</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Image</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stereo</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">stereo</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cam</span><span class="p">)</span>
+            <span class="k">break</span>  <span class="c1"># from any further for loop iteration</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">] Image &quot;</span><span class="si">%s</span><span class="s1">&quot; does not exist&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_previous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stereo</span><span class="o">.</span><span class="n">_previous</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Image</span><span class="p">):</span> <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">Image</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_left</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_left</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shutter</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_shutter</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Image (</span><span class="si">%s</span><span class="s2">/#</span><span class="si">%05d</span><span class="s2">/</span><span class="si">%.2f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stamp</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        Returns the resolution of the cameras as a named tuple ``Resolution(width, height)``</span>
+<span class="sd">        </span>
+<span class="sd">        .. seealso:: :any:`Sequence.resolution &lt;ShutTUM.Sequence.resolution&gt;`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">resolution</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot; The shutter method with which this image was captured as string, either ``&quot;rolling&quot;`` or ``&quot;global&quot;`` &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shutter</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ID</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The frame ID as int of this image. This number, prepended to 5 digits is also the name of the JPEG file&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stereo</span><span class="o">.</span><span class="n">ID</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">opposite</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;This holds the reference of the opposite image, that is the image taken from the other camera with the </span>
+<span class="sd">        same shutter.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stereo</span><span class="o">.</span><span class="n">_opposite</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The exposure time as float in milli seconds, that this image was illuminated&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stereo</span><span class="o">.</span><span class="n">exposure</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">illuminance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The image&#39;s illuminance in lux.</span>
+<span class="sd">        </span>
+<span class="sd">        .. seealso:: :any:`StereoImage.illuminance &lt;ShutTUM.StereoImage.illuminance&gt;`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stereo</span><span class="o">.</span><span class="n">illuminance</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The path to the JPEG file of this image, relative to the the construction parameter of </span>
+<span class="sd">        :any:`Sequence(...) &lt;ShutTUM.Sequence.__init__&gt;`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stereo</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_path</span><span class="p">,</span> <span class="s1">&#39;frames&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%05d</span><span class="s1">.jpeg&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">imu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The matching :any:`Imu` for this image. Since the capture of an image is synchronized with the IMU,</span>
+<span class="sd">        no interpolation is needed.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stereo</span><span class="o">.</span><span class="n">imu</span>
+
+<div class="viewcode-block" id="Image.groundtruth"><a class="viewcode-back" href="../../values.html#ShutTUM.values.Image.groundtruth">[docs]</a>    <span class="k">def</span> <span class="nf">groundtruth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_stamp_delta</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span>
+                    <span class="n">position_interpolation</span><span class="o">=</span><span class="n">ShutTUM</span><span class="o">.</span><span class="n">Interpolation</span><span class="o">.</span><span class="n">linear</span><span class="p">,</span>
+                    <span class="n">orientation_interpolation</span><span class="o">=</span><span class="n">ShutTUM</span><span class="o">.</span><span class="n">Interpolation</span><span class="o">.</span><span class="n">slerp</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find the matching :any:`GroundTruth` value for this image. Since the motion capture system and the cameras</span>
+<span class="sd">        are not synced, we need to interpolate between ground truths by image&#39;s time stamp.</span>
+<span class="sd">        </span>
+<span class="sd">        :param max_stamp_delta: specify the maximal allowed time deviation [s] for interpolation. When the previous </span>
+<span class="sd">                                (or next) closest ground truth value is older (or newer) then this delta, None will be </span>
+<span class="sd">                                returned. </span>
+<span class="sd">        :param position_interpolation: a predefined or custom interpolation function to interpolate positions </span>
+<span class="sd">        :param orientation_interpolation: a predefined or custom interpolation function to interpolate quaternions</span>
+<span class="sd">        :return: the matching interpolated ground truth or None, if any of its values was NaN</span>
+
+<span class="sd">        .. seealso:: :any:`ShutTUM.GroundTruth.interpolate`</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="n">GroundTruth</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stamp</span><span class="p">,</span> <span class="n">max_stamp_delta</span><span class="p">,</span> <span class="n">position_interpolation</span><span class="p">,</span> <span class="n">orientation_interpolation</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Image.load"><a class="viewcode-back" href="../../values.html#ShutTUM.values.Image.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the JPEG itself into memory::</span>
+
+<span class="sd">            image = ...</span>
+<span class="sd">            pixels = image.load()   # uses cv2.imread()</span>
+<span class="sd">            print(pixels.shape)     # (1024, 1280)</span>
+<span class="sd">            print(type(pixels))     # numpy.ndarray</span>
+
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_GRAYSCALE</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Image.distortion"><a class="viewcode-back" href="../../values.html#ShutTUM.values.Image.distortion">[docs]</a>    <span class="k">def</span> <span class="nf">distortion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        Get the distortion coefficients the camera which took this image</span>
+<span class="sd">        It looks up the parameters in ``params/params.yaml/&lt;cam&gt;/distortion/&lt;model&gt;``</span>
+<span class="sd">        </span>
+<span class="sd">        :param model: One of ``&quot;fov&quot;`` or ``&quot;radtan&quot;``</span>
+<span class="sd">        :return: either a float :math:`\omega` for FOV model, or a named tuple with </span>
+<span class="sd">        the four elements ``DistCooefs(k1, k2, r1, r2)`` for Rad Tan model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;fov&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_refs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">][</span><span class="s1">&#39;distortion&#39;</span><span class="p">][</span><span class="n">model</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;radtan&#39;</span><span class="p">:</span>
+            <span class="n">coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_refs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">][</span><span class="s1">&#39;distortion&#39;</span><span class="p">][</span><span class="n">model</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DistCoeffs</span><span class="p">(</span><span class="n">k1</span><span class="o">=</span><span class="n">coeffs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k2</span><span class="o">=</span><span class="n">coeffs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">r1</span><span class="o">=</span><span class="n">coeffs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">r2</span><span class="o">=</span><span class="n">coeffs</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+        <span class="k">else</span><span class="p">:</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] Unknown distortion model: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">model</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">focal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot; The camera&#39;s focal length as named tuple ``Vector2(x, y)`` in pixels &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Image</span><span class="o">.</span><span class="n">_Vector2</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_refs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">][</span><span class="s1">&#39;intrinsics&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                              <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_refs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">][</span><span class="s1">&#39;intrinsics&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">principle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot; The camera&#39;s principle point as named tuple ``Vector2(x, y)`` in pixels &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Image</span><span class="o">.</span><span class="n">_Vector2</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_refs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">][</span><span class="s1">&#39;intrinsics&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span>
+                              <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_refs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">][</span><span class="s1">&#39;intrinsics&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">K</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The intrinsic camera matrix as 3x3 </span>
+<span class="sd">        `ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">focal</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">principle</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(((</span><span class="n">f</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">x</span><span class="p">),</span>
+                         <span class="p">(</span>  <span class="mi">0</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">y</span><span class="p">),</span></div>
+                         <span class="p">(</span>  <span class="mi">0</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">)))</span>
+
+
+<div class="viewcode-block" id="StereoImage"><a class="viewcode-back" href="../../values.html#ShutTUM.values.StereoImage">[docs]</a><span class="k">class</span> <span class="nc">StereoImage</span><span class="p">(</span><span class="n">Value</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A stereo image contains of two individual :any:`Image` s, a left and a right one.</span>
+<span class="sd">    It is more or less a container for the two.</span>
+
+<span class="sd">    Note that for internal reasons a stereo image derives from :any:`Value`. However, you should</span>
+<span class="sd">    not use the transform functions (``&lt;&lt;`` and ``&gt;&gt;``) with this, since a stereo image contains two </span>
+<span class="sd">    reference frames, one for each camera::</span>
+<span class="sd">        id = 1</span>
+<span class="sd">        stereo = sequence.cameras(&#39;rolling&#39;)[id]</span>
+
+<span class="sd">        # The following is ambiguous</span>
+<span class="sd">        notok = stereo &lt;&lt; &quot;imu&quot;   # which camera of the two do you mean?</span>
+
+<span class="sd">        # Better would be</span>
+<span class="sd">        ok = stereo.L &lt;&lt; &quot;imu&quot;    # (which is the same as above)</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="StereoImage.extrapolate"><a class="viewcode-back" href="../../values.html#ShutTUM.values.StereoImage.extrapolate">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extrapolate</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">shutter</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;closest&#39;</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find a matching image for a certain :any:`Value` based on a extrapolation method</span>
+
+<span class="sd">        :param value: The value for which to find a matching image</span>
+<span class="sd">        :param shutter: The shutter type of the images to find (``&quot;global&quot;``, ``&quot;rolling&quot;``, **not** ``&quot;both&quot;``) </span>
+<span class="sd">        :param method: An optional extrapolation method to determine the rules for a &quot;match&quot;:</span>
+
+<span class="sd">            * ``&quot;closest&quot;``: the image with the least difference to value.stamp is chosen</span>
+<span class="sd">            * ``&quot;next&quot;``: the image with the next larger time stamp than value.stamp is chosen</span>
+<span class="sd">            * ``&quot;prev&quot;``: the image with the next smaller time stamp than value.stamp is chosen</span>
+<span class="sd">            * ``&quot;exact&quot;``: the image where value.stamp == image.stamp holds is chosen, None otherwise</span>
+
+<span class="sd">        :return: The matching stereo image or None if no was found</span>
+<span class="sd">        </span>
+<span class="sd">        .. seealso:: :any:`Sequence.cameras &lt;ShutTUM.Sequence.cameras&gt;`</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;closest&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">frames</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">value</span><span class="o">.</span><span class="n">stamp</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">StereoImage</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="n">shutter</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;next&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">frames</span>
+            <span class="n">frame</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">value</span><span class="o">.</span><span class="n">stamp</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">StereoImage</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">frame</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shutter</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;prev&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">frames</span>
+            <span class="n">frame</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">value</span><span class="o">.</span><span class="n">stamp</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">StereoImage</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">frame</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">shutter</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;exact&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">frames</span>
+            <span class="n">frame</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">value</span><span class="o">.</span><span class="n">stamp</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">StereoImage</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">frame</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shutter</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">] Unknown extrapolation method: </span><span class="si">%s</span><span class="s1"> (supported are &quot;closest&quot;, &quot;next&quot;, &quot;prev&quot; and &quot;exact&quot;)&#39;</span></div>
+                         <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">method</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">shutter</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span> <span class="o">=</span> <span class="n">sequence</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shutter</span> <span class="o">=</span> <span class="n">shutter</span>
+        <span class="n">L</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="n">frames</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">frames</span>
+        <span class="nb">id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span> <span class="n">L</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shutter</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span> <span class="n">L</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span> <span class="n">R</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shutter</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span> <span class="n">R</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># If stereosync is required, the stereo image is only valid, if we found both L/R images</span>
+            <span class="k">if</span> <span class="n">sequence</span><span class="o">.</span><span class="n">stereosync</span> <span class="ow">and</span> <span class="n">L</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">R</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="k">break</span>
+
+            <span class="c1"># If no stereosync is required, it suffices if we find only one</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">sequence</span><span class="o">.</span><span class="n">stereosync</span> <span class="ow">and</span> <span class="p">(</span><span class="n">L</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">R</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span> <span class="k">break</span>
+
+            <span class="c1"># Otherwise we look for the next data in frames.csv and try again ...</span>
+            <span class="nb">id</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">frames</span><span class="p">[</span><span class="n">frames</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="nb">id</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">continue</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">] Cannot find no more stereo images due to frame drops for camera &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">shutter</span><span class="p">))</span>
+
+        <span class="c1"># Timestamp is in second column</span>
+        <span class="n">cam</span> <span class="o">=</span> <span class="n">L</span> <span class="k">if</span> <span class="n">L</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">R</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_left</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_right</span> <span class="o">=</span> <span class="n">L</span><span class="p">,</span> <span class="n">R</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">StereoImage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cam</span><span class="o">.</span><span class="n">reference</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_previous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">StereoImage</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">shutter</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;prev&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">StereoImage</span><span class="p">):</span> <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">StereoImage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_left</span><span class="o">.</span><span class="n">reference</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_left</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;None&#39;</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_right</span><span class="o">.</span><span class="n">reference</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_right</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;None&#39;</span>
+        <span class="k">return</span> <span class="s2">&quot;StereoImage ({</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">}/</span><span class="si">%05d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_opposite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">img</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_left</span><span class="p">:</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_right</span>
+        <span class="k">if</span> <span class="n">img</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_right</span><span class="p">:</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_left</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] Image </span><span class="si">%s</span><span class="s2"> unknown, cannot find opposite&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        Returns the resolution of the cameras as a named tuple ``Resolution(width, height)``</span>
+<span class="sd">        </span>
+<span class="sd">        .. seealso:: :any:`Sequence.resolution &lt;ShutTUM.Sequence.resolution&gt;`</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">resolution</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ID</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The frame ID as int of this image. This number, prepended to 5 digits is also the name of the JPEG file&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot; The shutter method with which this stereo image was captured as string, either ``&quot;rolling&quot;`` or ``&quot;global&quot;`` &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shutter</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The exposure time as float in milli seconds, that this image was illuminated. This is constant for </span>
+<span class="sd">        :any:`L &lt;ShutTUM.StereoImage.L&gt;` and :any:`R &lt;ShutTUM.StereoImage.R&gt;`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">illuminance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The estimated illuminance measured by the `TSL2561 Lux-sensor &lt;https://cdn-shop.adafruit.com/datasheets/TSL2561.pdf&gt;`_. </span>
+<span class="sd">        </span>
+<span class="sd">        This float is measured in lx but is only an approximation. This value is constant for both </span>
+<span class="sd">        :any:`L &lt;ShutTUM.StereoImage.L&gt;` and :any:`R &lt;ShutTUM.StereoImage.R&gt;`. Based on this value, the estimated </span>
+<span class="sd">        :any:`exposure` time can be computed with the following hand fitted formula:</span>
+
+<span class="sd">        .. image:: images/autoexposure.svg</span>
+
+<span class="sd">        .. math:: t_{exposure} \left ( E_v \right ) = 198.1527 \cdot E_v^{-0.8003}</span>
+<span class="sd">        </span>
+<span class="sd">        This will return ``float(&#39;nan&#39;)`` if no measurement was taken, such as during an I2C error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">L</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot; The reference to the left :any:`Image`&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_left</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">R</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot; The reference to the right :any:`Image`&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_right</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">imu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The matching :any:`Imu` for this image. Since the capture of an image is synchronized with the IMU,</span>
+<span class="sd">                no interpolation is needed.&quot;&quot;&quot;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">imu</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="n">i</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">stamp</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">match</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="n">Imu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</div>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] It seems that </span><span class="si">%s</span><span class="s2"> has no matching IMU value&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="Imu"><a class="viewcode-back" href="../../values.html#ShutTUM.values.Imu">[docs]</a><span class="k">class</span> <span class="nc">Imu</span><span class="p">(</span><span class="n">Value</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot; An imu value represents the measurement of IMU sensor at a specific time.</span>
+
+<span class="sd">    Since it is a :any:`Value` you can use it to calculate transforms with it. Also </span>
+<span class="sd">    the IMU is synchronized in a way, that it measures exactly seven times </span>
+<span class="sd">    per image. Any :any:`Imu` value consist of three acceleration measurements in X, Y and Z </span>
+<span class="sd">    and three angular velocity measurements around the X, Y, and Z axis.</span>
+
+<span class="sd">    .. seealso:: :any:`Interpolation` for the data frequency &amp; :any:`Value` for the reference frame</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Imu.extrapolate"><a class="viewcode-back" href="../../values.html#ShutTUM.values.Imu.extrapolate">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extrapolate</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;closest&#39;</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find a matching :any:`Imu` value for a certain :any:`Value` based on a extrapolation method</span>
+
+<span class="sd">        :param value: The value for which to find a matching :any:`Imu` value</span>
+<span class="sd">        :param method: An optional extrapolation method to determine the rules for a &quot;match&quot;:</span>
+
+<span class="sd">            * ``&quot;closest&quot;``: the image with the least difference to value.stamp is chosen</span>
+<span class="sd">            * ``&quot;next&quot;``: the image with the next larger time stamp than value.stamp is chosen</span>
+<span class="sd">            * ``&quot;prev&quot;``: the image with the next smaller time stamp than value.stamp is chosen</span>
+<span class="sd">            * ``&quot;exact&quot;``: the image where value.stamp == image.stamp holds is chosen, None otherwise</span>
+
+<span class="sd">        :return: The matching IMU value or None if no was found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;closest&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">imu</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">value</span><span class="o">.</span><span class="n">stamp</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">Imu</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;next&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">imu</span>
+            <span class="n">imu</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">value</span><span class="o">.</span><span class="n">stamp</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">imu</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">Imu</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">imu</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;prev&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">imu</span>
+            <span class="n">imu</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">value</span><span class="o">.</span><span class="n">stamp</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">imu</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">Imu</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">imu</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;exact&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">imu</span>
+            <span class="n">imu</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">value</span><span class="o">.</span><span class="n">stamp</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">imu</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">Imu</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">imu</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">] Unknown extrapolation method: </span><span class="si">%s</span><span class="s1"> (supported are &quot;closest&quot;, &quot;next&quot;, &quot;prev&quot; and &quot;exact&quot;)&#39;</span></div>
+                         <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">method</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">7</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] Data must have at least 7 entries [time1, acc3, gyro3] but has </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)))</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Imu</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">stamp</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">reference</span><span class="o">=</span><span class="s1">&#39;imu&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gyro</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_previous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Imu</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;prev&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Imu</span><span class="p">):</span> <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">Imu</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_acc</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">_acc</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gyro</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">_gyro</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">acceleration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The acceleration 3D vector [x,y,z] of this measurement as </span>
+<span class="sd">        `ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_ </span>
+<span class="sd">        in :math:`\frac{m}{s^2}`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acc</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">angular_velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The angular velocity 3D vector around [x,y,z] of this measurement as </span>
+<span class="sd">        `ndarray &lt;https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.html&gt;`_</span>
+<span class="sd">        in :math:`\frac{rad}{s}`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gyro</span>
+
+<div class="viewcode-block" id="Imu.stereo"><a class="viewcode-back" href="../../values.html#ShutTUM.values.Imu.stereo">[docs]</a>    <span class="k">def</span> <span class="nf">stereo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shutter</span><span class="p">,</span> <span class="n">extrapolation</span><span class="o">=</span><span class="s1">&#39;closest&#39;</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The matching stereo image for this :any:`Imu` measurement</span>
+<span class="sd">        :param shutter: The shutter type of the images to find (``&quot;global&quot;``, ``&quot;rolling&quot;``, **not** ``&quot;both&quot;``) </span>
+<span class="sd">        :param extrapolation: An optional extrapolation method to determine the rules for a &quot;match&quot;:</span>
+
+<span class="sd">            * ``&quot;closest&quot;``: the image with the least difference to value.stamp is chosen</span>
+<span class="sd">            * ``&quot;next&quot;``: the image with the next larger time stamp than value.stamp is chosen</span>
+<span class="sd">            * ``&quot;prev&quot;``: the image with the next smaller time stamp than value.stamp is chosen</span>
+<span class="sd">            * ``&quot;exact&quot;``: the image where ``value.stamp == image.stamp`` holds is chosen, None otherwise</span>
+<span class="sd">        :return: The matching stereo image or None if no was found</span>
+
+<span class="sd">        .. seealso:: :any:`ShutTUM.StereoImage.extrapolate`</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="n">StereoImage</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shutter</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">extrapolation</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Imu.groundtruth"><a class="viewcode-back" href="../../values.html#ShutTUM.values.Imu.groundtruth">[docs]</a>    <span class="k">def</span> <span class="nf">groundtruth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_stamp_delta</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span>
+                    <span class="n">position_interpolation</span><span class="o">=</span><span class="n">ShutTUM</span><span class="o">.</span><span class="n">Interpolation</span><span class="o">.</span><span class="n">linear</span><span class="p">,</span>
+                    <span class="n">orientation_interpolation</span><span class="o">=</span><span class="n">ShutTUM</span><span class="o">.</span><span class="n">Interpolation</span><span class="o">.</span><span class="n">slerp</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find the matching :any:`GroundTruth` value for this :any:`Imu` value. Since the motion capture system and the </span>
+<span class="sd">        IMU sensor are not synced, we need to interpolate between ground truths by time stamp of this :any:`Imu` value.</span>
+
+<span class="sd">        :param max_stamp_delta: specify the maximal allowed time deviation [s] for interpolation. When the previous </span>
+<span class="sd">                                (or next) closest ground truth value is older (or newer) then this delta, None will be </span>
+<span class="sd">                                returned. </span>
+<span class="sd">        :param position_interpolation: a predefined or custom interpolation function to interpolate positions </span>
+<span class="sd">        :param orientation_interpolation: a predefined or custom interpolation function to interpolate quaternions</span>
+<span class="sd">        :return: the matching interpolated ground truth</span>
+
+<span class="sd">        .. seealso:: :any:`ShutTUM.GroundTruth.interpolate`</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">GroundTruth</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stamp</span><span class="p">,</span> <span class="n">max_stamp_delta</span><span class="p">,</span></div></div>
+                                       <span class="n">position_interpolation</span><span class="p">,</span> <span class="n">orientation_interpolation</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="GroundTruth"><a class="viewcode-back" href="../../values.html#ShutTUM.values.GroundTruth">[docs]</a><span class="k">class</span> <span class="nc">GroundTruth</span><span class="p">(</span><span class="n">Value</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A ground truth is a :any:`Value` with the reference ``&quot;world&quot;``.</span>
+<span class="sd">    The ground truth is taken with a higher frequency than the images (around 120 Hz), but slower than the imu. </span>
+<span class="sd">    Since the mocap system is stationary in one room only, it will not cover the whole duration of this sequence.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GroundTruth.interpolate"><a class="viewcode-back" href="../../values.html#ShutTUM.values.GroundTruth.interpolate">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">stamp</span><span class="p">,</span> <span class="n">max_stamp_delta</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span>
+                    <span class="n">position_interpolation</span><span class="o">=</span><span class="n">ShutTUM</span><span class="o">.</span><span class="n">Interpolation</span><span class="o">.</span><span class="n">linear</span><span class="p">,</span>
+                    <span class="n">orientation_interpolation</span><span class="o">=</span><span class="n">ShutTUM</span><span class="o">.</span><span class="n">Interpolation</span><span class="o">.</span><span class="n">slerp</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function enables you to find the interpolated ground truth of a record given a certain timestamp.</span>
+
+<span class="sd">        :param sequence: the sequence which holds all ground truth values to interpolate over </span>
+<span class="sd">        :param float stamp: the time at which to interpolate (in seconds, with decimal places) </span>
+<span class="sd">        :param max_stamp_delta: specify the maximal allowed time deviation [s] for interpolation. When the previous </span>
+<span class="sd">                                (or next) closest ground truth value is older (or newer) then this delta, None will be </span>
+<span class="sd">                                returned. </span>
+<span class="sd">        :param position_interpolation: A predefined or custom interpolation function</span>
+<span class="sd">        :param orientation_interpolation: A predefined or custom interpolation function</span>
+<span class="sd">        :return: A :any:`GroundTruth` -Value</span>
+
+<span class="sd">        .. seealso:: :any:`Interpolation`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">poses</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">groundtruth</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">poses</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">stamp</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">idx</span> <span class="o">!=</span> <span class="n">poses</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="n">stamp</span> <span class="o">-</span> <span class="n">poses</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">dt</span> <span class="o">&gt;</span> <span class="n">max_stamp_delta</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="n">t</span> <span class="o">=</span> <span class="n">dt</span> <span class="o">/</span> <span class="p">(</span><span class="n">poses</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">poses</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+            <span class="c1"># Compute previous values for interpolation method, if existant</span>
+            <span class="n">a0</span><span class="p">,</span> <span class="n">b0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">qa0</span><span class="p">,</span> <span class="n">qb0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>             <span class="n">a0</span><span class="p">,</span> <span class="n">qa0</span> <span class="o">=</span> <span class="n">poses</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">poses</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">8</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">poses</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">b0</span><span class="p">,</span> <span class="n">qb0</span> <span class="o">=</span> <span class="n">poses</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">poses</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">8</span><span class="p">]</span>
+
+            <span class="n">p</span> <span class="o">=</span> <span class="n">position_interpolation</span><span class="p">(</span><span class="n">poses</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">poses</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">t</span><span class="p">,</span> <span class="n">a0</span><span class="p">,</span> <span class="n">b0</span><span class="p">)</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">orientation_interpolation</span><span class="p">(</span><span class="n">poses</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">8</span><span class="p">],</span> <span class="n">poses</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">8</span><span class="p">],</span> <span class="n">t</span><span class="p">,</span> <span class="n">qa0</span><span class="p">,</span> <span class="n">qb0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">q</span><span class="p">)):</span> <span class="k">return</span> <span class="kc">None</span>
+</div>
+        <span class="k">return</span> <span class="n">GroundTruth</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="n">stamp</span><span class="p">],</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)))</span>
+
+<div class="viewcode-block" id="GroundTruth.extrapolate"><a class="viewcode-back" href="../../values.html#ShutTUM.values.GroundTruth.extrapolate">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extrapolate</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;closest&#39;</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find a matching ground truth for a certain :any:`Value` based on a extrapolation method</span>
+
+<span class="sd">        :param value: The value for which to find a matching ground truth value</span>
+<span class="sd">        :param method: An optional extrapolation method to determine the rules for a &quot;match&quot;:</span>
+
+<span class="sd">            * ``&quot;closest&quot;``: the image with the least difference to value.stamp is chosen</span>
+<span class="sd">            * ``&quot;next&quot;``: the image with the next larger time stamp than value.stamp is chosen</span>
+<span class="sd">            * ``&quot;prev&quot;``: the image with the next smaller time stamp than value.stamp is chosen</span>
+<span class="sd">            * ``&quot;exact&quot;``: the image where value.stamp == image.stamp holds is chosen, None otherwise</span>
+
+<span class="sd">        :return: The matching ground truth or None if no was found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;closest&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">groundtruth</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">value</span><span class="o">.</span><span class="n">stamp</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">GroundTruth</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;next&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">groundtruth</span>
+            <span class="n">gt</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">value</span><span class="o">.</span><span class="n">stamp</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">gt</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">GroundTruth</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">gt</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;prev&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">groundtruth</span>
+            <span class="n">gt</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">value</span><span class="o">.</span><span class="n">stamp</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">gt</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">GroundTruth</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">gt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;exact&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">groundtruth</span>
+            <span class="n">gt</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">value</span><span class="o">.</span><span class="n">stamp</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">gt</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">GroundTruth</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">gt</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">] Unknown extrapolation method: </span><span class="si">%s</span><span class="s1"> (supported are &quot;closest&quot;, &quot;next&quot;, &quot;prev&quot; and &quot;exact&quot;)&#39;</span></div>
+                         <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="n">method</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] Data must have at least 8 entries [time1, position3, orientation4] but has </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span> <span class="o">=</span> <span class="n">sequence</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GroundTruth</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">stamp</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">reference</span><span class="o">=</span><span class="s1">&#39;world&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_previous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">GroundTruth</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;prev&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">GroundTruth</span><span class="p">):</span> <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">GroundTruth</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">affines</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span>
+            <span class="n">T</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span>
+            <span class="n">R</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">quaternions</span><span class="o">.</span><span class="n">quat2mat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">8</span><span class="p">]),</span>
+            <span class="n">Z</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+            <span class="n">S</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">marker</span> <span class="o">&gt;&gt;</span> <span class="s1">&#39;cam1&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GroundTruth.stereo"><a class="viewcode-back" href="../../values.html#ShutTUM.values.GroundTruth.stereo">[docs]</a>    <span class="k">def</span> <span class="nf">stereo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shutter</span><span class="p">,</span> <span class="n">extrapolation</span><span class="o">=</span><span class="s1">&#39;closest&#39;</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find a matching stereo image pair for this ground truth value.</span>
+
+<span class="sd">        :param shutter: The shutter type of the images to find (``&quot;global&quot;``, ``&quot;rolling&quot;``, **not** ``&quot;both&quot;``) </span>
+<span class="sd">        :param extrapolation: An optional extrapolation method to determine the rules for a &quot;match&quot; </span>
+<span class="sd">                            (one of ``&quot;closest&quot;``, ``&quot;next&quot;``, ``&quot;prev&quot;``, ``&quot;exact&quot;``)</span>
+<span class="sd">        :return: The matching stereo image or None if no was found</span>
+
+<span class="sd">        .. seealso:: :any:`ShutTUM.StereoImage.extrapolate`</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="n">StereoImage</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shutter</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">extrapolation</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">marker</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot; Returns the :any:`Marker`, which got tracked by this ground truth. &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="n">Marker</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stamp</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Marker"><a class="viewcode-back" href="../../values.html#ShutTUM.values.Marker">[docs]</a><span class="k">class</span> <span class="nc">Marker</span><span class="p">(</span><span class="n">Value</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The marker is an IR ball placed on top of the setup to be tracked by the mocap.</span>
+<span class="sd">    </span>
+<span class="sd">    To enable transformation calculations, this class inherits from :any:`Value`,</span>
+<span class="sd">    though its transformation stays constant over time.</span>
+<span class="sd">    </span>
+<span class="sd">    .. seealso:: :any:`Value`</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">stamp</span><span class="p">):</span></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Marker</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">stamp</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="s1">&#39;marker&#39;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">ShutTUM</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../sequence.html">Sequence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../devices.html">Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../values.html">Values</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../downloads.html">Downloads</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  <li><a href="../ShutTUM.html">ShutTUM</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Thore Goll.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
