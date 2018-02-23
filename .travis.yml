@@ -16,6 +16,10 @@ deploy:
   provider: pypi
   on:
     tags: true
+  branches:
+  only:
+    - master
+    - /v\d+\.\d+[a-z]/
   user: gollth
   password:
     secure: rPfBkGFUbDuGbNQPo3YgrhHsiwfwbEy2mo8gIRviAon8G9CspQWiJtCtrtz48nQnWGBDPbOhc/ppUhvCReH5EEQ5dbRMTE2HQKmU4Pmg8E1vYshM9g8KFR2dvFz3H8M5/tqvYgRrajExsZoXVsTma58MxRb+t8g5qpoyD8FMItTmTN07I6AoMDEM9ss21utGPRpWqU5QmwjadZyPuWKgxp3fG1bZwoCahpwHqsNCulP1XXLg/96cS300n/J0Eo3lKeSpp+pgqDzenOa59MZFnhFKoRWFBPC0mrNgF8He6UuwNkp96bh5o77+yzMNmTolZGdikDNcsj8rFZTDTbnGIvMjfc7FBP9TQ9qyMfxaXO/K68vTt1/XxjPKj7B7IsLbMrwDdU23OBpWjCyETceUBXn92j9ugWgEvAx31XUUtxVO9qyOQOAtoScx4HnRJy0L4i8nOedUbXKyy/j3eka0OWSNE2PiWAwV2wkkrrAGMciXGjufw/3kzmQ+IehVR2cVppbyM9sDBR8Aix6yjX79luTfXXXL0wDg5802TopKOBKOl5+BQ0mQFcWcaADiChdeAcf0Ti7MiWux9XTJDZfG67VM5kR8D1dsAwquE5EPJnFydHXUFHRJeur21Ru9MouV5xRAs8al9oYUc8Bb9KpAdL/YctK95dIVL1DGGyezfQc=
