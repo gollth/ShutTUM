@@ -24,6 +24,11 @@ class TestFrameDrops (unittest.TestCase):
         for id in rolling_ids:
             self.assertEqual(id, cam[id].ID)
 
+    def test_duostereo_camera_iterations(self):
+        for stereo1, stereo2 in self.sequence.cameras():
+            self.assertEqual(stereo1.shutter, 'global')
+            self.assertEqual(stereo2.shutter, 'rolling')
+
     def test_sync_cameras_skip_single_frame_drops(self):
         global_ids = [2]
         cam = self.sequence.cameras('global')
