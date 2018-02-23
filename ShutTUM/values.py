@@ -541,33 +541,6 @@ class Imu(Value):
         raise ValueError('[%s] Unknown extrapolation method: %s (supported are "closest", "next", "prev" and "exact")'
                          % (value._sequence, method))
 
-    @staticmethod
-    def interpolate(sequence, stamp, acceleration_interpolation=ShutTUM.Interpolation.linear,
-                    angvelo_interpolation=ShutTUM.Interpolation.linear):
-        r"""
-        This function enables you to find the interpolated :any:`Imu` values of a record given a certain timestamp.
-
-        :param sequence: the sequence which holds all imu values to interpolate over 
-        :param float stamp: the time at which to interpolate (in seconds, with decimal places) 
-        :param acceleration_interpolation: A predefined or custom interpolation function
-        :param angvelo_interpolation: A predefined or custom interpolation function
-        :return: An :any:`Imu` value
-
-        .. seealso:: :any:`Interpolation`
-        """
-
-        imu = sequence.raw.imu
-        idx = np.searchsorted(imu[:, 0], stamp)
-        acc = np.ones((1, 3)) * np.nan
-        gyr = np.ones((1, 4)) * np.nan
-        if idx != 0 and idx != imu.shape[0]:
-            ta = acceleration_interpolation(imu[idx - 1, 0], imu[idx, 0], stamp)
-            acc = (1 - ta) * imu[idx - 1, 1:4] + ta * imu[idx, 1:4]
-            tg = angvelo_interpolation(imu[idx - 1, 0], imu[idx, 0], stamp)
-            gyr = (1 - tg) * imu[idx - 1, 1:4] + tg * imu[idx, 1:4]
-
-        return Imu(sequence, np.concatenate(([stamp], acc, gyr)))
-
     def __init__(self, sequence, data):
         if len(data) < 7: raise ValueError(
             "[%s] Data must have at least 7 entries [time1, acc3, gyro3] but has %d" % (self._sequence, len(data)))
