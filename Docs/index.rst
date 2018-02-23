@@ -1,16 +1,16 @@
+
 .. image:: images/logo.png
 
-A utility API to easily interact with the ShutTUM dataset by `Thore Goll <thore.goll@tum.de>`_
+A utility API to easily interact with the ShutTUM dataset by `Thore Goll <thore.goll@tum.de>`_.
 
--------
-Modules
--------
 .. toctree::
     :maxdepth: 2
+    :hidden:
 
     sequence
     devices
     values
+    downloads
 
 ---------
 Structure
